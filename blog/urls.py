@@ -3,6 +3,7 @@ from . import views
 
 urlpatterns = [
     path('postular/',                                   views.submission_picker,                        name='submission_picker'),
+    path('postular/prefill/<str:source_type>/<int:source_id>/', views.submission_prefill,              name='submission_prefill'),
     path('postular/libre/',                             views.submission_create,                        name='submission_create'),
     path('postular/<str:source_type>/<int:source_id>/', views.submission_create,                        name='submission_create_from_source'),
     path('postulaciones/',                              views.submission_list,                           name='submission_list'),

@@ -1,9 +1,17 @@
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 from django import forms
 
 from .models import BlogSubmission
+
+
+@login_required
+def submission_prefill(request, source_type, source_id):
+    """AJAX: returns pre-filled title + body for a given source."""
+    title, body, _, _, _ = _prefill_from_source(source_type, source_id, request.user)
+    return JsonResponse({'title': title, 'body': body})
 
 
 @login_required
@@ -108,6 +116,8 @@ def submission_create(request, source_type='free', source_id=None):
             birth_report=birth_report,
             status=status,
         )
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'ok': True, 'status': status})
         return redirect('submission_list')
 
     return render(request, 'blog/submission_edit.html', {
