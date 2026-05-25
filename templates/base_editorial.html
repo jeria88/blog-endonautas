@@ -13,27 +13,37 @@
 
   {% block structured_data %}{% endblock %}
 
-  <!-- EB Garamond + Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Inter:wght@300;400;500&display=swap">
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 
   <style>
+    @media (prefers-reduced-motion: reduce) {
+      .aurora, .const-line { animation: none !important; }
+      .const-line { stroke-dashoffset: 0 !important; }
+      .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+      .glass-card { transition: none !important; }
+      .btn-primary, .btn-ghost { transition: none !important; }
+    }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:         #000000;
-      --text:       #ffffff;
-      --muted:      #a1a1aa;
-      --dim:        #52525b;
-      --gold:       #d4a853;
-      --gold-glow:  rgba(212,168,83,0.18);
-      --teal:       #4ecdc4;
-      --glass-bg:   rgba(255,255,255,0.03);
-      --glass-bd:   rgba(255,255,255,0.08);
-      --glass-hov:  rgba(255,255,255,0.06);
-      --font-serif: 'EB Garamond', Georgia, serif;
-      --font-ui:    'Inter', system-ui, sans-serif;
+      --bg:           #000000;
+      --text:         #ffffff;
+      --muted:        #a1a1aa;
+      --dim:          #52525b;
+      --gold:         #EAB308;
+      --accent:       #EAB308;
+      --gold-glow:    rgba(234,179,8,0.18);
+      --teal:         #4ecdc4;
+      --glass-bg:     rgba(255,255,255,0.03);
+      --glass-bd:     rgba(255,255,255,0.08);
+      --glass-hov:    rgba(255,255,255,0.06);
+      --font-serif:   'EB Garamond', Georgia, serif;
+      --font-heading: 'EB Garamond', Georgia, serif;
+      --font-ui:      'Inter', system-ui, sans-serif;
     }
 
     html { scroll-behavior: smooth; background: var(--bg); }
@@ -50,7 +60,7 @@
       overflow-x: hidden;
     }
 
-    /* ── Fondo global fijo ── */
+    /* ── Fondo global ── */
     #global-bg {
       position: fixed;
       inset: 0;
@@ -67,31 +77,36 @@
       pointer-events: none;
       animation: aFloat 22s infinite alternate ease-in-out;
     }
-    .aurora-1 {
-      top: -15%; right: -10%;
-      width: 700px; height: 700px;
-      background: #3b0764;
-      opacity: 0.45;
-    }
-    .aurora-2 {
-      bottom: -20%; left: -15%;
-      width: 900px; height: 900px;
-      background: #172554;
-      opacity: 0.3;
-      animation-delay: -6s;
-    }
-    .aurora-3 {
-      top: 40%; left: 30%;
-      width: 500px; height: 500px;
-      background: #0f2027;
-      opacity: 0.35;
-      animation-delay: -11s;
-    }
+    .aurora-1 { top: -10%; right: -10%; width: 700px; height: 700px; background: #3b0764; opacity: 0.4; }
+    .aurora-2 { bottom: -20%; left: -10%; width: 900px; height: 900px; background: #172554; opacity: 0.3; animation-delay: -6s; }
+    .aurora-3 { top: 40%; left: 30%; width: 500px; height: 500px; background: #0f2027; opacity: 0.3; animation-delay: -11s; }
 
     @keyframes aFloat {
       0%   { transform: translate(0,0) scale(1); }
-      100% { transform: translate(-40px, 50px) scale(1.12); }
+      100% { transform: translate(-40px,50px) scale(1.12); }
     }
+
+    /* ── Constelaciones ── */
+    .svg-constellations {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      z-index: 2; pointer-events: none;
+    }
+    .const-line {
+      stroke: rgba(255,255,255,0.12); stroke-width: 0.5; fill: none;
+      stroke-dasharray: 1000; stroke-dashoffset: 1000;
+      animation: drawLine 8s cubic-bezier(0.4,0,0.2,1) infinite alternate;
+    }
+    .const-node     { fill: #fff; opacity: 0.65; filter: drop-shadow(0 0 3px rgba(255,255,255,0.6)); }
+    .const-node-dim { fill: rgba(255,255,255,0.3); }
+    @keyframes drawLine { 0%,10% { stroke-dashoffset: 1000; } 90%,100% { stroke-dashoffset: 0; } }
+
+    /* ── Scroll Reveal ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.9s cubic-bezier(0.16,1,0.3,1), transform 0.9s cubic-bezier(0.16,1,0.3,1);
+    }
+    .reveal.is-visible { opacity: 1; transform: translateY(0); }
 
     /* ── Nav ── */
     header {
@@ -101,27 +116,28 @@
     }
     .nav {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 1.4rem 4rem;
-      background: linear-gradient(to bottom, rgba(0,0,0,0.75) 0%, transparent 100%);
+      padding: 1.5rem 4rem;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, transparent 100%);
     }
     .nav > * { pointer-events: auto; }
 
     .nav-logo {
       font-family: var(--font-serif);
-      font-size: 1.25rem;
+      font-size: 1.5rem;
       color: var(--text);
       text-decoration: none;
       letter-spacing: 0.02em;
+      flex-shrink: 0;
     }
     .nav-logo em { font-style: italic; color: var(--muted); }
 
     .nav-links {
-      display: flex; gap: 2rem; align-items: center; list-style: none;
+      display: flex; gap: 1.75rem; align-items: center; list-style: none;
     }
     .nav-links a {
       color: var(--muted);
       text-decoration: none;
-      font-size: 0.78rem;
+      font-size: 0.75rem;
       letter-spacing: 0.1em;
       text-transform: uppercase;
       font-weight: 400;
@@ -129,22 +145,20 @@
     }
     .nav-links a:hover { color: var(--text); }
     .nav-links .nav-cta {
-      color: var(--teal);
-      border: 1px solid rgba(78,205,196,0.3);
+      color: var(--gold);
+      border: 1px solid rgba(234,179,8,0.3);
       border-radius: 999px;
       padding: 0.35rem 1rem;
       font-weight: 500;
     }
     .nav-links .nav-cta:hover {
-      background: rgba(78,205,196,0.08);
-      color: var(--teal);
+      background: rgba(234,179,8,0.08);
+      color: var(--gold);
+      border-color: rgba(234,179,8,0.5);
     }
 
     /* ── Contenido ── */
-    #page-content {
-      position: relative;
-      z-index: 1;
-    }
+    #page-content { position: relative; z-index: 1; }
 
     /* ── Utilidades ── */
     .container      { max-width: 780px;  margin: 0 auto; padding: 0 1.5rem; }
@@ -163,7 +177,7 @@
     .tag-pill {
       display: inline-block;
       font-size: 0.65rem; letter-spacing: 0.14em; text-transform: uppercase;
-      color: var(--gold); border: 1px solid rgba(212,168,83,0.25);
+      color: var(--gold); border: 1px solid rgba(234,179,8,0.25);
       border-radius: 999px; padding: 0.2rem 0.7rem;
     }
 
@@ -222,15 +236,13 @@
     .footer {
       position: relative; z-index: 1;
       margin-top: 8rem;
-      padding: 3rem 2rem;
-      text-align: center;
-      color: var(--dim);
-      font-size: 0.75rem;
+      padding: 2.5rem 4rem;
       border-top: 1px solid rgba(255,255,255,0.06);
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 1rem;
     }
     .footer-links {
-      display: flex; gap: 2rem; justify-content: center;
-      margin-bottom: 1rem; flex-wrap: wrap;
+      display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: center;
     }
     .footer-links a {
       color: var(--dim); text-decoration: none;
@@ -238,11 +250,21 @@
       transition: color 0.2s;
     }
     .footer-links a:hover { color: var(--muted); }
+    .footer-copy { font-size: 0.72rem; color: var(--dim); }
 
-    @media (max-width: 768px) {
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .nav { padding: 1.2rem 2rem; }
+      .nav-links { gap: 1.2rem; }
+      .nav-links a { font-size: 0.7rem; }
+      .nav-hide-md { display: none; }
+    }
+    @media (max-width: 600px) {
       .nav { padding: 1rem 1.25rem; }
-      .nav-links { gap: 1rem; }
-      .nav-links a { font-size: 0.72rem; }
+      .nav-links { gap: 0.9rem; }
+      .nav-links a { font-size: 0.65rem; }
+      .nav-hide-sm { display: none; }
+      .footer { padding: 2rem 1.5rem; flex-direction: column; align-items: flex-start; }
     }
   </style>
 
@@ -250,12 +272,40 @@
 </head>
 <body>
 
-<!-- Fondo global con auroras -->
 <div id="global-bg">
   <div class="aurora aurora-1"></div>
   <div class="aurora aurora-2"></div>
   <div class="aurora aurora-3"></div>
-  <canvas id="star-canvas"></canvas>
+  <canvas id="star-canvas" aria-hidden="true"></canvas>
+  <svg class="svg-constellations" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice"
+       xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+    <g id="const-group" transform-origin="500 500">
+      <path class="const-line" d="M200,300 L300,350 L400,250 L480,320 L550,200"/>
+      <circle class="const-node" cx="200" cy="300" r="2"/>
+      <circle class="const-node-dim" cx="300" cy="350" r="1.5"/>
+      <circle class="const-node" cx="400" cy="250" r="2.5"/>
+      <circle class="const-node-dim" cx="480" cy="320" r="1.5"/>
+      <circle class="const-node" cx="550" cy="200" r="2"/>
+
+      <path class="const-line" style="animation-delay:2s" d="M700,500 L800,450 L750,600 L850,650 L900,550"/>
+      <path class="const-line" style="animation-delay:2s" d="M750,600 L650,700"/>
+      <circle class="const-node" cx="700" cy="500" r="2"/>
+      <circle class="const-node-dim" cx="800" cy="450" r="1.5"/>
+      <circle class="const-node" cx="750" cy="600" r="3"/>
+      <circle class="const-node" cx="850" cy="650" r="2"/>
+      <circle class="const-node-dim" cx="900" cy="550" r="1.5"/>
+      <circle class="const-node" cx="650" cy="700" r="2"/>
+
+      <path class="const-line" style="animation-delay:4s" d="M300,700 L250,800 L350,850 L450,750 L400,650 Z"/>
+      <path class="const-line" style="animation-delay:4s" d="M450,750 L550,800"/>
+      <circle class="const-node" cx="300" cy="700" r="2"/>
+      <circle class="const-node-dim" cx="250" cy="800" r="1.5"/>
+      <circle class="const-node" cx="350" cy="850" r="2"/>
+      <circle class="const-node" cx="450" cy="750" r="2.5"/>
+      <circle class="const-node-dim" cx="400" cy="650" r="1.5"/>
+      <circle class="const-node" cx="550" cy="800" r="2"/>
+    </g>
+  </svg>
 </div>
 
 <header>
@@ -263,9 +313,10 @@
     <a href="/" class="nav-logo">Endonautas <em>·</em></a>
     <ul class="nav-links">
       <li><a href="/blog/">Blog</a></li>
-      <li><a href="https://ebook.endonautas.cl" target="_blank">Ebook</a></li>
-      <li><a href="https://app.endonautas.cl/comunidad/" target="_blank">Comunidad</a></li>
-      <li><a href="mailto:hola@endonautas.cl">Contacto</a></li>
+      <li class="nav-hide-sm"><a href="https://ebook.endonautas.cl" target="_blank">Ebook</a></li>
+      <li><a href="/comunidad/">Comunidad</a></li>
+      <li class="nav-hide-md"><a href="/mision/">Misión</a></li>
+      <li><a href="/contacto/">Contacto</a></li>
       <li><a href="https://app.endonautas.cl" class="nav-cta">Entrar →</a></li>
     </ul>
   </nav>
@@ -279,54 +330,85 @@
   <div class="footer-links">
     <a href="/">Inicio</a>
     <a href="/blog/">Blog</a>
-    <a href="https://ebook.endonautas.cl">Endonautica</a>
+    <a href="https://ebook.endonautas.cl">Ebook</a>
+    <a href="/comunidad/">Comunidad</a>
+    <a href="/mision/">Misión</a>
+    <a href="/contacto/">Contacto</a>
     <a href="https://app.endonautas.cl">App</a>
   </div>
-  <p>© {% now "Y" %} Endonautas — Franco Jeria Castro</p>
+  <span class="footer-copy">© {% now "Y" %} Endonautas — Franco Jeria Castro</span>
 </footer>
 
 <script>
+/* ── Estrellas (600 píxeles cuadrados, alto rendimiento) ── */
 (function() {
   const canvas = document.getElementById('star-canvas');
-  const ctx    = canvas.getContext('2d');
-  let W, H, stars = [];
-
-  function resize() {
-    W = canvas.width  = window.innerWidth;
-    H = canvas.height = window.innerHeight;
+  if (!canvas) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { canvas.style.display = 'none'; return; }
+  const ctx = canvas.getContext('2d', { alpha: false });
+  let W, H, paused = false;
+  const stars = [];
+  for (let i = 0; i < 600; i++) {
+    stars.push({
+      x: Math.random(), y: Math.random(),
+      s: Math.random() < 0.9 ? 1 : 2,
+      baseAlpha: 0.1 + Math.random() * 0.5,
+      phase: Math.random() * Math.PI * 2,
+      speed: 0.0005 + Math.random() * 0.001,
+    });
   }
+  function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
   window.addEventListener('resize', resize);
   resize();
-
-  for (let i = 0; i < 160; i++) {
-    stars.push({
-      x: Math.random() * 1920,
-      y: Math.random() * 1080,
-      r: Math.random() * 0.9 + 0.1,
-      a: Math.random() * 0.7 + 0.1,
-      twinkle: Math.random() * Math.PI * 2,
-      speed: Math.random() * 0.02 + 0.005,
-    });
+  document.addEventListener('visibilitychange', () => { paused = document.hidden; if (!paused) loop(performance.now()); });
+  function loop(now) {
+    if (paused) return;
+    requestAnimationFrame(loop);
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, W, H);
+    for (let i = 0; i < stars.length; i++) {
+      const s = stars[i];
+      const a = s.baseAlpha + Math.sin(now * s.speed + s.phase) * 0.3;
+      if (a > 0.05) {
+        ctx.fillStyle = `rgba(255,255,255,${Math.max(0, Math.min(1, a))})`;
+        ctx.fillRect(s.x * W, s.y * H, s.s, s.s);
+      }
+    }
   }
-
-  function draw() {
-    ctx.clearRect(0, 0, W, H);
-    stars.forEach(s => {
-      s.twinkle += s.speed;
-      const alpha = s.a * (0.6 + 0.4 * Math.sin(s.twinkle));
-      ctx.beginPath();
-      ctx.arc(
-        (s.x / 1920) * W,
-        (s.y / 1080) * H,
-        s.r, 0, Math.PI * 2
-      );
-      ctx.fillStyle = `rgba(255,255,255,${alpha})`;
-      ctx.fill();
-    });
-    requestAnimationFrame(draw);
-  }
-  draw();
+  loop(performance.now());
 })();
+
+/* ── Paralaje de constelaciones ── */
+(function() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const g = document.getElementById('const-group');
+  if (!g) return;
+  let mx = 0, my = 0, cx = 0, cy = 0;
+  document.addEventListener('mousemove', e => {
+    mx = (e.clientX / window.innerWidth - 0.5) * 2;
+    my = (e.clientY / window.innerHeight - 0.5) * 2;
+  });
+  function tick() {
+    requestAnimationFrame(tick);
+    cx += (mx - cx) * 0.04;
+    cy += (my - cy) * 0.04;
+    const t = Date.now() * 0.0002;
+    g.style.transform = `translate(${cx * -15}px, ${cy * -15}px) rotate(${Math.sin(t) * 2}deg)`;
+  }
+  tick();
+})();
+
+/* ── Scroll Reveal ── */
+if ('IntersectionObserver' in window) {
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('is-visible'); obs.unobserve(e.target); }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+} else {
+  document.querySelectorAll('.reveal').forEach(el => el.classList.add('is-visible'));
+}
 </script>
 
 {% block extra_js %}{% endblock %}

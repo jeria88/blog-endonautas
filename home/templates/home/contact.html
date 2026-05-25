@@ -1,0 +1,152 @@
+{% extends "base_editorial.html" %}
+
+{% block title %}Contacto — Endonautas{% endblock %}
+{% block meta_description %}Escríbenos a Franco Jeria y el equipo Endonautas.{% endblock %}
+{% block og_title %}Contacto — Endonautas{% endblock %}
+{% block og_url %}/contacto/{% endblock %}
+{% block canonical %}/contacto/{% endblock %}
+
+{% block extra_head %}
+<style data-page-style>
+  .contact-wrap {
+    padding: 8rem 1.5rem 6rem;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  .contact-eyebrow {
+    display: inline-flex; align-items: center; gap: 12px;
+    font-size: 0.68rem; font-weight: 500;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 2rem;
+  }
+  .contact-eyebrow::before {
+    content: ''; display: block; width: 24px; height: 1px; background: var(--dim);
+  }
+
+  .contact-title {
+    font-family: var(--font-heading);
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    font-weight: 400;
+    line-height: 1.1;
+    color: var(--text);
+    letter-spacing: -0.01em;
+    margin-bottom: 1rem;
+  }
+
+  .contact-sub {
+    color: var(--muted);
+    font-size: 1rem;
+    line-height: 1.7;
+    margin-bottom: 3rem;
+  }
+
+  .contact-form {
+    display: flex; flex-direction: column; gap: 1.25rem;
+  }
+
+  .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+  .form-group label {
+    font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--muted); font-weight: 400;
+  }
+  .form-group input,
+  .form-group textarea {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--glass-bd);
+    border-radius: 12px;
+    padding: 0.85rem 1.1rem;
+    color: var(--text);
+    font-family: var(--font-ui);
+    font-size: 0.95rem;
+    font-weight: 300;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+  .form-group input:focus,
+  .form-group textarea:focus { border-color: rgba(234,179,8,0.4); }
+  .form-group textarea { resize: vertical; min-height: 160px; line-height: 1.6; }
+
+  .form-actions { margin-top: 0.5rem; }
+
+  .contact-success {
+    text-align: center;
+    padding: 3rem 2rem;
+  }
+  .contact-success-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+    opacity: 0.8;
+  }
+  .contact-success h2 {
+    font-family: var(--font-heading);
+    font-size: 1.8rem;
+    font-weight: 400;
+    margin-bottom: 0.8rem;
+  }
+  .contact-success p {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+  }
+
+  .contact-alt {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    color: var(--dim);
+    font-size: 0.85rem;
+  }
+  .contact-alt a { color: var(--muted); text-decoration: none; }
+  .contact-alt a:hover { color: var(--text); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="contact-wrap">
+
+  {% if enviado %}
+  <div class="contact-success reveal">
+    <div class="contact-success-icon">✦</div>
+    <h2>Mensaje recibido.</h2>
+    <p>Te responderemos pronto a tu correo electrónico.</p>
+    <a href="/" class="btn-ghost">Volver al inicio</a>
+  </div>
+
+  {% else %}
+  <p class="contact-eyebrow reveal">Endonautas</p>
+  <h1 class="contact-title reveal" style="transition-delay:0.1s">Contacto</h1>
+  <p class="contact-sub reveal" style="transition-delay:0.15s">
+    Preguntas sobre el método, el libro, la app o el trabajo terapéutico.<br>
+    Escríbenos y respondemos en menos de 48 horas.
+  </p>
+
+  <form class="contact-form reveal" method="post" style="transition-delay:0.2s">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="c-nombre">Nombre</label>
+      <input type="text" id="c-nombre" name="nombre" placeholder="Tu nombre" required autocomplete="name">
+    </div>
+    <div class="form-group">
+      <label for="c-email">Correo electrónico</label>
+      <input type="email" id="c-email" name="email" placeholder="tu@correo.cl" required autocomplete="email">
+    </div>
+    <div class="form-group">
+      <label for="c-mensaje">Mensaje</label>
+      <textarea id="c-mensaje" name="mensaje" placeholder="¿En qué podemos ayudarte?" required></textarea>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn-primary">Enviar mensaje →</button>
+    </div>
+  </form>
+
+  <div class="contact-alt reveal" style="transition-delay:0.3s">
+    También puedes escribir directamente a
+    <a href="mailto:hola@endonautas.cl">hola@endonautas.cl</a>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

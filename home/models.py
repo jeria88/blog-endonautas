@@ -39,3 +39,18 @@ class HomePage(Page):
 
     class Meta:
         verbose_name = 'Página de Inicio'
+
+
+class SimplePage(Page):
+    body = RichTextField(blank=True)
+    cta_text = models.CharField(max_length=80, blank=True)
+    cta_url = models.URLField(blank=True)
+
+    content_panels = Page.content_panels + [
+        FieldPanel('body'),
+        FieldPanel('cta_text'),
+        FieldPanel('cta_url'),
+    ]
+
+    class Meta:
+        verbose_name = 'Página Simple'

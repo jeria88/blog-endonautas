@@ -5,6 +5,8 @@ from django.shortcuts import redirect
 from django.urls import include, path
 from django.views.generic import TemplateView
 
+from home.views import contacto_view
+
 from wagtail import urls as wagtail_urls
 from wagtail.admin import urls as wagtailadmin_urls
 from wagtail.documents import urls as wagtaildocs_urls
@@ -28,6 +30,9 @@ urlpatterns = [
 
     # Blog — postulaciones de usuarios
     path('blog/', include('blog.urls')),
+
+    # Páginas editoriales
+    path('contacto/', contacto_view, name='contacto'),
 
     # MirrorWork app routes
     path('', include('accounts.urls_public')),
