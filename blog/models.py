@@ -1,6 +1,7 @@
 import datetime
 import json
 
+from django.conf import settings
 from django.db import models
 from wagtail.models import Page
 from wagtail.fields import StreamField, RichTextField
@@ -92,3 +93,65 @@ class BlogPost(Page):
 
     class Meta:
         verbose_name = 'Artículo del Blog'
+
+
+class BlogSubmission(models.Model):
+    SOURCE_ESPEJO = 'espejo'
+    SOURCE_TEST   = 'test'
+    SOURCE_BIRTH  = 'birth'
+    SOURCE_FREE   = 'free'
+    SOURCE_CHOICES = [
+        (SOURCE_ESPEJO, 'Sesión del Espejo'),
+        (SOURCE_TEST,   'Resultado de Test'),
+        (SOURCE_BIRTH,  'Lectura de Nacimiento'),
+        (SOURCE_FREE,   'Texto libre'),
+    ]
+
+    STATUS_DRAFT     = 'draft'
+    STATUS_SUBMITTED = 'submitted'
+    STATUS_APPROVED  = 'approved'
+    STATUS_REJECTED  = 'rejected'
+    STATUS_CHOICES = [
+        (STATUS_DRAFT,     'Borrador'),
+        (STATUS_SUBMITTED, 'En revisión'),
+        (STATUS_APPROVED,  'Aprobado'),
+        (STATUS_REJECTED,  'Rechazado'),
+    ]
+
+    user        = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='blog_submissions')
+    title       = models.CharField('Título', max_length=200)
+    body        = models.TextField('Texto')
+    source_type = models.CharField(max_length=10, choices=SOURCE_CHOICES, default=SOURCE_FREE)
+
+    # Solo uno de estos estará activo según source_type
+    espejo_session = models.ForeignKey('mirror.ConflictSession',   null=True, blank=True, on_delete=models.SET_NULL, related_name='blog_submissions')
+    test_result    = models.ForeignKey('psychometrics.TestResult', null=True, blank=True, on_delete=models.SET_NULL, related_name='blog_submissions')
+    birth_report   = models.ForeignKey('birth.BirthReport',       null=True, blank=True, on_delete=models.SET_NULL, related_name='blog_submissions')
+
+    status         = models.CharField(max_length=12, choices=STATUS_CHOICES, default=STATUS_DRAFT)
+    reviewer_notes = models.TextField('Notas del revisor', blank=True)
+    blog_post      = models.OneToOneField('blog.BlogPost', null=True, blank=True, on_delete=models.SET_NULL, related_name='submission')
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-updated_at']
+        verbose_name = 'Postulación al Blog'
+        verbose_name_plural = 'Postulaciones al Blog'
+
+    def __str__(self):
+        return f'{self.user.email} — {self.title[:60]} [{self.status}]'
+
+    @property
+    def is_editable(self):
+        return self.status in (self.STATUS_DRAFT, self.STATUS_REJECTED)
+
+    def source_label(self):
+        if self.espejo_session:
+            return f'Espejo: {self.espejo_session.title or self.espejo_session.conflict_description[:50]}'
+        if self.test_result:
+            return f'Test: {self.test_result.test.name}'
+        if self.birth_report:
+            return f'Nacimiento: {self.birth_report.get_report_type_display()}'
+        return 'Texto libre'

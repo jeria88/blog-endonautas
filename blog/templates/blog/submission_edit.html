@@ -1,0 +1,223 @@
+{% extends "base_editorial.html" %}
+
+{% block title %}
+  {% if is_new %}Nueva postulación{% else %}Editar postulación{% endif %} — Endonautas
+{% endblock %}
+
+{% block extra_head %}
+<style>
+  .edit-page {
+    padding: 8rem 1.5rem 6rem;
+  }
+
+  .edit-wrap {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .edit-header {
+    margin-bottom: 2.5rem;
+  }
+
+  .edit-header h1 {
+    font-family: var(--font-serif);
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    font-weight: 400;
+    line-height: 1.15;
+    margin-top: 0.8rem;
+  }
+
+  .source-info {
+    margin-top: 0.8rem;
+    font-size: 0.82rem;
+    color: var(--muted);
+    padding: 0.7rem 1rem;
+    border-left: 2px solid var(--dim);
+    font-style: italic;
+  }
+
+  .form-group {
+    margin-bottom: 1.75rem;
+  }
+
+  .form-label {
+    display: block;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.6rem;
+    font-weight: 500;
+  }
+
+  .form-input,
+  .form-textarea {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--glass-bd);
+    border-radius: 12px;
+    padding: 0.85rem 1rem;
+    color: var(--text);
+    font-family: var(--font-ui);
+    font-size: 0.95rem;
+    font-weight: 300;
+    line-height: 1.6;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-input:focus,
+  .form-textarea:focus {
+    border-color: rgba(212,168,83,0.4);
+  }
+
+  .form-textarea {
+    resize: vertical;
+    min-height: 340px;
+    font-family: var(--font-serif);
+    font-size: 1rem;
+  }
+
+  .form-hint {
+    font-size: 0.75rem;
+    color: var(--dim);
+    margin-top: 0.4rem;
+  }
+
+  .form-error {
+    font-size: 0.78rem;
+    color: #f87171;
+    margin-top: 0.4rem;
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--glass-bd);
+  }
+
+  .btn-submit {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: var(--gold);
+    color: #000;
+    font-family: var(--font-ui);
+    font-weight: 500;
+    font-size: 0.82rem;
+    letter-spacing: 0.04em;
+    padding: 0.85rem 2rem;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  .btn-submit:hover {
+    opacity: 0.85;
+    transform: scale(1.02);
+  }
+
+  .back-link {
+    font-size: 0.78rem;
+    color: var(--muted);
+    text-decoration: none;
+    letter-spacing: 0.06em;
+    margin-left: auto;
+    transition: color 0.2s;
+  }
+  .back-link:hover { color: var(--text); }
+
+  .rejection-notice {
+    padding: 1rem 1.25rem;
+    border: 1px solid rgba(248,113,113,0.25);
+    border-radius: 12px;
+    background: rgba(248,113,113,0.05);
+    margin-bottom: 2rem;
+    font-size: 0.88rem;
+    color: #fca5a5;
+    line-height: 1.6;
+  }
+  .rejection-notice strong {
+    display: block;
+    margin-bottom: 0.3rem;
+    color: #f87171;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="edit-page">
+  <div class="edit-wrap">
+
+    <div class="edit-header">
+      <span class="tag-label">
+        {% if is_new %}Escribe para el blog{% else %}Editando borrador{% endif %}
+      </span>
+      <h1>
+        {% if is_new %}Nueva postulación{% else %}{{ submission.title }}{% endif %}
+      </h1>
+
+      {% if not is_new and submission.source_label != 'Texto libre' %}
+      <div class="source-info">Basado en: {{ submission.source_label }}</div>
+      {% endif %}
+    </div>
+
+    {% if not is_new and submission.status == 'rejected' and submission.reviewer_notes %}
+    <div class="rejection-notice">
+      <strong>Nota del revisor</strong>
+      {{ submission.reviewer_notes }}
+    </div>
+    {% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label class="form-label" for="id_title">Título</label>
+        <input
+          type="text"
+          id="id_title"
+          name="title"
+          class="form-input"
+          value="{{ form.title.value|default:'' }}"
+          placeholder="{{ form.title.field.widget.attrs.placeholder }}"
+          maxlength="200"
+          required
+        >
+        {% if form.title.errors %}
+        <div class="form-error">{{ form.title.errors|join:", " }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="id_body">Tu texto</label>
+        <textarea
+          id="id_body"
+          name="body"
+          class="form-textarea"
+          placeholder="{{ form.body.field.widget.attrs.placeholder }}"
+          rows="18"
+          required
+        >{{ form.body.value|default:'' }}</textarea>
+        <p class="form-hint">Puedes editar y reescribir libremente. Lo que se envía es lo que ves aquí.</p>
+        {% if form.body.errors %}
+        <div class="form-error">{{ form.body.errors|join:", " }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" name="guardar" class="btn-ghost">Guardar borrador</button>
+        <button type="submit" name="enviar" class="btn-submit">Enviar para revisión →</button>
+        <a href="{% url 'submission_list' %}" class="back-link">← Volver</a>
+      </div>
+    </form>
+
+  </div>
+</div>
+{% endblock %}

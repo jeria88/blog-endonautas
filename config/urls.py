@@ -26,6 +26,9 @@ urlpatterns = [
     path('robots.txt', TemplateView.as_view(template_name='robots.txt', content_type='text/plain')),
     path('llms.txt', TemplateView.as_view(template_name='llms.txt', content_type='text/plain')),
 
+    # Blog — postulaciones de usuarios
+    path('blog/', include('blog.urls')),
+
     # MirrorWork app routes
     path('', include('accounts.urls_public')),
     path('', include('accounts.urls', namespace='accounts')),
