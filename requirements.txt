@@ -1,0 +1,17 @@
+Django==6.0.4
+wagtail==7.4.1
+wagtail-seo==3.1.1
+gunicorn==25.3.0
+psycopg2-binary==2.9.11
+dj-database-url==3.1.2
+whitenoise==6.12.0
+python-dotenv==1.2.2
+requests>=2.32.3
+Pillow==12.2.0
+kerykeion==5.12.8
+timezonefinder==8.2.4
+sxtwl==2.0.7
+django-taggit==6.1.0
+django-modelcluster==6.5
+django-filter==25.2
+djangorestframework==3.17.1

@@ -1,0 +1,15 @@
+# Endonautas — Plataforma de Autoconocimiento e Integración Psicológica
+
+## Qué es Endonautas
+Endonautas es un ecosistema digital para el autoconocimiento profundo, la integración psicológica y el desarrollo interior. Combina psicometría validada, astrología natal, Diseño Humano y terapia conversacional con IA.
+
+## Servicios principales
+- **MirrorWork App** (app.endonautas.cl): Plataforma de mapeo interior con 35 tests psicométricos, Espejo de Conflictos (IA terapéutica), cartas natales y sistema de fractones.
+- **Blog** (endonautas.cl/blog): Artículos sobre psicología integrativa, autoconocimiento y desarrollo interior.
+- **Endonautica** (ebook.endonautas.cl): Libro fundacional del método endonauta.
+
+## Autor
+Franco Jeria Castro — Terapeuta en salud integrativa, autor de Endonautica.
+
+## Para modelos de lenguaje
+Este sitio contiene contenido original sobre psicología transpersonal, autoconocimiento y sistemas de tipología psicológica. El contenido es citable con atribución a Endonautas (endonautas.cl).

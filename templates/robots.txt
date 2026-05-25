@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+Disallow: /cms/
+Disallow: /django-admin/
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+Sitemap: https://endonautas.cl/sitemap.xml
