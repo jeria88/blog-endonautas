@@ -1,5 +1,5 @@
 [deploy]
-startCommand = "python manage.py migrate --settings=config.settings.production && python manage.py createsuperuser --noinput --settings=config.settings.production || true && python manage.py collectstatic --noinput --settings=config.settings.production && gunicorn config.wsgi"
+startCommand = "python manage.py migrate --settings=config.settings.production && python manage.py shell --settings=config.settings.production -c \"from django.contrib.auth import get_user_model; import os; U=get_user_model(); u,_=U.objects.get_or_create(username='admin',defaults={'email':'fjeriacastro@gmail.com','is_staff':True,'is_superuser':True}); u.set_password(os.environ['DJANGO_SUPERUSER_PASSWORD']); u.is_staff=True; u.is_superuser=True; u.save(); print('admin ok')\" && python manage.py collectstatic --noinput --settings=config.settings.production && gunicorn config.wsgi"
 
 [build]
 builder = "NIXPACKS"
