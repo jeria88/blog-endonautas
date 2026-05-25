@@ -1,21 +1,216 @@
-{% extends "base.html" %}
-{% load static %}
+{% extends "base_editorial.html" %}
+{% load wagtailcore_tags wagtailimages_tags %}
 
-{% block body_class %}template-homepage{% endblock %}
+{% block title %}Endonautas — Autoconocimiento profundo e integración psicológica{% endblock %}
+{% block meta_description %}{{ page.tagline|default:"Autoconocimiento profundo e integración psicológica. Explora tu mundo interior con herramientas psicométricas, el Espejo de Conflictos y lecturas de nacimiento." }}{% endblock %}
+{% block og_title %}Endonautas{% endblock %}
+{% block og_description %}{{ page.tagline|default:"Autoconocimiento profundo e integración psicológica." }}{% endblock %}
 
-{% block extra_css %}
+{% block structured_data %}
+<script type="application/ld+json">{{ page.get_structured_data_json }}</script>
+{% endblock %}
 
-{% comment %}
-Delete the line below if you're just getting started and want to remove the welcome screen!
-{% endcomment %}
-<link rel="stylesheet" href="{% static 'css/welcome_page.css' %}">
-{% endblock extra_css %}
+{% block extra_head %}
+<style data-page-style>
+  .hero {
+    min-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 4rem 1.5rem 6rem;
+  }
+
+  .hero-eyebrow {
+    font-size: 0.72rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-title {
+    font-family: var(--font-heading);
+    font-size: clamp(2.4rem, 6vw, 4.2rem);
+    font-weight: 400;
+    line-height: 1.15;
+    color: var(--text);
+    max-width: 760px;
+    margin-bottom: 1.4rem;
+  }
+
+  .hero-title em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .hero-tagline {
+    font-size: clamp(1rem, 2vw, 1.15rem);
+    color: var(--muted);
+    max-width: 520px;
+    margin-bottom: 2.8rem;
+    line-height: 1.7;
+  }
+
+  .hero-ctas {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  /* ── Divider ── */
+  .section-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0;
+  }
+
+  /* ── Features ── */
+  .features {
+    padding: 5rem 1.5rem;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    max-width: 1100px;
+    margin: 3rem auto 0;
+  }
+
+  .feature-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.75rem 1.5rem;
+    transition: border-color 0.2s;
+  }
+
+  .feature-card:hover { border-color: rgba(78,205,196,0.4); }
+
+  .feature-icon {
+    font-size: 1.6rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .feature-title {
+    font-family: var(--font-heading);
+    font-size: 1.05rem;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+  }
+
+  .feature-desc {
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* ── Section heading ── */
+  .section-heading {
+    text-align: center;
+    font-family: var(--font-heading);
+    font-size: clamp(1.5rem, 3.5vw, 2.2rem);
+    font-weight: 400;
+    color: var(--text);
+  }
+
+  .section-sub {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+  }
+
+  /* ── CTA final ── */
+  .cta-band {
+    padding: 5rem 1.5rem;
+    text-align: center;
+    background: linear-gradient(180deg, transparent, rgba(78,205,196,0.04) 50%, transparent);
+  }
+
+  .cta-band h2 {
+    font-family: var(--font-heading);
+    font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+    font-weight: 400;
+    color: var(--text);
+    margin-bottom: 0.8rem;
+  }
+
+  .cta-band p {
+    color: var(--muted);
+    max-width: 460px;
+    margin: 0 auto 2.2rem;
+    font-size: 0.95rem;
+  }
+
+  @media (max-width: 600px) {
+    .features-grid { grid-template-columns: 1fr; }
+  }
+</style>
+{% endblock %}
 
 {% block content %}
 
-{% comment %}
-Delete the line below if you're just getting started and want to remove the welcome screen!
-{% endcomment %}
-{% include 'home/welcome_page.html' %}
+<!-- Hero -->
+<section class="hero">
+  <p class="hero-eyebrow">Plataforma de autoconocimiento</p>
+  <h1 class="hero-title">
+    {% if page.tagline %}{{ page.tagline }}{% else %}Conoce tu mundo interior con <em>profundidad real</em>{% endif %}
+  </h1>
+  {% if page.intro %}
+  <p class="hero-tagline">{{ page.intro|richtext }}</p>
+  {% else %}
+  <p class="hero-tagline">Tests psicométricos, el Espejo de Conflictos y lecturas astrales integradas en una sola experiencia.</p>
+  {% endif %}
+  <div class="hero-ctas">
+    <a href="{{ page.cta_app_url }}" class="btn-primary">{{ page.cta_app_text }} →</a>
+    <a href="{{ page.cta_ebook_url }}" class="btn-ghost">{{ page.cta_ebook_text }}</a>
+  </div>
+</section>
 
-{% endblock content %}
+<hr class="section-divider">
+
+<!-- Features -->
+<section class="features">
+  <div class="container-wide">
+    <h2 class="section-heading">¿Qué encontrarás aquí?</h2>
+    <p class="section-sub">Herramientas para explorar lo que vives desde adentro.</p>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">&#x2699;&#xFE0F;</div>
+        <h3 class="feature-title">Tests Psicométricos</h3>
+        <p class="feature-desc">35 instrumentos — clínicos validados, adaptados y propios — que mapean tu mundo emocional, cognitivo y relacional.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">&#x1F9F6;</div>
+        <h3 class="feature-title">Espejo de Conflictos</h3>
+        <p class="feature-desc">Una IA que no resuelve: devuelve. Registra y transforma patrones de conflicto en autoconocimiento activo.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">&#x2728;</div>
+        <h3 class="feature-title">Lecturas de Nacimiento</h3>
+        <p class="feature-desc">Astrología, Human Design y calendario lunar chino integrados en una sola lectura de tu mapa de origen.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">&#x1F4D6;</div>
+        <h3 class="feature-title">Blog Endonauta</h3>
+        <p class="feature-desc">Artículos de profundidad sobre psicología integrativa, filosofía del autoconocimiento y experiencias de la comunidad.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- CTA final -->
+<section class="cta-band">
+  <h2>El viaje comienza adentro</h2>
+  <p>Crea tu cuenta gratuita y accede a los primeros tests, el Espejo y la comunidad Endonauta.</p>
+  <a href="{{ page.cta_app_url }}" class="btn-primary">Comenzar ahora →</a>
+</section>
+
+{% endblock %}
