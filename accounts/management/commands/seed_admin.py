@@ -7,8 +7,9 @@ class Command(BaseCommand):
     help = 'Crea usuario admin de testing si no existe'
 
     def handle(self, *args, **options):
-        email = 'admin@mirrorwork.app'
-        password = 'Mirror2026!'
+        import os
+        email = os.environ.get('ADMIN_EMAIL', 'fjeriacastro@gmail.com')
+        password = os.environ.get('ADMIN_PASSWORD', 'Mirror2026!')
 
         u, created = User.objects.get_or_create(email=email, defaults={
             'username': 'admin',
