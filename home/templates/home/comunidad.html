@@ -1,0 +1,236 @@
+{% extends "base_editorial.html" %}
+
+{% block title %}Comunidad — Endonautas{% endblock %}
+{% block meta_description %}La comunidad de endonautas: personas en proceso, compartiendo el viaje interior desde territorios distintos.{% endblock %}
+{% block og_title %}Comunidad — Endonautas{% endblock %}
+{% block og_url %}/comunidad/{% endblock %}
+{% block canonical %}/comunidad/{% endblock %}
+
+{% block extra_head %}
+<style data-page-style>
+
+  .page-hero {
+    min-height: 60vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 10rem 4rem 5rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .page-eyebrow {
+    display: inline-flex; align-items: center; gap: 12px;
+    font-size: 0.68rem; font-weight: 500;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 1.5rem;
+  }
+  .page-eyebrow::before {
+    content: ''; display: block; width: 24px; height: 1px; background: var(--dim);
+  }
+
+  .page-title {
+    font-family: var(--font-heading);
+    font-size: clamp(3rem, 8vw, 6.5rem);
+    font-weight: 400;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    max-width: 900px;
+  }
+  .page-title em { font-style: italic; color: var(--muted); }
+
+  .ed-section {
+    max-width: 780px; margin: 0 auto; padding: 4rem 4rem;
+  }
+
+  .ed-label {
+    font-size: 0.68rem; font-weight: 500;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--dim); margin-bottom: 2rem;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .ed-label::before { content: ''; display: block; width: 24px; height: 1px; background: var(--dim); }
+
+  .ed-heading {
+    font-family: var(--font-heading);
+    font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+    font-weight: 400; line-height: 1.2;
+    color: var(--text); margin-bottom: 1.5rem;
+    letter-spacing: -0.01em;
+  }
+
+  .ed-body {
+    font-size: 1.05rem; line-height: 1.85;
+    color: rgba(255,255,255,0.85);
+  }
+  .ed-body p { margin-bottom: 1.4rem; }
+  .ed-body p:last-child { margin-bottom: 0; }
+
+  /* ── Tarjetas de llegada ── */
+  .arrival-list {
+    display: flex; flex-direction: column; gap: 1rem;
+    margin-top: 2rem;
+  }
+  .arrival-item {
+    padding: 1.75rem;
+    display: flex; gap: 1.25rem; align-items: flex-start;
+  }
+  .arrival-num {
+    font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--dim); flex-shrink: 0; padding-top: 0.15rem;
+    min-width: 2rem;
+  }
+  .arrival-text {
+    font-family: var(--font-heading);
+    font-style: italic; font-size: 1.1rem;
+    line-height: 1.55; color: var(--text);
+  }
+
+  /* ── Qué encontrarás ── */
+  .find-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.25rem; margin-top: 2rem;
+  }
+  .find-card {
+    padding: 1.75rem 1.5rem;
+  }
+  .find-icon {
+    font-size: 1.2rem; margin-bottom: 0.75rem; opacity: 0.75;
+  }
+  .find-title {
+    font-family: var(--font-heading);
+    font-size: 1.05rem; font-weight: 400;
+    color: var(--text); margin-bottom: 0.5rem;
+  }
+  .find-desc {
+    font-size: 0.86rem; color: var(--muted); line-height: 1.6;
+  }
+
+  /* ── CTA final ── */
+  .page-cta {
+    max-width: 780px; margin: 0 auto; padding: 4rem 4rem 8rem;
+  }
+  .page-cta-inner {
+    background: linear-gradient(180deg, transparent, rgba(78,205,196,0.04) 50%, transparent);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 24px; padding: 3.5rem; text-align: center;
+  }
+  .page-cta-title {
+    font-family: var(--font-heading);
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    font-weight: 400; color: var(--text);
+    margin-bottom: 0.8rem; line-height: 1.2;
+  }
+  .page-cta-title em { font-style: italic; color: var(--teal); }
+  .page-cta-sub {
+    color: var(--muted); font-size: 0.95rem; margin-bottom: 2rem; line-height: 1.6;
+  }
+  .cta-pair { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+
+  .nav-cta-teal {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    background: var(--teal); color: #000;
+    font-family: var(--font-ui); font-weight: 500; font-size: 0.82rem;
+    letter-spacing: 0.04em;
+    padding: 0.85rem 2rem; border-radius: 999px; border: none;
+    text-decoration: none; cursor: pointer;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  .nav-cta-teal:hover { opacity: 0.88; transform: scale(1.02); }
+
+  @media (max-width: 768px) {
+    .page-hero  { padding: 8rem 1.5rem 3.5rem; }
+    .ed-section { padding: 3rem 1.5rem; }
+    .page-cta   { padding: 3rem 1.5rem 5rem; }
+    .page-cta-inner { padding: 2.5rem 1.5rem; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<div class="page-hero">
+  <p class="page-eyebrow reveal">Endonautas</p>
+  <h1 class="page-title reveal" style="transition-delay:0.1s">
+    El viaje interior<br>no es <em>solitario.</em>
+  </h1>
+</div>
+
+<hr class="divider">
+
+<!-- Qué es -->
+<section class="ed-section">
+  <p class="ed-label reveal">La comunidad</p>
+  <div class="ed-body reveal" style="transition-delay:0.1s">
+    <p>No porque necesites validación del exterior — sino porque la conciencia se ve a sí misma con más claridad cuando se refleja en otra conciencia que también está en proceso.</p>
+    <p>La comunidad Endonautas no es un grupo de seguidores ni una audiencia. Es un colectivo de personas haciendo el mismo trabajo desde territorios distintos.</p>
+    <p>La endonáutica propone que el cambio en el mundo exterior nace en el mundo interior. El impacto crece en la medida en que más personas realizan esa misma tarea con honestidad.</p>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- Quiénes están -->
+<section class="ed-section">
+  <p class="ed-label reveal">Quiénes llegan</p>
+  <h2 class="ed-heading reveal" style="transition-delay:0.1s">Hay muchas formas de nacer como endonauta.</h2>
+
+  <div class="arrival-list">
+    <div class="glass-card arrival-item reveal">
+      <span class="arrival-num">01</span>
+      <p class="arrival-text">"La vida afuera va bien. Y sin embargo algo adentro no encaja. Como si llevaras una versión de ti que no termina de ser tú."</p>
+    </div>
+    <div class="glass-card arrival-item reveal" style="transition-delay:0.1s">
+      <span class="arrival-num">02</span>
+      <p class="arrival-text">"La terapia terminó. Las preguntas no. Entendiste el origen de tus patrones pero el lenguaje para leerlos en tiempo real todavía te falta."</p>
+    </div>
+    <div class="glass-card arrival-item reveal" style="transition-delay:0.2s">
+      <span class="arrival-num">03</span>
+      <p class="arrival-text">"Una crisis — una pérdida, una ruptura, una pausa — te forzó a mirar hacia adentro. Y descubriste que ahí hay algo que vale la pena explorar."</p>
+    </div>
+  </div>
+
+  <p class="ed-body reveal" style="margin-top:2rem; transition-delay:0.3s">
+    No importa en qué punto del viaje estés. Lo que une a la comunidad no es el nivel de avance — es la honestidad con el proceso.
+  </p>
+</section>
+
+<hr class="divider">
+
+<!-- Qué encontrarás -->
+<section class="ed-section">
+  <p class="ed-label reveal">Qué encontrarás</p>
+  <div class="find-grid">
+    <div class="glass-card find-card reveal">
+      <div class="find-icon">⟡</div>
+      <div class="find-title">Exploración compartida</div>
+      <p class="find-desc">Personas mostrando sus resultados de tests, lecturas de nacimiento y sesiones con el Espejo de Conflictos.</p>
+    </div>
+    <div class="glass-card find-card reveal" style="transition-delay:0.1s">
+      <div class="find-icon">◈</div>
+      <div class="find-title">Preguntas, no respuestas</div>
+      <p class="find-desc">Conversaciones que no piden tener la respuesta — solo la pregunta honesta. Sin jerarquías de iluminación.</p>
+    </div>
+    <div class="glass-card find-card reveal" style="transition-delay:0.2s">
+      <div class="find-icon">✦</div>
+      <div class="find-title">Proceso, no marca</div>
+      <p class="find-desc">Un espacio donde el autoconocimiento no es productividad ni contenido. Es trabajo real con uno mismo.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="page-cta">
+  <div class="page-cta-inner reveal">
+    <h2 class="page-cta-title">Entra a la <em>comunidad.</em></h2>
+    <p class="page-cta-sub">Crea tu cuenta gratuita y accede a la comunidad Endonautas desde la app.</p>
+    <div class="cta-pair">
+      <a href="https://app.endonautas.cl/comunidad/" class="nav-cta-teal">Entrar a la comunidad →</a>
+      <a href="/mision/" class="btn-ghost">Leer la misión</a>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

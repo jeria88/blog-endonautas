@@ -1,0 +1,263 @@
+{% extends "base_editorial.html" %}
+
+{% block title %}Misión y Visión — Endonautas{% endblock %}
+{% block meta_description %}La historia, la misión y la visión detrás de Endonautas. Por qué existe y qué estamos construyendo.{% endblock %}
+{% block og_title %}Misión y Visión — Endonautas{% endblock %}
+{% block og_url %}/mision/{% endblock %}
+{% block canonical %}/mision/{% endblock %}
+
+{% block extra_head %}
+<style data-page-style>
+
+  .page-hero {
+    min-height: 60vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 10rem 4rem 5rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .page-eyebrow {
+    display: inline-flex; align-items: center; gap: 12px;
+    font-size: 0.68rem; font-weight: 500;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 1.5rem;
+  }
+  .page-eyebrow::before {
+    content: ''; display: block; width: 24px; height: 1px; background: var(--dim);
+  }
+
+  .page-title {
+    font-family: var(--font-heading);
+    font-size: clamp(3rem, 8vw, 6.5rem);
+    font-weight: 400;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    max-width: 900px;
+  }
+  .page-title em { font-style: italic; color: var(--muted); }
+
+  /* ── Secciones editoriales ── */
+  .ed-section {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 4rem 4rem;
+  }
+
+  .ed-section-wide {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 4rem 4rem;
+  }
+
+  .ed-label {
+    font-size: 0.68rem; font-weight: 500;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--dim); margin-bottom: 2rem;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .ed-label::before { content: ''; display: block; width: 24px; height: 1px; background: var(--dim); }
+
+  .ed-heading {
+    font-family: var(--font-heading);
+    font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+    font-weight: 400;
+    line-height: 1.2;
+    color: var(--text);
+    margin-bottom: 1.5rem;
+    letter-spacing: -0.01em;
+  }
+
+  .ed-body {
+    font-size: 1.05rem;
+    line-height: 1.85;
+    color: rgba(255,255,255,0.85);
+  }
+  .ed-body p { margin-bottom: 1.4rem; }
+  .ed-body p:last-child { margin-bottom: 0; }
+
+  .ed-quote {
+    font-family: var(--font-heading);
+    font-style: italic;
+    font-size: clamp(1.4rem, 2.8vw, 2rem);
+    line-height: 1.4;
+    color: var(--text);
+    padding: 2.5rem 0;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    margin: 2rem 0;
+  }
+
+  /* ── Grid de pilares ── */
+  .mission-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.25rem;
+    margin-top: 2.5rem;
+  }
+
+  .mission-card {
+    padding: 2rem 1.75rem;
+  }
+  .mission-card-num {
+    font-size: 0.65rem; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--dim); margin-bottom: 0.75rem;
+  }
+  .mission-card-title {
+    font-family: var(--font-heading);
+    font-size: 1.15rem; font-weight: 400;
+    color: var(--text); margin-bottom: 0.6rem;
+  }
+  .mission-card-desc {
+    font-size: 0.88rem; color: var(--muted); line-height: 1.65;
+  }
+
+  /* ── Firma ── */
+  .firma {
+    margin-top: 3rem;
+    padding-top: 2.5rem;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    display: flex; align-items: center; gap: 1.5rem;
+  }
+  .firma-name {
+    font-family: var(--font-heading);
+    font-size: 1.1rem; font-weight: 400;
+    color: var(--text);
+  }
+  .firma-title { font-size: 0.82rem; color: var(--muted); margin-top: 0.2rem; }
+
+  /* ── CTA final ── */
+  .page-cta {
+    max-width: 780px; margin: 0 auto;
+    padding: 4rem 4rem 8rem;
+  }
+  .page-cta-inner {
+    background: linear-gradient(180deg, transparent, rgba(234,179,8,0.04) 50%, transparent);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 24px;
+    padding: 3.5rem;
+    text-align: center;
+  }
+  .page-cta-title {
+    font-family: var(--font-heading);
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    font-weight: 400; color: var(--text);
+    margin-bottom: 0.8rem; line-height: 1.2;
+  }
+  .page-cta-title em { font-style: italic; color: var(--gold); }
+  .page-cta-sub {
+    color: var(--muted); font-size: 0.95rem; margin-bottom: 2rem; line-height: 1.6;
+  }
+  .cta-pair { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+
+  @media (max-width: 768px) {
+    .page-hero  { padding: 8rem 1.5rem 3.5rem; }
+    .ed-section, .ed-section-wide { padding: 3rem 1.5rem; }
+    .page-cta   { padding: 3rem 1.5rem 5rem; }
+    .page-cta-inner { padding: 2.5rem 1.5rem; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<div class="page-hero">
+  <p class="page-eyebrow reveal">Endonautas</p>
+  <h1 class="page-title reveal" style="transition-delay:0.1s">
+    El mapa nació<br>antes de tener <em>nombre.</em>
+  </h1>
+</div>
+
+<hr class="divider">
+
+<!-- El origen -->
+<section class="ed-section">
+  <p class="ed-label reveal">El origen</p>
+  <div class="ed-body reveal" style="transition-delay:0.1s">
+    <p>Desde niño me comparé con personajes que buscaban algo — Naruto, Killua, Shinji Ikari. No como escape, sino como brújula. Sus conflictos decían algo de los míos.</p>
+    <p>Cuando empecé a acompañar a otras personas como terapeuta noté que la mayoría de sus conflictos no venían de afuera. Venían de no tener el lenguaje para leer lo que ocurría adentro: los patrones, las creencias heredadas, la identidad construida para sobrevivir lo que se vivió.</p>
+    <p>El nombre endonáutica se me ocurrió hacia 2019. El libro lo escribí en 2022, cuando encontré el punto de quietud necesario para ordenar lo que habitaba en mi interior desde una perspectiva con sentido. El resultado es una teoría del mundo interior — y este proyecto es la plataforma para practicarla.</p>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- La misión -->
+<section class="ed-section">
+  <p class="ed-label reveal">La misión</p>
+  <h2 class="ed-heading reveal" style="transition-delay:0.1s">Entregar herramientas para que cada persona pueda leer su propio mapa interior.</h2>
+  <div class="ed-body reveal" style="transition-delay:0.2s">
+    <p>No prescribimos. No diagnosticamos. Hacemos cartografía.</p>
+    <p>Un mapa no dice qué camino tomar — dice dónde estás, qué hay alrededor, qué terrenos existen. Desde ahí, cada uno elige su ruta.</p>
+  </div>
+
+  <div class="mission-grid">
+    <div class="glass-card mission-card reveal">
+      <div class="mission-card-num">01. Tests</div>
+      <div class="mission-card-title">Psicometría del mundo interior</div>
+      <p class="mission-card-desc">35 instrumentos que mapean emociones, patrones cognitivos, apego y regulación. No para diagnosticar — para ver.</p>
+    </div>
+    <div class="glass-card mission-card reveal" style="transition-delay:0.1s">
+      <div class="mission-card-num">02. Espejo</div>
+      <div class="mission-card-title">IA que devuelve, no resuelve</div>
+      <p class="mission-card-desc">El Espejo de Conflictos registra y transforma los patrones que se repiten en las relaciones, el trabajo, la vida cotidiana.</p>
+    </div>
+    <div class="glass-card mission-card reveal" style="transition-delay:0.2s">
+      <div class="mission-card-num">03. Nacimiento</div>
+      <div class="mission-card-title">El mapa de origen</div>
+      <p class="mission-card-desc">Astrología, Human Design y Saju integrados en una sola lectura. No como destino — como punto de partida.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- El endonauta -->
+<section class="ed-section">
+  <p class="ed-label reveal">Un endonauta</p>
+  <div class="ed-quote reveal" style="transition-delay:0.1s">
+    "Una conciencia capaz de percibirse a sí misma, sentirse, conocerse y amarse."
+  </div>
+  <div class="ed-body reveal" style="transition-delay:0.2s">
+    <p>Una persona que puede conversar consigo misma, observarse sin juzgarse, e integrar las partes de sí que hasta ahora rechazaba u ocultaba.</p>
+    <p>Hay muchas formas de llegar hasta acá: una crisis, la terapia, un sueño, la intuición, una pérdida. Cada ser que medita, que respira, que quiere hacer del mundo un lugar mejor — es un endonauta. No importa si lo sabe o no.</p>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- La visión -->
+<section class="ed-section">
+  <p class="ed-label reveal">La visión</p>
+  <h2 class="ed-heading reveal" style="transition-delay:0.1s">Una revolución que comienza adentro.</h2>
+  <div class="ed-body reveal" style="transition-delay:0.2s">
+    <p>La endonáutica propone que el cambio en el mundo exterior nace en el mundo interior. No es utopía abstracta. Es matemática simple: mientras más personas desarrollen su mundo interior con honestidad, más conscientes serán las decisiones que toman — sobre sí mismas y sobre los otros.</p>
+    <p>Mientras mayor sea el número de endonautas, más rápido podemos cambiar el mundo.</p>
+    <p>Eso es lo que estamos construyendo.</p>
+  </div>
+
+  <div class="firma reveal" style="transition-delay:0.3s">
+    <div>
+      <div class="firma-name">Franco Jeria Castro</div>
+      <div class="firma-title">Terapeuta en Salud Integrativa · Autor de Endonautica</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="page-cta">
+  <div class="page-cta-inner reveal">
+    <h2 class="page-cta-title">El mapa completo está en el <em>libro.</em></h2>
+    <p class="page-cta-sub">La teoría completa del mundo interior — la lógica fractal, la ley del espejo, el trabajo con la sombra, los arquetipos.</p>
+    <div class="cta-pair">
+      <a href="https://ebook.endonautas.cl" class="btn-primary">Leer Endonautica →</a>
+      <a href="https://app.endonautas.cl" class="btn-ghost">Entrar a la App</a>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -31,8 +31,10 @@ urlpatterns = [
     # Blog — postulaciones de usuarios
     path('blog/', include('blog.urls')),
 
-    # Páginas editoriales
+    # Páginas editoriales (antes de cualquier include que pueda solaparse)
     path('contacto/', contacto_view, name='contacto'),
+    path('mision/', TemplateView.as_view(template_name='home/mision.html'), name='mision'),
+    path('comunidad/', TemplateView.as_view(template_name='home/comunidad.html'), name='comunidad_editorial'),
 
     # MirrorWork app routes
     path('', include('accounts.urls_public')),
