@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sitemaps',
+    'django.contrib.postgres',
 ]
 
 MIDDLEWARE = [
@@ -118,7 +119,8 @@ STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 ]
 
-STATICFILES_DIRS = [BASE_DIR / 'static']
+_STATIC_SRC = BASE_DIR / 'static'
+STATICFILES_DIRS = [_STATIC_SRC] if _STATIC_SRC.exists() else []
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATIC_URL = '/static/'
 MEDIA_ROOT = BASE_DIR / 'media'
