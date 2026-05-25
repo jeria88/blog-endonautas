@@ -1,7 +1,7 @@
 from .base import *
 import dj_database_url
 
-DEBUG = False
+DEBUG = True  # TEMP: diagnosis 500 login — revertir después
 
 SECRET_KEY = os.environ['SECRET_KEY']
 

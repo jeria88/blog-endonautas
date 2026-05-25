@@ -11,5 +11,5 @@ def create_user_profile(sender, instance, created, **kwargs):
         from tokens.models import TokenBalance
         TokenBalance.objects.create(
             user=instance,
-            balance=settings.TOKEN_PLANS['free']['monthly_tokens']
+            balance=settings.TOKEN_PLANS['free'].get('monthly_tokens', settings.TOKEN_PLANS['free'].get('monthly_fractones', 100))
         )
