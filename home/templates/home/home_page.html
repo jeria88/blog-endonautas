@@ -150,10 +150,51 @@
   }
 
   /* ── CTA band ── */
+  /* ── Autor ── */
+  .author-section {
+    padding: 5rem 1.5rem;
+  }
+  .author-inner {
+    max-width: 860px;
+    margin: 0 auto;
+    display: flex;
+    gap: 3.5rem;
+    align-items: center;
+  }
+  .author-photo-wrap { flex-shrink: 0; }
+  .author-photo {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--glass-bd);
+    display: block;
+  }
+  .author-text { flex: 1; }
+  .author-eyebrow {
+    font-size: 0.68rem; font-weight: 500;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--dim); margin-bottom: 0.8rem;
+  }
+  .author-name {
+    font-family: var(--font-serif);
+    font-size: clamp(1.4rem, 2.5vw, 2rem);
+    font-weight: 400; color: var(--text);
+    margin-bottom: 0.75rem;
+  }
+  .author-bio {
+    font-size: 0.95rem; color: var(--muted);
+    line-height: 1.75; margin-bottom: 1.5rem;
+  }
+  @media (max-width: 640px) {
+    .author-inner { flex-direction: column; align-items: flex-start; gap: 1.5rem; }
+    .author-photo { width: 100px; height: 100px; }
+  }
+
   .cta-band {
     padding: 7rem 1.5rem;
     text-align: center;
-    background: linear-gradient(180deg, transparent, rgba(212,168,83,0.04) 50%, transparent);
+    background: linear-gradient(180deg, transparent, rgba(234,179,8,0.04) 50%, transparent);
   }
 
   .cta-band-inner {
@@ -202,14 +243,14 @@
 
 <!-- Hero -->
 <section class="hero">
-  <p class="hero-eyebrow">Plataforma de autoconocimiento</p>
-  <h1 class="hero-title">
+  <p class="hero-eyebrow reveal">Plataforma de autoconocimiento</p>
+  <h1 class="hero-title reveal" style="transition-delay:0.15s">
     {% if page.tagline %}{{ page.tagline }}{% else %}Conoce tu mundo interior con <em>profundidad real</em>{% endif %}
   </h1>
-  <p class="hero-tagline">
+  <p class="hero-tagline reveal" style="transition-delay:0.3s">
     {% if page.intro %}{{ page.intro }}{% else %}Tests psicométricos, el Espejo de Conflictos y lecturas de nacimiento — integrados en una sola experiencia.{% endif %}
   </p>
-  <div class="hero-ctas">
+  <div class="hero-ctas reveal" style="transition-delay:0.45s">
     <a href="{% if page.cta_app_url %}{{ page.cta_app_url }}{% else %}https://app.endonautas.cl{% endif %}" class="btn-primary">
       {% if page.cta_app_text %}{{ page.cta_app_text }}{% else %}Entrar a la App{% endif %} →
     </a>
@@ -224,33 +265,55 @@
 <!-- Features -->
 <section class="features">
   <div class="container-wide">
-    <div class="section-eyebrow">
+    <div class="section-eyebrow reveal">
       <span class="tag-label">Lo que encontrarás</span>
     </div>
-    <h2 class="section-heading">Herramientas para el viaje interior</h2>
-    <p class="section-sub">Cada módulo es una forma distinta de mirarte desde adentro.</p>
+    <h2 class="section-heading reveal" style="transition-delay:0.1s">Cuatro formas de leer lo que ocurre adentro</h2>
+    <p class="section-sub reveal" style="transition-delay:0.15s">No hay un solo espejo. Hay cuatro.</p>
 
     <div class="features-grid">
-      <div class="feature-card glass-card">
+      <div class="feature-card glass-card reveal">
         <div class="feature-icon">⟡</div>
         <h3 class="feature-title">Tests Psicométricos</h3>
-        <p class="feature-desc">35 instrumentos — clínicos validados, adaptados y propios — que mapean tu mundo emocional, cognitivo y relacional.</p>
+        <p class="feature-desc">Preguntas que devuelven una imagen de ti que rara vez puedes ver solo. No para diagnosticar — para tener el lenguaje de lo que ya sabes.</p>
       </div>
-      <div class="feature-card glass-card">
+      <div class="feature-card glass-card reveal" style="transition-delay:0.1s">
         <div class="feature-icon">◈</div>
         <h3 class="feature-title">Espejo de Conflictos</h3>
-        <p class="feature-desc">Una IA que no resuelve: devuelve. Registra y transforma patrones de conflicto en autoconocimiento activo.</p>
+        <p class="feature-desc">No viene con respuestas. Llega con las preguntas que no te habías hecho. Registra los patrones que se repiten — hasta que los puedas ver tú.</p>
       </div>
-      <div class="feature-card glass-card">
+      <div class="feature-card glass-card reveal" style="transition-delay:0.2s">
         <div class="feature-icon">✦</div>
         <h3 class="feature-title">Lecturas de Nacimiento</h3>
-        <p class="feature-desc">Astrología, Human Design y calendario lunar chino integrados en una sola lectura de tu mapa de origen.</p>
+        <p class="feature-desc">Tres sistemas que mapean el momento exacto de tu llegada. No como destino — como punto de partida que ilumina hacia dónde quieres ir.</p>
       </div>
-      <div class="feature-card glass-card">
+      <div class="feature-card glass-card reveal" style="transition-delay:0.3s">
         <div class="feature-icon">𝍢</div>
         <h3 class="feature-title">Blog Endonauta</h3>
-        <p class="feature-desc">Artículos de profundidad sobre psicología integrativa, filosofía del autoconocimiento y experiencias de la comunidad.</p>
+        <p class="feature-desc">Reflexiones de profundidad sobre psicología, filosofía del interior y el proceso real de quienes hacen el viaje.</p>
       </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- Autor -->
+<section class="author-section">
+  <div class="author-inner">
+    <div class="author-photo-wrap reveal">
+      <img
+        src="https://ebook.endonautas.cl/assets/img/franco-jeria.jpeg"
+        alt="Franco Jeria Castro"
+        class="author-photo"
+        loading="lazy"
+      >
+    </div>
+    <div class="author-text">
+      <p class="author-eyebrow reveal">Creado por</p>
+      <h2 class="author-name reveal" style="transition-delay:0.1s">Franco Jeria Castro</h2>
+      <p class="author-bio reveal" style="transition-delay:0.2s">Terapeuta en salud integrativa, autor de Endonautica. Desde 2019 construyendo herramientas para que el viaje interior tenga lenguaje, mapa y dirección — no como promesa, sino como práctica.</p>
+      <a href="/mision/" class="btn-ghost reveal" style="font-size:0.82rem; transition-delay:0.3s">Leer la historia →</a>
     </div>
   </div>
 </section>
@@ -260,10 +323,10 @@
 <!-- CTA final -->
 <section class="cta-band">
   <div class="cta-band-inner">
-    <span class="tag-label" style="margin-bottom:1.5rem; display:inline-flex;">El punto de partida</span>
-    <h2>El viaje comienza <em>adentro</em></h2>
-    <p>Crea tu cuenta gratuita y accede a los primeros tests, el Espejo y la comunidad Endonauta.</p>
-    <div class="cta-pair">
+    <span class="tag-label reveal" style="margin-bottom:1.5rem; display:inline-flex;">El punto de partida</span>
+    <h2 class="reveal" style="transition-delay:0.1s">El viaje comienza <em>adentro</em></h2>
+    <p class="reveal" style="transition-delay:0.2s">Crea tu cuenta gratuita y accede a los primeros tests, el Espejo y la comunidad Endonauta.</p>
+    <div class="cta-pair reveal" style="transition-delay:0.3s">
       <a href="{% if page.cta_app_url %}{{ page.cta_app_url }}{% else %}https://app.endonautas.cl{% endif %}" class="btn-primary">Comenzar ahora →</a>
       <a href="/blog/" class="btn-ghost">Leer el blog</a>
     </div>

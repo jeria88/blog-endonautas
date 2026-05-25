@@ -122,6 +122,13 @@
     border-top: 1px solid rgba(255,255,255,0.06);
     display: flex; align-items: center; gap: 1.5rem;
   }
+  .firma-photo {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--glass-bd);
+    flex-shrink: 0;
+  }
   .firma-name {
     font-family: var(--font-heading);
     font-size: 1.1rem; font-weight: 400;
@@ -241,6 +248,12 @@
   </div>
 
   <div class="firma reveal" style="transition-delay:0.3s">
+    <img
+      src="https://ebook.endonautas.cl/assets/img/franco-jeria.jpeg"
+      alt="Franco Jeria Castro"
+      class="firma-photo"
+      loading="lazy"
+    >
     <div>
       <div class="firma-name">Franco Jeria Castro</div>
       <div class="firma-title">Terapeuta en Salud Integrativa · Autor de Endonautica</div>
