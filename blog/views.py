@@ -1,10 +1,30 @@
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 from django import forms
 
 from .models import BlogSubmission
+
+
+@login_required
+def submission_picker(request):
+    """Muestra todo el contenido del usuario para que elija de dónde postular."""
+    from mirror.models import ConflictSession
+    from psychometrics.models import TestResult
+    from birth.models import BirthReport
+
+    context = {
+        'espejo_sessions': ConflictSession.objects.filter(
+            user=request.user, status='completed'
+        ).order_by('-updated_at'),
+        'test_results': TestResult.objects.filter(
+            user=request.user
+        ).select_related('test').order_by('-completed_at'),
+        'birth_reports': BirthReport.objects.filter(
+            user=request.user, status='complete'
+        ).order_by('-created_at'),
+    }
+    return render(request, 'blog/submission_picker.html', context)
 
 
 class SubmissionForm(forms.Form):
