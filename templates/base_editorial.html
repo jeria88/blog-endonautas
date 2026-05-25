@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Endonautas{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}Autoconocimiento profundo e integración psicológica.{% endblock %}">
+  <meta property="og:title" content="{% block og_title %}Endonautas{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}Autoconocimiento profundo e integración psicológica.{% endblock %}">
+  <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+  <meta property="og:url" content="https://endonautas.cl{% block og_url %}{% endblock %}">
+  <link rel="canonical" href="https://endonautas.cl{% block canonical %}{% endblock %}">
+
+  {% block structured_data %}{% endblock %}
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #000000;
+      --surface:  #0d0d14;
+      --border:   #1e1e2e;
+      --text:     #e2e2f0;
+      --muted:    #6a6a90;
+      --accent:   #4ecdc4;
+      --accent2:  #7c6dfa;
+      --luz:      #f0c040;
+      --font-ui:  'Inter', system-ui, sans-serif;
+      --font-heading: Georgia, 'Times New Roman', serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-ui);
+      font-size: 16px;
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* ── Fondo de partículas suaves ── */
+    #particles-bg {
+      position: fixed; inset: 0; z-index: 0;
+      pointer-events: none; overflow: hidden;
+    }
+    #particles-bg canvas { position: absolute; inset: 0; }
+
+    /* ── Nav ── */
+    .nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 2rem;
+      background: rgba(0,0,0,0.85);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+    }
+    .nav-logo {
+      font-family: var(--font-heading);
+      font-size: 1.1rem;
+      color: var(--text);
+      text-decoration: none;
+      letter-spacing: 0.04em;
+    }
+    .nav-logo span { color: var(--accent); }
+    .nav-links {
+      display: flex; gap: 1.75rem; align-items: center;
+      list-style: none;
+    }
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.82rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-links .nav-cta {
+      color: var(--accent);
+      border: 1px solid rgba(78,205,196,0.35);
+      border-radius: 999px;
+      padding: 0.3rem 0.9rem;
+    }
+    .nav-links .nav-cta:hover {
+      background: rgba(78,205,196,0.08);
+      color: var(--accent);
+    }
+
+    /* ── Contenido ── */
+    #page-content {
+      position: relative; z-index: 1;
+    }
+
+    /* ── Utilidades ── */
+    .container {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+    .container-wide {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    .tag-pill {
+      display: inline-block;
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      border: 1px solid rgba(78,205,196,0.25);
+      border-radius: 999px;
+      padding: 0.2rem 0.7rem;
+    }
+
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      background: var(--accent); color: #000;
+      font-weight: 600; font-size: 0.88rem;
+      padding: 0.75rem 1.75rem;
+      border-radius: 999px; border: none;
+      text-decoration: none; cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s;
+    }
+    .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      color: var(--text); font-size: 0.88rem;
+      padding: 0.75rem 1.75rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      text-decoration: none; cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Footer ── */
+    .footer {
+      margin-top: 6rem;
+      border-top: 1px solid var(--border);
+      padding: 3rem 2rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+    .footer-links {
+      display: flex; gap: 1.5rem; justify-content: center;
+      margin-bottom: 1rem; flex-wrap: wrap;
+    }
+    .footer-links a {
+      color: var(--muted); text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--accent); }
+
+    @media (max-width: 600px) {
+      .nav { padding: 0.75rem 1rem; }
+      .nav-links { gap: 1rem; }
+      .nav-links a { font-size: 0.75rem; }
+    }
+  </style>
+
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<!-- Fondo de partículas generativo -->
+<div id="particles-bg"><canvas id="pcanvas"></canvas></div>
+
+<nav class="nav" aria-label="Navegación principal">
+  <a href="/" class="nav-logo">Endo<span>nautas</span></a>
+  <ul class="nav-links">
+    <li><a href="/blog/">Blog</a></li>
+    <li><a href="https://ebook.endonautas.cl" target="_blank">Ebook</a></li>
+    <li><a href="https://app.endonautas.cl" class="nav-cta">Entrar a la App →</a></li>
+  </ul>
+</nav>
+
+<main id="page-content">
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="footer">
+  <div class="footer-links">
+    <a href="/">Inicio</a>
+    <a href="/blog/">Blog</a>
+    <a href="https://app.endonautas.cl">App</a>
+    <a href="https://ebook.endonautas.cl">Endonautica</a>
+  </div>
+  <p>© {% now "Y" %} Endonautas — Franco Jeria Castro</p>
+</footer>
+
+<script>
+(function() {
+  const canvas = document.getElementById('pcanvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles = [];
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  for (let i = 0; i < 90; i++) {
+    particles.push({
+      x: Math.random() * 1920,
+      y: Math.random() * 1080,
+      r: Math.random() * 1.2 + 0.2,
+      vx: (Math.random() - 0.5) * 0.12,
+      vy: (Math.random() - 0.5) * 0.12,
+      a: Math.random() * 0.5 + 0.1,
+    });
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+      if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(78,205,196,${p.a})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>
