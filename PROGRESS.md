@@ -1,5 +1,51 @@
 # endonautas-platform — Registro de progreso
 
+## 2026-05-26 — Fix CMS login, DNS, brand audit
+
+### ✅ Completado
+
+#### CMS — Wagtail admin funcional
+- `seed_admin` management command: crea superuser con email como USERNAME_FIELD, soporta `ADMIN_EMAIL`/`ADMIN_PASSWORD` env vars
+- Fix `balance.permanent` (no `balance.balance` — es @property sin setter)
+- Fix `accounts/signals.py`: `monthly_tokens` → `.get('monthly_fractones', 100)` (KeyError en signup)
+- `wagtail.contrib.settings` añadido a INSTALLED_APPS (requerido por wagtailseo — sin él, `/cms/` daba NoReverseMatch 500)
+- CMS accesible y funcional en `/cms/`
+
+#### Deploy — Nixpacks restaurado
+- Dockerfile y .dockerignore añadidos a `.gitignore` (evitar que Railway cambie de builder)
+- `railway.toml` restaurado con `builder = "NIXPACKS"`
+- startCommand: `migrate → seed_admin → collectstatic → gunicorn`
+
+#### DNS / Dominio
+- `endonautas.cl` → live via Cloudflare CNAME → Railway
+- Error 1000 Cloudflare resuelto: eliminados A/AAAA records con IPs de Cloudflare para `www`
+- `www` CNAME configurado en Cloudflare, falta registrar en Railway service
+
+#### Brand audit — editorial
+- `comunidad.html`: teal → gold en CTA (gradient + color `em` + clase btn)
+- `home_page.html`: features reescritas con voz personal del libro, sección autor con foto de Franco, corrección gradient CTA band (`#d4a853` → `rgba(234,179,8,0.04)`)
+- `mision.html`: foto circular de Franco en firma
+
+### 🔶 Pendiente
+
+#### www.endonautas.cl
+- Registrar `www.endonautas.cl` como custom domain en Railway service Settings → Domains
+
+#### CMS — configuración inicial
+- En `/cms/` → Settings → Sites → hostname `endonautas.cl`, puerto 443, root page → HomePage
+- Primer post del blog
+
+#### Nav y cross-site
+- Nav cross-site: actualizar para ser consistente (Contacto, Comunidad)
+- Barra "← volver a endonautas.cl" en mirrorwork para no autenticados
+
+#### Features app
+- `sensorial` app: URLs no están wired en `config/urls.py`
+- Email vars en Railway para /contacto/: `EMAIL_HOST`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `EMAIL_PORT`, `EMAIL_USE_TLS`
+- Configurar Wagtail Site en CMS post-deploy
+
+---
+
 ## 2026-05-25 — Deploy inicial + blog submission pipeline
 
 ### ✅ Completado
@@ -32,23 +78,7 @@
 - `llms.txt` con descripción del proyecto para modelos de lenguaje
 - JSON-LD WebSite schema en homepage, Article schema en BlogPost
 
-### 🔶 Pendiente
-
-#### DNS / Dominio
-- Configurar Cloudflare: `endonautas.cl` → Railway service URL
-- Crear superuser en Railway: `python manage.py createsuperuser --settings=config.settings.production`
-- En `/cms/` → Sites → hostname `endonautas.cl`, apuntar a HomePage
-
-#### Nav unificado cross-site
-- Añadir Contacto y Comunidad (RRSS) al nav de `base_editorial.html`
-- Actualizar nav de endonautica-landing para ser consistente
-- Barra "← volver a endonautas.cl" en mirrorwork para usuarios no autenticados
-
-#### Templates de la app
-- Los templates de mirrorwork no están en este repo — están en `/home/nikka/Proyectos/mirrorwork/templates/`
-- Para el deploy unificado: añadir ese path a `TEMPLATES[0]['DIRS']` en settings, o copiar templates
-
-#### Features pendientes
-- `sensorial` app: URLs no están wired en `config/urls.py`
-- Configurar superuser y primera HomePage en Wagtail CMS (post-deploy)
-- Primer post del blog (editorial o desde una postulación)
+### ✅ Resuelto en 2026-05-26
+- DNS Cloudflare configurado → endonautas.cl live
+- Superuser creado vía seed_admin (automatizado en startCommand)
+- CMS accesible en /cms/

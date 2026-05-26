@@ -2,7 +2,7 @@
 
 Proyecto unificado de Endonautas. Incluye el sitio editorial (home + blog con Wagtail CMS) y todos los módulos de la app MirrorWork (psicometría, Espejo de Conflictos, lecturas de nacimiento, comunidad, tokens).
 
-**Producción:** https://endonautas.cl (DNS Cloudflare pendiente de configurar)
+**Producción:** https://endonautas.cl — live ✅
 
 ---
 
@@ -76,7 +76,7 @@ Los usuarios de la app pueden postular contenido al blog desde cualquier sesión
 Paleta EB Garamond + aurora + gold:
 ```css
 --bg: #000000          --text: #ffffff         --muted: #a1a1aa
---dim: #52525b         --gold: #d4a853         --teal: #4ecdc4
+--dim: #52525b         --gold: #EAB308         --teal: #4ecdc4
 --glass-bg: rgba(255,255,255,0.03)
 --font-serif: 'EB Garamond', Georgia, serif
 --font-ui: 'Inter', system-ui, sans-serif
@@ -99,7 +99,7 @@ python3 manage.py migrate --settings=config.settings.dev
 python3 manage.py seed_tests --force --settings=config.settings.dev
 python3 manage.py seed_missions --settings=config.settings.dev
 python3 manage.py seed_mirror_kb --settings=config.settings.dev
-python3 manage.py createsuperuser --settings=config.settings.dev
+python3 manage.py seed_admin --settings=config.settings.dev    # crea superuser admin con env vars
 python3 manage.py runserver --settings=config.settings.dev
 ```
 
@@ -110,18 +110,29 @@ SECRET_KEY=
 DATABASE_URL=          # inyectado por Railway Postgres
 DJANGO_SETTINGS_MODULE=config.settings.production
 DEEPSEEK_API_KEY=
+ADMIN_EMAIL=           # email del superuser (default: fjeriacastro@gmail.com)
+ADMIN_PASSWORD=        # contraseña del superuser (sin ! — Railway lo interpreta como history expansion)
 ```
 
 ---
 
 ## Deploy (Railway)
 
-El `Procfile` ejecuta en orden: `migrate → seed_tests → seed_missions → seed_mirror_kb → collectstatic → gunicorn`
+El `railway.toml` startCommand ejecuta en orden: `migrate → seed_admin → collectstatic → gunicorn`
 
-### Pasos pendientes post-deploy
-1. `python manage.py createsuperuser --settings=config.settings.production`
-2. En `/cms/` → Settings → Sites → configurar hostname `endonautas.cl` y apuntar a `HomePage`
-3. Cloudflare DNS: `endonautas.cl` → Railway service URL (CNAME)
+**Builder:** Nixpacks. No incluir `Dockerfile` en el repo — Railway lo detecta y cambia de builder, rompiendo el deploy.
+
+### Post-deploy (primera vez)
+1. Env vars en Railway: `SECRET_KEY`, `DJANGO_SETTINGS_MODULE`, `DEEPSEEK_API_KEY`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`
+2. `seed_admin` corre automáticamente en cada deploy y crea/actualiza el superuser
+3. En `/cms/` → Settings → Sites → hostname `endonautas.cl`, puerto 443, apuntar a `HomePage`
+
+### Estado actual (2026-05-26)
+- ✅ endonautas.cl — live, Wagtail CMS accesible en `/cms/`
+- ✅ DNS Cloudflare configurado (CNAME → Railway)
+- ✅ Superuser creado vía `seed_admin`
+- ⚠️ www.endonautas.cl → 404 (CNAME configurado en Cloudflare, falta registrar dominio en Railway service)
+- ⚠️ `wagtail.contrib.settings` debe estar en INSTALLED_APPS (requerido por wagtailseo — sin él, login CMS da 500)
 
 ---
 
