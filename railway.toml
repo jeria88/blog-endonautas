@@ -1,5 +1,5 @@
 [deploy]
-startCommand = "python manage.py migrate --settings=config.settings.production && python manage.py seed_admin --settings=config.settings.production && python manage.py collectstatic --noinput --settings=config.settings.production && gunicorn config.wsgi"
+startCommand = "python manage.py migrate --settings=config.settings.production && python manage.py collectstatic --noinput --settings=config.settings.production && gunicorn config.wsgi"
 
 [build]
 builder = "NIXPACKS"

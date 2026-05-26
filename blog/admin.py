@@ -8,7 +8,6 @@ from .models import BlogPost, BlogIndexPage, BlogSubmission
 
 
 def _create_post_from_submission(sub):
-    """Creates a BlogPost draft from a submission and links it back."""
     blog_index = BlogIndexPage.objects.live().first()
     if not blog_index:
         raise RuntimeError('No existe una página de índice de blog publicada.')
@@ -18,14 +17,14 @@ def _create_post_from_submission(sub):
     post = BlogPost(
         title=sub.title,
         intro=sub.body[:280],
-        author_name=sub.user.get_full_name() or sub.user.email.split('@')[0],
+        author_name=sub.author_name or sub.author_email.split('@')[0],
         is_community=True,
         date=sub.created_at.date(),
     )
     post.body = [('richtext', RichText(body_html))]
 
     blog_index.add_child(instance=post)
-    post.save_revision()  # draft — Franco puede revisar antes de publicar
+    post.save_revision()
 
     sub.blog_post = post
     sub.status = BlogSubmission.STATUS_APPROVED
@@ -56,25 +55,21 @@ def rechazar_submissions(modeladmin, request, queryset):
 
 @admin.register(BlogSubmission)
 class BlogSubmissionAdmin(admin.ModelAdmin):
-    list_display  = ('title', 'user_email', 'source_label', 'status', 'created_at', 'cms_link')
-    list_filter   = ('status', 'source_type')
-    search_fields = ('title', 'user__email')
+    list_display   = ('title', 'author_email', 'source_type', 'status', 'created_at', 'cms_link')
+    list_filter    = ('status', 'source_type')
+    search_fields  = ('title', 'author_email', 'author_name')
     readonly_fields = (
-        'user', 'source_type', 'espejo_session', 'test_result',
-        'birth_report', 'blog_post', 'source_label', 'body_preview', 'created_at', 'updated_at',
+        'author_email', 'author_name', 'source_type', 'source_description',
+        'blog_post', 'body_preview', 'created_at', 'updated_at',
     )
     fields = (
-        'user', 'source_label', 'title', 'body_preview', 'body',
+        'author_email', 'author_name', 'source_type', 'source_description',
+        'title', 'body_preview', 'body',
         'status', 'reviewer_notes',
-        'espejo_session', 'test_result', 'birth_report',
         'blog_post', 'created_at',
     )
     actions = [aprobar_submissions, rechazar_submissions]
     ordering = ('-created_at',)
-
-    def user_email(self, obj):
-        return obj.user.email
-    user_email.short_description = 'Usuario'
 
     def body_preview(self, obj):
         preview = obj.body[:400] + ('…' if len(obj.body) > 400 else '')
@@ -87,4 +82,3 @@ class BlogSubmissionAdmin(admin.ModelAdmin):
             return format_html('<a href="{}" target="_blank">Editar en CMS →</a>', url)
         return '—'
     cms_link.short_description = 'CMS'
-    cms_link.allow_tags = True

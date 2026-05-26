@@ -11,22 +11,23 @@ class BlogSubmissionViewSet(SnippetViewSet):
     icon = 'doc-empty'
     menu_label = 'Postulaciones'
     menu_order = 200
-    list_display = ('title', 'user', 'source_type', 'status', 'created_at')
+    list_display = ('title', 'author_email', 'source_type', 'status', 'created_at')
     list_filter = ('status', 'source_type')
     ordering = ('-created_at',)
 
     panels = [
+        MultiFieldPanel([
+            FieldPanel('author_name', read_only=True),
+            FieldPanel('author_email', read_only=True),
+            FieldPanel('source_type', read_only=True),
+            FieldPanel('source_description', read_only=True),
+        ], heading='Autor y origen'),
         FieldPanel('title', read_only=True),
         FieldPanel('body', read_only=True),
         MultiFieldPanel([
             FieldPanel('status'),
             FieldPanel('reviewer_notes'),
         ], heading='Revisión'),
-        MultiFieldPanel([
-            FieldPanel('espejo_session', read_only=True),
-            FieldPanel('test_result', read_only=True),
-            FieldPanel('birth_report', read_only=True),
-        ], heading='Fuente original'),
     ]
 
 

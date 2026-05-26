@@ -16,18 +16,6 @@ INSTALLED_APPS = [
     'blog',
     'search',
 
-    # Endonautas — app (MirrorWork)
-    'accounts',
-    'mirror',
-    'psychometrics',
-    'community',
-    'tokens',
-    'birth',
-    'background',
-    'practitioners',
-    'reports',
-    'sensorial',
-
     # Wagtail
     'wagtail.contrib.forms',
     'wagtail.contrib.redirects',
@@ -45,7 +33,6 @@ INSTALLED_APPS = [
     'modelcluster',
     'taggit',
     'wagtailseo',
-    'django_filters',
 
     # Django
     'django.contrib.admin',
@@ -83,7 +70,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'accounts.context_processors.map_aesthetic',
             ],
         },
     },
@@ -97,11 +83,6 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
-AUTH_USER_MODEL = 'accounts.User'
-LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL = '/mapa/'
-LOGOUT_REDIRECT_URL = '/'
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -144,25 +125,7 @@ WAGTAILSEARCH_BACKENDS = {
 WAGTAILDOCS_EXTENSIONS = ['csv', 'docx', 'pdf', 'pptx', 'txt', 'xlsx']
 WAGTAILDOCS_MAX_UPLOAD_SIZE = 10 * 1024 * 1024
 
-# MirrorWork / Fractones
-FRACTON_REWARDS = {
-    'test_completed': 8,
-    'dimension_completed': 25,
-    'streak_weekly': 15,
-}
-TOKEN_COSTS = {
-    'espejo_exchange': 4,
-    'ai_insight': 20,
-    'report': 30,
-}
-TOKEN_PLANS = {
-    'free':        {'monthly_fractones': 100},
-    'navegante':   {'monthly_fractones': 600},
-    'practicante': {'monthly_fractones': 3000},
-}
-
-DEEPSEEK_API_KEY = os.environ.get('DEEPSEEK_API_KEY', '')
-DEEPSEEK_BASE_URL = os.environ.get('DEEPSEEK_BASE_URL', 'https://api.deepseek.com')
-DEEPSEEK_MODEL = os.environ.get('DEEPSEEK_MODEL', 'deepseek-chat')
+# Blog API — token compartido con mirrorwork para recibir postulaciones
+BLOG_SUBMIT_TOKEN = os.environ.get('BLOG_SUBMIT_TOKEN', '')
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
