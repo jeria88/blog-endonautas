@@ -13,15 +13,38 @@ ALLOWED_HOSTS = [
 ]
 
 DATABASES = {
-    'default': dj_database_url.config(conn_max_age=600, ssl_require=True)
+    'default': dj_database_url.config(conn_max_age=600)
 }
 
 CSRF_TRUSTED_ORIGINS = [
     'https://endonautas.cl',
     'https://www.endonautas.cl',
     'https://app.endonautas.cl',
+    'https://*.railway.app',
 ]
 
 SECURE_SSL_REDIRECT = False  # Cloudflare handles SSL
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+    },
+}
