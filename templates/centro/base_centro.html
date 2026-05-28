@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Centro{% endblock %} — Endonautas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #000000;
+      --surface:   #0d0d0d;
+      --surface2:  #161616;
+      --border:    rgba(255,255,255,0.08);
+      --border2:   rgba(255,255,255,0.14);
+      --text:      #f4f4f5;
+      --muted:     #71717a;
+      --dim:       #3f3f46;
+      --gold:      #EAB308;
+      --gold-dim:  rgba(234,179,8,0.15);
+      --gold-glow: rgba(234,179,8,0.08);
+      --teal:      #4ecdc4;
+      --teal-dim:  rgba(78,205,196,0.12);
+      --purple:    #a78bfa;
+      --green:     #4ade80;
+      --green-dim: rgba(74,222,128,0.12);
+      --red:       #f87171;
+      --font-h:    'EB Garamond', Georgia, serif;
+      --font-ui:   'Inter', system-ui, sans-serif;
+      --r:         12px;
+      --r-sm:      8px;
+    }
+
+    html { background: var(--bg); scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-ui);
+      font-size: 14px;
+      line-height: 1.6;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Nav ── */
+    .c-nav {
+      position: sticky; top: 0; z-index: 200;
+      display: flex; align-items: center; gap: 0; height: 52px;
+      background: rgba(0,0,0,0.92);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      padding: 0 1.5rem;
+    }
+
+    .c-brand {
+      font-family: var(--font-h);
+      font-size: 1.15rem;
+      color: var(--gold);
+      text-decoration: none;
+      letter-spacing: 0.02em;
+      margin-right: 2rem;
+      flex-shrink: 0;
+    }
+
+    .c-nav-links {
+      display: flex; gap: 0.25rem; list-style: none; flex: 1;
+    }
+
+    .c-nav-links a {
+      display: block;
+      padding: 0.35rem 0.75rem;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.78rem;
+      font-weight: 400;
+      letter-spacing: 0.04em;
+      border-radius: var(--r-sm);
+      transition: color 0.15s, background 0.15s;
+    }
+    .c-nav-links a:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+    .c-nav-links a.active { color: var(--gold); background: var(--gold-glow); }
+
+    .c-nav-ext {
+      margin-left: auto;
+      display: flex; gap: 0.5rem;
+    }
+    .c-nav-ext a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.75rem;
+      padding: 0.3rem 0.6rem;
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .c-nav-ext a:hover { color: var(--text); border-color: var(--border2); }
+
+    /* ── Layout ── */
+    .c-page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    .c-page-sm {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    .c-header {
+      margin-bottom: 2rem;
+    }
+    .c-header h1 {
+      font-family: var(--font-h);
+      font-size: 2rem;
+      font-weight: 400;
+      line-height: 1.2;
+      letter-spacing: 0.01em;
+    }
+    .c-header p {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-top: 0.35rem;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 1.25rem;
+    }
+
+    .card-title {
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+    }
+
+    /* ── Progress bar ── */
+    .progress-wrap { margin-top: 0.5rem; }
+    .progress-label {
+      display: flex; justify-content: space-between;
+      font-size: 0.72rem; color: var(--muted); margin-bottom: 0.35rem;
+    }
+    .progress-bar {
+      height: 4px;
+      background: var(--surface2);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: var(--gold);
+      transition: width 0.6s cubic-bezier(0.16,1,0.3,1);
+    }
+    .progress-fill.teal { background: var(--teal); }
+    .progress-fill.green { background: var(--green); }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-block;
+      font-size: 0.62rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.18rem 0.55rem;
+      border-radius: 999px;
+      border: 1px solid;
+    }
+    .badge-e0  { color: var(--teal);   border-color: rgba(78,205,196,0.3);   background: var(--teal-dim); }
+    .badge-e1  { color: var(--gold);   border-color: rgba(234,179,8,0.3);    background: var(--gold-dim); }
+    .badge-e2  { color: var(--purple); border-color: rgba(167,139,250,0.3);  background: rgba(167,139,250,0.1); }
+    .badge-bl  { color: var(--muted);  border-color: var(--dim);             background: rgba(255,255,255,0.03); }
+    .badge-ok  { color: var(--green);  border-color: rgba(74,222,128,0.3);   background: var(--green-dim); }
+    .badge-warn { color: var(--gold);  border-color: rgba(234,179,8,0.3);    background: var(--gold-dim); }
+    .badge-carrusel { color: var(--purple); border-color: rgba(167,139,250,0.3); background: rgba(167,139,250,0.08); }
+    .badge-texto    { color: var(--teal);   border-color: rgba(78,205,196,0.3);  background: var(--teal-dim); }
+    .badge-articulo { color: var(--gold);   border-color: rgba(234,179,8,0.3);   background: var(--gold-dim); }
+    .badge-generado   { color: var(--muted); border-color: var(--dim); background: rgba(255,255,255,0.02); }
+    .badge-programado { color: var(--gold);  border-color: rgba(234,179,8,0.3); background: var(--gold-dim); }
+    .badge-publicado  { color: var(--green); border-color: rgba(74,222,128,0.3); background: var(--green-dim); }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      font-family: var(--font-ui); font-size: 0.78rem; font-weight: 500;
+      padding: 0.55rem 1.1rem; border-radius: var(--r-sm);
+      border: 1px solid transparent; cursor: pointer;
+      text-decoration: none; transition: all 0.15s;
+    }
+    .btn-gold {
+      background: var(--gold); color: #000; border-color: var(--gold);
+    }
+    .btn-gold:hover { background: #fbbf24; }
+    .btn-ghost {
+      background: transparent; color: var(--muted); border-color: var(--border);
+    }
+    .btn-ghost:hover { color: var(--text); border-color: var(--border2); background: rgba(255,255,255,0.04); }
+    .btn-danger {
+      background: transparent; color: var(--red); border-color: rgba(248,113,113,0.25);
+    }
+    .btn-danger:hover { background: rgba(248,113,113,0.08); }
+    .btn-sm { padding: 0.3rem 0.7rem; font-size: 0.72rem; }
+
+    /* ── Forms ── */
+    .field { margin-bottom: 1rem; }
+    .field label {
+      display: block; font-size: 0.72rem; font-weight: 500;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 0.4rem;
+    }
+    input[type=text], input[type=number], input[type=date], select, textarea {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      color: var(--text);
+      font-family: var(--font-ui);
+      font-size: 0.85rem;
+      padding: 0.6rem 0.9rem;
+      transition: border-color 0.15s;
+      outline: none;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--gold); }
+    textarea { resize: vertical; min-height: 80px; }
+    select option { background: #1a1a1a; }
+
+    /* ── Divider ── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 1.5rem 0;
+    }
+
+    /* ── Grid utilities ── */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+
+    /* ── Stat big number ── */
+    .stat-num {
+      font-family: var(--font-h);
+      font-size: 2.8rem;
+      font-weight: 400;
+      line-height: 1;
+      color: var(--gold);
+    }
+    .stat-label {
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-top: 0.25rem;
+    }
+
+    /* ── Celeb animation ── */
+    @keyframes celeb {
+      0%   { transform: scale(1); }
+      30%  { transform: scale(1.15); }
+      60%  { transform: scale(0.95); }
+      100% { transform: scale(1); }
+    }
+    .celeb { animation: celeb 0.4s ease; }
+
+    @media (max-width: 768px) {
+      .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+      .c-nav-links a { font-size: 0.72rem; padding: 0.3rem 0.5rem; }
+      .c-brand { margin-right: 1rem; }
+    }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<nav class="c-nav">
+  <a href="{% url 'centro:index' %}" class="c-brand">◎ Centro</a>
+  <ul class="c-nav-links">
+    <li><a href="{% url 'centro:hoja_de_ruta' %}" {% if request.resolver_match.url_name == 'hoja_de_ruta' %}class="active"{% endif %}>Ruta</a></li>
+    <li><a href="{% url 'centro:setup' %}" {% if request.resolver_match.url_name == 'setup' %}class="active"{% endif %}>Setup</a></li>
+    <li><a href="{% url 'centro:calendario' %}" {% if request.resolver_match.url_name == 'calendario' %}class="active"{% endif %}>Calendario</a></li>
+    <li><a href="{% url 'centro:metricas' %}" {% if request.resolver_match.url_name == 'metricas' %}class="active"{% endif %}>Métricas</a></li>
+    <li><a href="{% url 'centro:ideas' %}" {% if request.resolver_match.url_name == 'ideas' %}class="active"{% endif %}>Ideas</a></li>
+  </ul>
+  <div class="c-nav-ext">
+    <a href="{% url 'centro:chequeo_semanal' %}">Chequeo ↗</a>
+    <a href="{% url 'centro:sesion_quincenal' %}">Quincenal ↗</a>
+    <a href="/cms/">CMS</a>
+  </div>
+</nav>
+
+{% block content %}{% endblock %}
+
+</body>
+</html>

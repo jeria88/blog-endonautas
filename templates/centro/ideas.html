@@ -1,0 +1,139 @@
+{% extends "centro/base_centro.html" %}
+{% block title %}Ideas{% endblock %}
+
+{% block extra_head %}
+<style>
+  .ideas-warning {
+    background: var(--gold-glow); border: 1px solid rgba(234,179,8,0.25);
+    border-radius: var(--r); padding: 1rem 1.25rem;
+    font-size: 0.85rem; margin-bottom: 2rem;
+    line-height: 1.5;
+  }
+  .ideas-warning strong { color: var(--gold); }
+
+  .idea-form {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 1.25rem; margin-bottom: 2rem;
+  }
+
+  .ideas-list { display: flex; flex-direction: column; gap: 0.5rem; }
+  .idea-item {
+    display: flex; align-items: flex-start; gap: 0.85rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-sm); padding: 0.9rem 1rem;
+    transition: all 0.2s;
+  }
+  .idea-item.revisada {
+    border-color: rgba(74,222,128,0.2); opacity: 0.6;
+  }
+
+  .freeze-icon {
+    font-size: 1rem; flex-shrink: 0; margin-top: 1px;
+    color: var(--muted);
+  }
+  .idea-revisada .freeze-icon { color: var(--green); }
+
+  .idea-body { flex: 1; }
+  .idea-texto { font-size: 0.88rem; line-height: 1.5; }
+  .idea-fecha { font-size: 0.7rem; color: var(--dim); margin-top: 0.35rem; }
+
+  .idea-actions { display: flex; gap: 0.4rem; align-items: flex-start; }
+  .idea-btn {
+    font-size: 0.68rem; background: none; border: 1px solid var(--border);
+    border-radius: 4px; padding: 0.2rem 0.5rem; cursor: pointer;
+    color: var(--muted); transition: all 0.15s; font-family: var(--font-ui);
+  }
+  .idea-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .idea-btn.del:hover { border-color: var(--red); color: var(--red); }
+
+  .empty-state { text-align: center; padding: 3rem; color: var(--muted); }
+  .empty-icon { font-size: 2rem; margin-bottom: 0.75rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="c-page-sm">
+  <div class="c-header">
+    <h1>Buzón de Ideas</h1>
+    <p>Capturá sin filtro. Las ideas se congelan hasta el mes 3.</p>
+  </div>
+
+  <div class="ideas-warning">
+    <strong>Regla anti-expansión:</strong> ninguna idea se ejecuta antes del mes 3.
+    Si algo vale la pena, va a seguir siendo bueno en 90 días.
+    Anotá acá y cerrá la pestaña.
+  </div>
+
+  <!-- Formulario -->
+  <div class="idea-form">
+    <form method="post" style="display:flex; gap:0.75rem; align-items:flex-end">
+      {% csrf_token %}
+      <div class="field" style="flex:1; margin-bottom:0">
+        <label>Nueva idea</label>
+        <textarea name="texto" placeholder="Segunda cuenta, nuevo formato, colaboración con..." rows="2" required style="min-height:60px"></textarea>
+      </div>
+      <button type="submit" class="btn btn-gold" style="flex-shrink:0; margin-bottom:0">Congelar →</button>
+    </form>
+  </div>
+
+  <!-- Lista -->
+  {% if ideas %}
+  <div style="font-size:0.75rem; color:var(--muted); margin-bottom:0.75rem">
+    {{ sin_revisar }} ideas pendientes de revisar
+  </div>
+  <div class="ideas-list">
+    {% for idea in ideas %}
+    <div class="idea-item {% if idea.revisada %}revisada{% endif %}" id="idea-{{ idea.id }}">
+      <div class="freeze-icon">{% if idea.revisada %}✓{% else %}❄{% endif %}</div>
+      <div class="idea-body">
+        <div class="idea-texto">{{ idea.texto }}</div>
+        <div class="idea-fecha">{{ idea.creada_en|date:"j \d\e F, Y" }}</div>
+      </div>
+      <div class="idea-actions">
+        <button class="idea-btn" onclick="revisarIdea({{ idea.id }})">
+          {% if idea.revisada %}desmarcar{% else %}revisada{% endif %}
+        </button>
+        <button class="idea-btn del" onclick="eliminarIdea({{ idea.id }})">✕</button>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">❄</div>
+    <div>Sin ideas congeladas todavía.</div>
+    <div style="font-size:0.78rem; margin-top:0.25rem">Cuando aparezca una, anotala acá antes de actuar.</div>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+const CSRF = '{{ csrf_token }}';
+
+function revisarIdea(id) {
+  fetch(`/centro/ideas/${id}/revisar/`, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': CSRF },
+  })
+  .then(r => r.json())
+  .then(data => {
+    location.reload();
+  });
+}
+
+function eliminarIdea(id) {
+  if (!confirm('¿Eliminar esta idea?')) return;
+  fetch(`/centro/ideas/${id}/eliminar/`, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': CSRF },
+  })
+  .then(() => {
+    const el = document.getElementById('idea-' + id);
+    el.style.opacity = '0';
+    el.style.transform = 'translateX(-20px)';
+    el.style.transition = 'all 0.3s';
+    setTimeout(() => el.remove(), 300);
+  });
+}
+</script>
+{% endblock %}

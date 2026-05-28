@@ -1,0 +1,198 @@
+{% extends "centro/base_centro.html" %}
+{% block title %}Chequeo Semanal{% endblock %}
+
+{% block extra_head %}
+<style>
+  .guided-wrap {
+    max-width: 620px; margin: 0 auto;
+  }
+  .guided-progress {
+    display: flex; gap: 0.35rem; margin-bottom: 2rem;
+  }
+  .guided-dot {
+    flex: 1; height: 3px; border-radius: 999px;
+    background: var(--dim); transition: background 0.3s;
+  }
+  .guided-dot.done { background: var(--gold); }
+
+  .step {
+    display: none;
+    animation: stepIn 0.3s ease;
+  }
+  .step.active { display: block; }
+  @keyframes stepIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .step-num {
+    font-size: 0.68rem; font-weight: 600; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem;
+  }
+  .step-q {
+    font-family: var(--font-h);
+    font-size: 1.6rem; font-weight: 400;
+    line-height: 1.25; margin-bottom: 1.25rem;
+  }
+  .step-hint { font-size: 0.82rem; color: var(--muted); margin-bottom: 1.5rem; }
+
+  .yes-no {
+    display: flex; gap: 0.75rem; margin-bottom: 1.5rem;
+  }
+  .yn-btn {
+    flex: 1; padding: 0.75rem; border-radius: var(--r-sm);
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--text); font-size: 0.85rem; cursor: pointer;
+    transition: all 0.15s; font-family: var(--font-ui);
+  }
+  .yn-btn:hover { border-color: var(--gold); background: var(--gold-glow); color: var(--gold); }
+  .yn-btn.selected { border-color: var(--gold); background: var(--gold-glow); color: var(--gold); }
+
+  .step-nav {
+    display: flex; gap: 0.75rem; margin-top: 1.5rem;
+  }
+
+  .step-finish {
+    text-align: center; padding: 2rem 0;
+  }
+  .finish-icon { font-size: 3rem; margin-bottom: 1rem; }
+  .finish-title {
+    font-family: var(--font-h); font-size: 2rem; margin-bottom: 0.5rem;
+  }
+  .finish-sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 2rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="c-page-sm">
+  <div class="c-header" style="text-align:center; margin-bottom:2.5rem">
+    <div style="font-size:0.75rem; color:var(--muted); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:0.4rem">Sesión guiada</div>
+    <h1>Chequeo Semanal</h1>
+    <p>10 minutos · Solo preguntas · No crear nada</p>
+  </div>
+
+  <div class="guided-wrap">
+    <div class="guided-progress">
+      {% for i in "123456" %}<div class="guided-dot" id="dot-{{ i }}"></div>{% endfor %}
+    </div>
+
+    <form method="post" id="chequeo-form">
+      {% csrf_token %}
+
+      <!-- Paso 1 -->
+      <div class="step active" id="step-1">
+        <div class="step-num">Paso 1 de 6</div>
+        <div class="step-q">¿ManyChat respondió automáticamente los comentarios MASCARA / MAPA / ESPEJO?</div>
+        <div class="yes-no">
+          <button type="button" class="yn-btn" onclick="selectYN(this, 'manychat_ok', 'si')">Sí, funcionó</button>
+          <button type="button" class="yn-btn" onclick="selectYN(this, 'manychat_ok', 'no')">No / Hubo error</button>
+          <button type="button" class="yn-btn" onclick="selectYN(this, 'manychat_ok', 'nohubo')">No hubo comentarios</button>
+        </div>
+        <input type="hidden" name="manychat_ok" id="val-manychat_ok">
+        <div class="step-nav">
+          <button type="button" class="btn btn-gold" onclick="nextStep(1)" id="btn-1" disabled>Siguiente →</button>
+        </div>
+      </div>
+
+      <!-- Paso 2 -->
+      <div class="step" id="step-2">
+        <div class="step-num">Paso 2 de 6</div>
+        <div class="step-q">¿Hay algún DM que necesite una respuesta tuya?</div>
+        <div class="step-hint">ManyChat maneja los automáticos. Si alguien respondió con algo que el flujo no supo manejar, eso necesita tu atención.</div>
+        <div class="yes-no">
+          <button type="button" class="yn-btn" onclick="selectYN(this, 'dm_pendiente', 'si')">Sí, hay uno</button>
+          <button type="button" class="yn-btn" onclick="selectYN(this, 'dm_pendiente', 'no')">No, todo atendido</button>
+        </div>
+        <input type="hidden" name="dm_pendiente" id="val-dm_pendiente">
+        <div class="step-nav">
+          <button type="button" class="btn btn-ghost btn-sm" onclick="prevStep(2)">← Atrás</button>
+          <button type="button" class="btn btn-gold" onclick="nextStep(2)" id="btn-2" disabled>Siguiente →</button>
+        </div>
+      </div>
+
+      <!-- Paso 3 -->
+      <div class="step" id="step-3">
+        <div class="step-num">Paso 3 de 6</div>
+        <div class="step-q">¿Qué post tuvo más saves o comentarios esta semana?</div>
+        <textarea name="mejor_post" placeholder="Ej: B10 (carrusel síntoma vs mapa) — 23 saves" style="margin-bottom:1rem"></textarea>
+        <div class="step-nav">
+          <button type="button" class="btn btn-ghost btn-sm" onclick="prevStep(3)">← Atrás</button>
+          <button type="button" class="btn btn-gold" onclick="nextStep(3)">Siguiente →</button>
+        </div>
+      </div>
+
+      <!-- Paso 4 -->
+      <div class="step" id="step-4">
+        <div class="step-num">Paso 4 de 6</div>
+        <div class="step-q">¿Cuántos seguidores nuevos esta semana?</div>
+        <input type="number" name="seguidores_nuevos" placeholder="0" min="0" style="font-size:1.5rem; padding:0.75rem; margin-bottom:1rem">
+        <div class="step-nav">
+          <button type="button" class="btn btn-ghost btn-sm" onclick="prevStep(4)">← Atrás</button>
+          <button type="button" class="btn btn-gold" onclick="nextStep(4)">Siguiente →</button>
+        </div>
+      </div>
+
+      <!-- Paso 5 -->
+      <div class="step" id="step-5">
+        <div class="step-num">Paso 5 de 6</div>
+        <div class="step-q">¿Cuántos saves tuvo el último carrusel?</div>
+        <input type="number" name="saves_carrusel" placeholder="0" min="0" style="font-size:1.5rem; padding:0.75rem; margin-bottom:1rem">
+        <div class="step-nav">
+          <button type="button" class="btn btn-ghost btn-sm" onclick="prevStep(5)">← Atrás</button>
+          <button type="button" class="btn btn-gold" onclick="nextStep(5)">Siguiente →</button>
+        </div>
+      </div>
+
+      <!-- Paso 6 -->
+      <div class="step" id="step-6">
+        <div class="step-num">Paso 6 de 6</div>
+        <div class="step-q">¿Algo se rompió o necesita atención en la próxima quincenal?</div>
+        <div class="step-hint">Si no hay nada, dejalo vacío. Si hay algo, anótalo para no olvidarlo.</div>
+        <textarea name="notas" placeholder="Ej: revisar flujo MAPA que no envió el link correcto..."></textarea>
+        <div class="step-nav" style="margin-top:1.5rem">
+          <button type="button" class="btn btn-ghost btn-sm" onclick="prevStep(6)">← Atrás</button>
+          <button type="submit" class="btn btn-gold">Cerrar chequeo ✓</button>
+        </div>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<script>
+let currentStep = 1;
+const totalSteps = 6;
+
+function updateDots() {
+  for (let i = 1; i <= totalSteps; i++) {
+    document.getElementById('dot-' + i).classList.toggle('done', i < currentStep);
+  }
+}
+
+function nextStep(from) {
+  document.getElementById('step-' + from).classList.remove('active');
+  currentStep = from + 1;
+  document.getElementById('step-' + currentStep).classList.add('active');
+  updateDots();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function prevStep(from) {
+  document.getElementById('step-' + from).classList.remove('active');
+  currentStep = from - 1;
+  document.getElementById('step-' + currentStep).classList.add('active');
+  updateDots();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function selectYN(btn, field, val) {
+  btn.closest('.yes-no').querySelectorAll('.yn-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('val-' + field).value = val;
+  const nextBtn = document.getElementById('btn-' + currentStep);
+  if (nextBtn) nextBtn.disabled = false;
+}
+
+updateDots();
+</script>
+{% endblock %}

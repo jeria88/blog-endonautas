@@ -1,0 +1,199 @@
+{% extends "centro/base_centro.html" %}
+{% block title %}Inicio{% endblock %}
+
+{% block extra_head %}
+<style>
+  .hero-date { font-family: var(--font-h); font-size: 0.85rem; color: var(--muted); margin-bottom: 0.5rem; }
+  .hero-title { font-family: var(--font-h); font-size: 2.2rem; font-weight: 400; margin-bottom: 2rem; line-height: 1.2; }
+  .hero-title span { color: var(--gold); }
+
+  .sugerencia {
+    border: 1px solid rgba(234,179,8,0.25);
+    background: var(--gold-glow);
+    border-radius: var(--r);
+    padding: 1.1rem 1.4rem;
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  .sugerencia-text { font-size: 0.9rem; }
+  .sugerencia-text strong { color: var(--gold); }
+
+  .dash-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 1.25rem;
+    display: flex; flex-direction: column; gap: 0.5rem;
+  }
+
+  .urgentes-section { margin-top: 2rem; }
+  .urgente-item {
+    display: flex; align-items: center; gap: 0.75rem;
+    padding: 0.65rem 0.75rem;
+    border-radius: var(--r-sm);
+    transition: background 0.15s;
+  }
+  .urgente-item:hover { background: rgba(255,255,255,0.03); }
+  .urgente-item .etapa-dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  }
+  .urgente-titulo { font-size: 0.85rem; flex: 1; }
+  .urgente-etapa  { font-size: 0.68rem; color: var(--muted); flex-shrink: 0; }
+
+  .accesos {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin-top: 2rem;
+  }
+  .acceso-btn {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 0.4rem; padding: 1.1rem 0.75rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    text-decoration: none; color: var(--text);
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .acceso-btn:hover {
+    border-color: var(--gold);
+    background: var(--gold-glow);
+    color: var(--gold);
+  }
+  .acceso-icon { font-size: 1.3rem; }
+  .acceso-label { font-size: 0.72rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; }
+
+  .empty-urgentes {
+    text-align: center; padding: 2rem;
+    color: var(--muted); font-size: 0.85rem;
+  }
+
+  @media (max-width: 768px) {
+    .dash-grid { grid-template-columns: 1fr 1fr; }
+    .accesos { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="c-page">
+
+  <div class="hero-date">{{ dia_semana }}, {{ today|date:"j \d\e F \d\e Y" }}</div>
+  <h1 class="hero-title">Centro de Operaciones <span>Endonautas</span></h1>
+
+  {% if sugerencia %}
+  <div class="sugerencia">
+    <div class="sugerencia-text">
+      <strong>{{ sugerencia.emoji }}</strong> {{ sugerencia.texto }}
+    </div>
+    {% if sugerencia.url == 'chequeo' %}
+    <a href="{% url 'centro:chequeo_semanal' %}" class="btn btn-gold btn-sm">{{ sugerencia.label }}</a>
+    {% else %}
+    <a href="{% url 'centro:sesion_quincenal' %}" class="btn btn-gold btn-sm">{{ sugerencia.label }}</a>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- Stats -->
+  <div class="dash-grid">
+    <div class="stat-card">
+      <div class="card-title">Setup Etapa 0</div>
+      <div class="stat-num" id="setup-pct">{{ setup_pct }}%</div>
+      <div class="stat-label">{{ setup_done }}/{{ setup_total }} configuradas</div>
+      <div class="progress-wrap">
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:{{ setup_pct }}%"></div>
+        </div>
+      </div>
+      <a href="{% url 'centro:setup' %}" class="btn btn-ghost btn-sm" style="margin-top:0.5rem">Ver checklist →</a>
+    </div>
+
+    <div class="stat-card">
+      <div class="card-title">Hoja de Ruta — Etapa 0</div>
+      <div class="stat-num">{{ e0_pct }}%</div>
+      <div class="stat-label">{{ e0_done }}/{{ e0_total }} tareas listas</div>
+      <div class="progress-wrap">
+        <div class="progress-bar">
+          <div class="progress-fill teal" style="width:{{ e0_pct }}%"></div>
+        </div>
+      </div>
+      <a href="{% url 'centro:hoja_de_ruta' %}" class="btn btn-ghost btn-sm" style="margin-top:0.5rem">Ver kanban →</a>
+    </div>
+
+    <div class="stat-card">
+      <div class="card-title">Ideas congeladas</div>
+      <div class="stat-num">{{ ideas_count }}</div>
+      <div class="stat-label">pendientes de revisar en mes 3</div>
+      {% if ultima_sesion %}
+      <div style="margin-top:auto; font-size:0.75rem; color:var(--muted);">
+        Última sesión: {{ ultima_sesion.get_tipo_display }} {{ ultima_sesion.fecha|date:"j/m" }}
+      </div>
+      {% endif %}
+      <a href="{% url 'centro:ideas' %}" class="btn btn-ghost btn-sm" style="margin-top:0.5rem">Ver ideas →</a>
+    </div>
+  </div>
+
+  <!-- Tareas en curso -->
+  <div class="urgentes-section card">
+    <div class="card-title" style="margin-bottom:1rem">
+      Tareas en curso
+      {% if tareas_urgentes %}— <span style="color:var(--gold)">{{ tareas_urgentes|length }}</span>{% endif %}
+    </div>
+
+    {% if tareas_urgentes %}
+      {% for tarea in tareas_urgentes %}
+      <div class="urgente-item">
+        <div class="etapa-dot"
+          style="background:{% if tarea.etapa == '0' %}var(--teal){% elif tarea.etapa == '1' %}var(--gold){% elif tarea.etapa == '2' %}var(--purple){% else %}var(--dim){% endif %}">
+        </div>
+        <div class="urgente-titulo">{{ tarea.titulo }}</div>
+        <div class="urgente-etapa">{{ tarea.get_etapa_display }}</div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-urgentes">
+        Sin tareas en curso — todo limpio.<br>
+        <a href="{% url 'centro:hoja_de_ruta' %}" style="color:var(--gold); text-decoration:none; font-size:0.8rem;">Ir al kanban →</a>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Acceso rápido -->
+  <div class="accesos">
+    <a href="{% url 'centro:hoja_de_ruta' %}" class="acceso-btn">
+      <span class="acceso-icon">◈</span>
+      <span class="acceso-label">Hoja de Ruta</span>
+    </a>
+    <a href="{% url 'centro:setup' %}" class="acceso-btn">
+      <span class="acceso-icon">✓</span>
+      <span class="acceso-label">Setup</span>
+    </a>
+    <a href="{% url 'centro:calendario' %}" class="acceso-btn">
+      <span class="acceso-icon">◷</span>
+      <span class="acceso-label">Calendario</span>
+    </a>
+    <a href="{% url 'centro:metricas' %}" class="acceso-btn">
+      <span class="acceso-icon">↗</span>
+      <span class="acceso-label">Métricas</span>
+    </a>
+    <a href="{% url 'centro:chequeo_semanal' %}" class="acceso-btn">
+      <span class="acceso-icon">◎</span>
+      <span class="acceso-label">Chequeo</span>
+    </a>
+    <a href="{% url 'centro:sesion_quincenal' %}" class="acceso-btn">
+      <span class="acceso-icon">✦</span>
+      <span class="acceso-label">Quincenal</span>
+    </a>
+  </div>
+
+</div>
+{% endblock %}

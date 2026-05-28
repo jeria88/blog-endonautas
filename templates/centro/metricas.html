@@ -1,0 +1,237 @@
+{% extends "centro/base_centro.html" %}
+{% block title %}Métricas{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<style>
+  .kpi-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem; margin-bottom: 2rem;
+  }
+  .kpi-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 1.1rem;
+  }
+  .kpi-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+  .kpi-val {
+    font-family: var(--font-h); font-size: 2.2rem; color: var(--gold);
+    line-height: 1; margin: 0.35rem 0 0.2rem;
+  }
+  .kpi-target { font-size: 0.72rem; color: var(--dim); }
+  .kpi-target span { color: var(--muted); }
+
+  .charts-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;
+  }
+  .chart-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 1.25rem;
+  }
+  .chart-title { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 1rem; }
+
+  .log-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+  .log-table th {
+    text-align: left; font-size: 0.65rem; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--muted);
+    border-bottom: 1px solid var(--border); padding: 0.5rem 0.75rem;
+    font-weight: 500;
+  }
+  .log-table td {
+    padding: 0.6rem 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: middle;
+  }
+  .log-table tr:last-child td { border-bottom: none; }
+
+  .add-form {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 1.5rem; margin-bottom: 2rem;
+  }
+  .add-form h3 { font-family: var(--font-h); font-size: 1.2rem; margin-bottom: 1.25rem; }
+  .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; }
+  .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+
+  @media (max-width: 768px) {
+    .kpi-grid, .charts-row, .form-grid-3, .form-grid-2 { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="c-page">
+  <div class="c-header">
+    <h1>Métricas</h1>
+    <p>Objetivo mes 1 — registrá cada lunes en el chequeo semanal</p>
+  </div>
+
+  <!-- KPIs actuales -->
+  {% if metricas %}
+  {% with m=metricas.0 %}
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">Seguidores nuevos</div>
+      <div class="kpi-val">{{ m.seguidores_nuevos }}</div>
+      <div class="kpi-target">meta mes 1: <span>+50</span></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Saves por carrusel</div>
+      <div class="kpi-val">{{ m.saves_carrusel }}</div>
+      <div class="kpi-target">meta mes 1: <span>>20</span></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Comentarios activos</div>
+      <div class="kpi-val">{{ m.comentarios_activos }}</div>
+      <div class="kpi-target">meta mes 1: <span>>5</span></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">PDFs enviados</div>
+      <div class="kpi-val">{{ m.pdfs_enviados }}</div>
+      <div class="kpi-target">meta mes 1: <span>>5</span></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Emails abiertos</div>
+      <div class="kpi-val">{{ m.emails_abiertos_pct }}%</div>
+      <div class="kpi-target">meta mes 1: <span>>40%</span></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Registros app</div>
+      <div class="kpi-val">{{ m.registros_app }}</div>
+      <div class="kpi-target">meta mes 1: <span>>10</span></div>
+    </div>
+  </div>
+  {% endwith %}
+
+  <!-- Charts -->
+  {% if metricas|length > 1 %}
+  <div class="charts-row">
+    <div class="chart-card">
+      <div class="chart-title">Seguidores nuevos / semana</div>
+      <canvas id="chartSeg" height="160"></canvas>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Saves por carrusel / semana</div>
+      <canvas id="chartSaves" height="160"></canvas>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Log histórico -->
+  <div class="card" style="margin-bottom:2rem; overflow-x:auto">
+    <div class="card-title">Historial</div>
+    <table class="log-table">
+      <thead>
+        <tr>
+          <th>Semana</th>
+          <th>Seguidores</th>
+          <th>Saves</th>
+          <th>Comentarios</th>
+          <th>PDFs</th>
+          <th>Email %</th>
+          <th>App</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in metricas %}
+        <tr>
+          <td style="color:var(--muted); font-size:0.75rem">{{ m.semana|date:"j/m" }}</td>
+          <td>{{ m.seguidores_nuevos }}</td>
+          <td>{{ m.saves_carrusel }}</td>
+          <td>{{ m.comentarios_activos }}</td>
+          <td>{{ m.pdfs_enviados }}</td>
+          <td>{{ m.emails_abiertos_pct }}%</td>
+          <td>{{ m.registros_app }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% else %}
+  <div class="card" style="text-align:center; padding:3rem; margin-bottom:2rem">
+    <div style="font-size:2rem; margin-bottom:0.75rem">◎</div>
+    <div style="font-size:0.9rem; color:var(--muted)">Todavía no hay métricas registradas.</div>
+    <div style="font-size:0.8rem; color:var(--dim); margin-top:0.25rem">Registrá la primera cada lunes en el chequeo semanal.</div>
+  </div>
+  {% endif %}
+
+  <!-- Formulario de carga -->
+  <div class="add-form">
+    <h3>Registrar semana</h3>
+    <form method="post">
+      {% csrf_token %}
+      <div class="field">
+        <label>Semana (lunes)</label>
+        <input type="date" name="semana" value="{{ hoy_lunes|date:'Y-m-d' }}" required>
+      </div>
+      <div class="form-grid-3">
+        <div class="field">
+          <label>Seguidores nuevos</label>
+          <input type="number" name="seguidores_nuevos" min="0" value="0">
+        </div>
+        <div class="field">
+          <label>Saves carrusel</label>
+          <input type="number" name="saves_carrusel" min="0" value="0">
+        </div>
+        <div class="field">
+          <label>Comentarios activos</label>
+          <input type="number" name="comentarios_activos" min="0" value="0">
+        </div>
+      </div>
+      <div class="form-grid-3">
+        <div class="field">
+          <label>PDFs enviados</label>
+          <input type="number" name="pdfs_enviados" min="0" value="0">
+        </div>
+        <div class="field">
+          <label>Emails abiertos %</label>
+          <input type="number" name="emails_abiertos_pct" min="0" max="100" value="0">
+        </div>
+        <div class="field">
+          <label>Registros app</label>
+          <input type="number" name="registros_app" min="0" value="0">
+        </div>
+      </div>
+      <div class="field">
+        <label>Notas (opcional)</label>
+        <textarea name="notas" placeholder="Algo llamativo de esta semana..."></textarea>
+      </div>
+      <button type="submit" class="btn btn-gold">Guardar semana</button>
+    </form>
+  </div>
+
+</div>
+
+{% if metricas|length > 1 %}
+<script>
+const labels = {{ chart_labels|safe }};
+const segData = {{ chart_seguidores|safe }};
+const savesData = {{ chart_saves|safe }};
+
+const chartCfg = (data, color) => ({
+  type: 'line',
+  data: {
+    labels,
+    datasets: [{
+      data,
+      borderColor: color,
+      backgroundColor: color.replace(')', ', 0.08)').replace('rgb', 'rgba'),
+      borderWidth: 2,
+      pointRadius: 3,
+      tension: 0.3,
+      fill: true,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { color: '#71717a', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+      y: { ticks: { color: '#71717a', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' }, beginAtZero: true },
+    }
+  }
+});
+
+new Chart(document.getElementById('chartSeg'),   chartCfg(segData,   'rgb(234,179,8)'));
+new Chart(document.getElementById('chartSaves'),  chartCfg(savesData, 'rgb(78,205,196)'));
+</script>
+{% endif %}
+{% endblock %}

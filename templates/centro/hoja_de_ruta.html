@@ -1,0 +1,297 @@
+{% extends "centro/base_centro.html" %}
+{% block title %}Hoja de Ruta{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<style>
+  .etapas-bar {
+    display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 2rem;
+  }
+  .etapa-pill {
+    display: flex; align-items: center; gap: 0.5rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 999px; padding: 0.35rem 0.85rem;
+    font-size: 0.72rem;
+  }
+  .etapa-pill .dot { width: 7px; height: 7px; border-radius: 50%; }
+  .etapa-pill .pct { color: var(--muted); }
+
+  .kanban {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1.25rem;
+    align-items: start;
+  }
+
+  .k-col {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    min-height: 400px;
+  }
+
+  .k-col-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.9rem 1rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .k-col-title {
+    font-size: 0.72rem; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted);
+  }
+  .k-col-count {
+    font-size: 0.7rem; color: var(--dim);
+    background: var(--surface2);
+    border-radius: 999px; padding: 0.1rem 0.5rem;
+  }
+
+  .k-col-body {
+    padding: 0.75rem;
+    min-height: 300px;
+  }
+
+  .tarea-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+    padding: 0.75rem 0.85rem;
+    margin-bottom: 0.5rem;
+    cursor: grab;
+    transition: border-color 0.15s, box-shadow 0.15s, opacity 0.15s;
+    user-select: none;
+    position: relative;
+  }
+  .tarea-card:hover {
+    border-color: var(--border2);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+  }
+  .tarea-card.sortable-ghost {
+    opacity: 0.35;
+    border-style: dashed;
+  }
+  .tarea-card.sortable-drag {
+    opacity: 0.9;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    cursor: grabbing;
+  }
+
+  .tarea-top {
+    display: flex; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.35rem;
+  }
+  .tarea-titulo { font-size: 0.85rem; font-weight: 400; flex: 1; line-height: 1.4; }
+  .tarea-desc { font-size: 0.75rem; color: var(--muted); margin-top: 0.3rem; }
+  .tarea-actions {
+    display: flex; gap: 0.35rem; margin-top: 0.6rem;
+    opacity: 0; transition: opacity 0.15s;
+  }
+  .tarea-card:hover .tarea-actions { opacity: 1; }
+  .tarea-del {
+    font-size: 0.68rem; color: var(--muted);
+    background: none; border: none; cursor: pointer; padding: 0.15rem 0.4rem;
+    border-radius: 4px; transition: color 0.1s, background 0.1s;
+  }
+  .tarea-del:hover { color: var(--red); background: rgba(248,113,113,0.08); }
+
+  .k-add-form {
+    margin-top: 0.75rem; padding-top: 0.75rem;
+    border-top: 1px solid var(--border);
+  }
+  .k-add-toggle {
+    width: 100%; background: none; border: 1px dashed var(--dim);
+    border-radius: var(--r-sm); padding: 0.5rem;
+    color: var(--muted); font-size: 0.78rem; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .k-add-toggle:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-glow); }
+
+  .k-form { display: none; }
+  .k-form.open { display: block; }
+  .k-form input, .k-form select, .k-form textarea {
+    font-size: 0.82rem; padding: 0.5rem 0.7rem; margin-bottom: 0.4rem;
+  }
+  .k-form-row { display: flex; gap: 0.4rem; }
+
+  @media (max-width: 900px) {
+    .kanban { grid-template-columns: 1fr; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="c-page">
+  <div class="c-header">
+    <h1>Hoja de Ruta</h1>
+    <p>Arrastrá las tarjetas entre columnas para actualizar el estado</p>
+  </div>
+
+  <!-- Etapas progress -->
+  <div class="etapas-bar">
+    {% for ep in etapas_progress %}
+    <div class="etapa-pill">
+      <span class="dot" style="background:{{ ep.color }}"></span>
+      <span>{{ ep.label }}</span>
+      <span class="pct">{{ ep.pct }}%</span>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Kanban -->
+  <div class="kanban">
+
+    <!-- Pendiente -->
+    <div class="k-col">
+      <div class="k-col-header">
+        <span class="k-col-title">Pendiente</span>
+        <span class="k-col-count" id="cnt-pendiente">{{ pendientes|length }}</span>
+      </div>
+      <div class="k-col-body" id="col-pendiente" data-estado="pendiente">
+        {% for t in pendientes %}
+        <div class="tarea-card" data-id="{{ t.id }}" data-estado="pendiente" data-etapa="{{ t.etapa }}">
+          <div class="tarea-top">
+            <span class="badge badge-{% if t.etapa == '0' %}e0{% elif t.etapa == '1' %}e1{% elif t.etapa == '2' %}e2{% else %}bl{% endif %} badge">{{ t.get_etapa_display }}</span>
+          </div>
+          <div class="tarea-titulo">{{ t.titulo }}</div>
+          {% if t.descripcion %}<div class="tarea-desc">{{ t.descripcion }}</div>{% endif %}
+          <div class="tarea-actions">
+            <button class="tarea-del" onclick="eliminarTarea({{ t.id }}, this)">eliminar</button>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="k-add-form" style="padding: 0 0.75rem 0.75rem;">
+        <button class="k-add-toggle" onclick="toggleForm('form-pendiente', this)">+ Nueva tarea</button>
+        <form method="post" action="{% url 'centro:hoja_de_ruta' %}" class="k-form" id="form-pendiente" style="margin-top:0.5rem">
+          {% csrf_token %}
+          <input type="hidden" name="estado_inicial" value="pendiente">
+          <input type="text" name="titulo" placeholder="Título de la tarea" required>
+          <select name="etapa">
+            {% for k, v in etapa_choices %}<option value="{{ k }}">{{ v }}</option>{% endfor %}
+          </select>
+          <textarea name="descripcion" placeholder="Descripción (opcional)" style="min-height:50px"></textarea>
+          <div class="k-form-row">
+            <button type="submit" class="btn btn-gold btn-sm" style="flex:1">Agregar</button>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="toggleForm('form-pendiente', null)">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- En curso -->
+    <div class="k-col" style="border-color: rgba(234,179,8,0.2);">
+      <div class="k-col-header">
+        <span class="k-col-title" style="color:var(--gold)">En curso</span>
+        <span class="k-col-count" id="cnt-en_curso">{{ en_curso|length }}</span>
+      </div>
+      <div class="k-col-body" id="col-en_curso" data-estado="en_curso">
+        {% for t in en_curso %}
+        <div class="tarea-card" style="border-color:rgba(234,179,8,0.15)" data-id="{{ t.id }}" data-estado="en_curso" data-etapa="{{ t.etapa }}">
+          <div class="tarea-top">
+            <span class="badge badge-{% if t.etapa == '0' %}e0{% elif t.etapa == '1' %}e1{% elif t.etapa == '2' %}e2{% else %}bl{% endif %} badge">{{ t.get_etapa_display }}</span>
+          </div>
+          <div class="tarea-titulo">{{ t.titulo }}</div>
+          {% if t.descripcion %}<div class="tarea-desc">{{ t.descripcion }}</div>{% endif %}
+          <div class="tarea-actions">
+            <button class="tarea-del" onclick="eliminarTarea({{ t.id }}, this)">eliminar</button>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Listo -->
+    <div class="k-col" style="border-color: rgba(74,222,128,0.15);">
+      <div class="k-col-header">
+        <span class="k-col-title" style="color:var(--green)">Listo</span>
+        <span class="k-col-count" id="cnt-listo">{{ listas|length }}</span>
+      </div>
+      <div class="k-col-body" id="col-listo" data-estado="listo">
+        {% for t in listas %}
+        <div class="tarea-card" style="border-color:rgba(74,222,128,0.1); opacity:0.65" data-id="{{ t.id }}" data-estado="listo" data-etapa="{{ t.etapa }}">
+          <div class="tarea-top">
+            <span class="badge badge-ok badge">✓</span>
+            <span class="badge badge-{% if t.etapa == '0' %}e0{% elif t.etapa == '1' %}e1{% elif t.etapa == '2' %}e2{% else %}bl{% endif %} badge">{{ t.get_etapa_display }}</span>
+          </div>
+          <div class="tarea-titulo" style="text-decoration:line-through; color:var(--muted)">{{ t.titulo }}</div>
+          <div class="tarea-actions">
+            <button class="tarea-del" onclick="eliminarTarea({{ t.id }}, this)">eliminar</button>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const CSRF = '{{ csrf_token }}';
+
+function getCounts() {
+  return {
+    pendiente: document.getElementById('col-pendiente').children.length,
+    en_curso:  document.getElementById('col-en_curso').children.length,
+    listo:     document.getElementById('col-listo').children.length,
+  };
+}
+
+function updateCounts() {
+  const c = getCounts();
+  document.getElementById('cnt-pendiente').textContent = c.pendiente;
+  document.getElementById('cnt-en_curso').textContent  = c.en_curso;
+  document.getElementById('cnt-listo').textContent     = c.listo;
+}
+
+function celebrateCard(el) {
+  el.classList.remove('celeb');
+  void el.offsetWidth;
+  el.classList.add('celeb');
+  setTimeout(() => el.classList.remove('celeb'), 400);
+}
+
+['pendiente', 'en_curso', 'listo'].forEach(estado => {
+  const el = document.getElementById('col-' + estado);
+  Sortable.create(el, {
+    group: 'tareas',
+    animation: 180,
+    ghostClass: 'sortable-ghost',
+    dragClass: 'sortable-drag',
+    onEnd(evt) {
+      const card = evt.item;
+      const nuevoEstado = evt.to.dataset.estado;
+      const id = card.dataset.id;
+      if (nuevoEstado === card.dataset.estado) return;
+      card.dataset.estado = nuevoEstado;
+      celebrateCard(card);
+      updateCounts();
+      fetch(`/centro/ruta/tarea/${id}/mover/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+        body: JSON.stringify({ estado: nuevoEstado }),
+      });
+    },
+  });
+});
+
+function toggleForm(id, btn) {
+  const form = document.getElementById(id);
+  const isOpen = form.classList.contains('open');
+  form.classList.toggle('open', !isOpen);
+  if (btn) btn.style.display = isOpen ? 'block' : 'none';
+}
+
+function eliminarTarea(id, btn) {
+  if (!confirm('¿Eliminar esta tarea?')) return;
+  const card = btn.closest('.tarea-card');
+  fetch(`/centro/ruta/tarea/${id}/eliminar/`, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': CSRF },
+  }).then(r => {
+    if (r.ok) {
+      card.remove();
+      updateCounts();
+    }
+  });
+}
+</script>
+{% endblock %}

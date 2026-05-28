@@ -1,0 +1,138 @@
+{% extends "centro/base_centro.html" %}
+{% block title %}Setup{% endblock %}
+
+{% block extra_head %}
+<style>
+  .setup-header-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1rem; flex-wrap: wrap;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .setup-big { font-family: var(--font-h); font-size: 3rem; color: var(--gold); line-height: 1; }
+  .setup-sub { font-size: 0.78rem; color: var(--muted); margin-top: 0.25rem; }
+  .setup-progress { flex: 1; max-width: 300px; }
+
+  .setup-section { margin-bottom: 2rem; }
+  .setup-section-title {
+    font-size: 0.68rem; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 0.75rem;
+    display: flex; align-items: center; gap: 0.75rem;
+  }
+  .setup-section-title::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+
+  .setup-item {
+    display: flex; align-items: flex-start; gap: 0.85rem;
+    padding: 0.85rem 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .setup-item:hover { border-color: var(--border2); background: rgba(255,255,255,0.02); }
+  .setup-item.done {
+    border-color: rgba(74,222,128,0.2);
+    background: rgba(74,222,128,0.03);
+  }
+  .setup-item.done .setup-texto { color: var(--muted); text-decoration: line-through; }
+
+  .setup-check {
+    width: 20px; height: 20px; flex-shrink: 0; margin-top: 1px;
+    border: 1.5px solid var(--dim); border-radius: 5px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    background: transparent;
+  }
+  .setup-item.done .setup-check {
+    background: var(--green); border-color: var(--green);
+  }
+  .setup-check-icon { display: none; color: #000; font-size: 0.75rem; font-weight: 700; }
+  .setup-item.done .setup-check-icon { display: block; }
+
+  .setup-body { flex: 1; }
+  .setup-texto { font-size: 0.85rem; line-height: 1.4; }
+  .setup-desc  { font-size: 0.75rem; color: var(--muted); margin-top: 0.25rem; }
+  .setup-ts    { font-size: 0.68rem; color: var(--dim); margin-top: 0.2rem; }
+
+  @keyframes checkIn {
+    0%   { transform: scale(0.5); opacity: 0; }
+    60%  { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(1); }
+  }
+  .setup-item.done .setup-check { animation: checkIn 0.3s ease; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="c-page">
+  <div class="c-header">
+    <h1>Setup — Etapa 0</h1>
+    <p>Configuraciones pendientes. Hacelas una a una, fuera del sistema, y volvé a marcarlas.</p>
+  </div>
+
+  <div class="setup-header-bar">
+    <div>
+      <div class="setup-big" id="setup-pct-num">{{ pct }}%</div>
+      <div class="setup-sub" id="setup-done-label">{{ done }} de {{ total }} completadas</div>
+    </div>
+    <div class="setup-progress">
+      <div class="progress-bar" style="height:6px">
+        <div class="progress-fill" id="setup-bar" style="width:{{ pct }}%"></div>
+      </div>
+    </div>
+    {% if pct == 100 %}
+    <div class="badge badge-ok" style="font-size:0.85rem; padding: 0.4rem 1rem;">¡Etapa 0 completa! ✓</div>
+    {% endif %}
+  </div>
+
+  {% for cat_key, cat_data in by_cat.items %}
+  <div class="setup-section">
+    <div class="setup-section-title">{{ cat_data.label }}</div>
+    {% for item in cat_data.items %}
+    <div class="setup-item {% if item.completado %}done{% endif %}" id="item-{{ item.id }}"
+         onclick="toggleSetup({{ item.id }})">
+      <div class="setup-check">
+        <span class="setup-check-icon">✓</span>
+      </div>
+      <div class="setup-body">
+        <div class="setup-texto">{{ item.texto }}</div>
+        {% if item.descripcion %}<div class="setup-desc">{{ item.descripcion }}</div>{% endif %}
+        {% if item.completado and item.completado_en %}
+        <div class="setup-ts">Completado {{ item.completado_en|date:"j/m/Y H:i" }}</div>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endfor %}
+</div>
+
+<script>
+const CSRF = '{{ csrf_token }}';
+const TOTAL = {{ total }};
+
+function toggleSetup(id) {
+  fetch(`/centro/setup/${id}/toggle/`, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': CSRF },
+  })
+  .then(r => r.json())
+  .then(data => {
+    const el = document.getElementById('item-' + id);
+    el.classList.toggle('done', data.completado);
+    document.getElementById('setup-pct-num').textContent = data.pct + '%';
+    document.getElementById('setup-done-label').textContent = data.done + ' de ' + TOTAL + ' completadas';
+    document.getElementById('setup-bar').style.width = data.pct + '%';
+  });
+}
+</script>
+{% endblock %}

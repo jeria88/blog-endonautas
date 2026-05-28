@@ -23,6 +23,9 @@ urlpatterns = [
     path('robots.txt', TemplateView.as_view(template_name='robots.txt', content_type='text/plain')),
     path('llms.txt', TemplateView.as_view(template_name='llms.txt', content_type='text/plain')),
 
+    # Centro de operaciones (solo staff)
+    path('centro/', include('centro.urls', namespace='centro')),
+
     # Blog — API de postulaciones desde mirrorwork
     path('blog/', include('blog.urls')),
 

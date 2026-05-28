@@ -1,0 +1,208 @@
+{% extends "centro/base_centro.html" %}
+{% block title %}Sesión Quincenal{% endblock %}
+
+{% block extra_head %}
+<style>
+  .steps-list { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 2.5rem; }
+
+  .step-row {
+    display: flex; align-items: flex-start; gap: 1rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 1rem 1.25rem;
+    transition: all 0.2s; cursor: pointer;
+  }
+  .step-row.done {
+    border-color: rgba(74,222,128,0.2);
+    background: rgba(74,222,128,0.03);
+  }
+  .step-row.active {
+    border-color: var(--gold);
+    background: var(--gold-glow);
+  }
+
+  .step-check {
+    width: 24px; height: 24px; flex-shrink: 0; margin-top: 1px;
+    border: 1.5px solid var(--dim); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.25s; font-size: 0.75rem; font-weight: 700;
+    color: transparent;
+  }
+  .step-row.done .step-check {
+    background: var(--green); border-color: var(--green); color: #000;
+  }
+  .step-row.active .step-check {
+    border-color: var(--gold);
+  }
+
+  .step-body { flex: 1; }
+  .step-titulo { font-size: 0.9rem; font-weight: 500; line-height: 1.4; }
+  .step-sub { font-size: 0.78rem; color: var(--muted); margin-top: 0.3rem; }
+  .step-time { font-size: 0.68rem; color: var(--dim); margin-top: 0.2rem; }
+
+  .step-link {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    font-size: 0.75rem; color: var(--gold); text-decoration: none;
+    border: 1px solid rgba(234,179,8,0.25); border-radius: 999px;
+    padding: 0.2rem 0.65rem; margin-top: 0.5rem;
+    transition: all 0.15s;
+  }
+  .step-link:hover { background: var(--gold-glow); }
+
+  .progress-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem;
+  }
+  .progress-steps {
+    font-size: 0.82rem; color: var(--muted);
+  }
+  .progress-steps strong { color: var(--gold); }
+
+  .fin-card {
+    background: var(--surface); border: 1px solid rgba(74,222,128,0.25);
+    border-radius: var(--r); padding: 2rem;
+    text-align: center;
+  }
+  .fin-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+  .fin-title { font-family: var(--font-h); font-size: 1.8rem; margin-bottom: 0.5rem; }
+  .fin-sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 1.5rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="c-page-sm">
+  <div class="c-header" style="text-align:center; margin-bottom:2rem">
+    <div style="font-size:0.75rem; color:var(--muted); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:0.4rem">Sesión guiada</div>
+    <h1>Sesión Quincenal</h1>
+    <p>~2 horas · Con Claude · Produce contenido para dos semanas</p>
+  </div>
+
+  <div class="progress-header">
+    <div class="progress-steps">Pasos completados: <strong id="done-count">0</strong> de 7</div>
+    <div style="flex:1; max-width:240px">
+      <div class="progress-bar"><div class="progress-fill" id="q-bar" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <div class="steps-list" id="steps">
+
+    <div class="step-row" id="sr-1" onclick="toggleStep(1)">
+      <div class="step-check" id="sc-1">✓</div>
+      <div class="step-body">
+        <div class="step-titulo">1. Revisar métricas del período</div>
+        <div class="step-sub">¿Qué funcionó? ¿Qué no? Solo observar, no optimizar.</div>
+        <div class="step-time">5 min</div>
+        <a href="{% url 'centro:metricas' %}" class="step-link" onclick="event.stopPropagation()">Ver métricas →</a>
+      </div>
+    </div>
+
+    <div class="step-row" id="sr-2" onclick="toggleStep(2)">
+      <div class="step-check" id="sc-2">✓</div>
+      <div class="step-body">
+        <div class="step-titulo">2. Elegir tema del banco</div>
+        <div class="step-sub">Tomar el siguiente en la secuencia — no pensar, ya está decidido.</div>
+        <div class="step-time">5 min</div>
+        {% if proximo_post %}
+        <div style="margin-top:0.5rem; font-size:0.8rem; color:var(--gold)">
+          Próximo: {{ proximo_post.codigo }} — {{ proximo_post.titulo }}
+        </div>
+        {% endif %}
+        <a href="{% url 'centro:calendario' %}" class="step-link" onclick="event.stopPropagation()">Ver calendario →</a>
+      </div>
+    </div>
+
+    <div class="step-row" id="sr-3" onclick="toggleStep(3)">
+      <div class="step-check" id="sc-3">✓</div>
+      <div class="step-body">
+        <div class="step-titulo">3. Generar artículo de blog con Claude</div>
+        <div class="step-sub">Skill: seo-content-machine. Publicar en Wagtail CMS.</div>
+        <div class="step-time">40 min</div>
+        <a href="/cms/" class="step-link" onclick="event.stopPropagation()">Abrir CMS →</a>
+      </div>
+    </div>
+
+    <div class="step-row" id="sr-4" onclick="toggleStep(4)">
+      <div class="step-check" id="sc-4">✓</div>
+      <div class="step-body">
+        <div class="step-titulo">4. Generar carrusel Instagram con Claude</div>
+        <div class="step-sub">Skill: /carrusel-maker. Fraunces 600 + Outfit + Pexels. CTA según la matriz.</div>
+        <div class="step-time">30 min</div>
+      </div>
+    </div>
+
+    <div class="step-row" id="sr-5" onclick="toggleStep(5)">
+      <div class="step-check" id="sc-5">✓</div>
+      <div class="step-body">
+        <div class="step-titulo">5. Generar post de texto</div>
+        <div class="step-sub">Una frase o momento del artículo, reencuadrado para Instagram. Sin imagen.</div>
+        <div class="step-time">10 min</div>
+      </div>
+    </div>
+
+    <div class="step-row" id="sr-6" onclick="toggleStep(6)">
+      <div class="step-check" id="sc-6">✓</div>
+      <div class="step-body">
+        <div class="step-titulo">6. Programar en Meta Business Suite</div>
+        <div class="step-sub">Carrusel → martes semana 1, 19:00 · Texto → jueves semana 1 · Carrusel → martes semana 2 · Texto → jueves semana 2</div>
+        <div class="step-time">15 min</div>
+      </div>
+    </div>
+
+    <div class="step-row" id="sr-7" onclick="toggleStep(7)">
+      <div class="step-check" id="sc-7">✓</div>
+      <div class="step-body">
+        <div class="step-titulo">7. Cerrar Instagram hasta la próxima sesión</div>
+        <div class="step-sub">El contenido está programado. No es necesario volver antes.</div>
+        <div class="step-time">— </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Cerrar sesión -->
+  <div class="fin-card" id="fin-card" style="display:none">
+    <div class="fin-icon">✦</div>
+    <div class="fin-title">Sesión quincenal completa</div>
+    <div class="fin-sub">El contenido de las próximas dos semanas está listo.</div>
+    <form method="post">
+      {% csrf_token %}
+      <textarea name="notas" placeholder="Notas de esta sesión (opcional)..." style="margin-bottom:1rem; min-height:60px"></textarea>
+      <button type="submit" class="btn btn-gold">Registrar y cerrar ✓</button>
+    </form>
+  </div>
+
+  <div id="fin-hint" style="text-align:center; margin-top:1.5rem; font-size:0.78rem; color:var(--muted)">
+    Hacé click en cada paso para marcarlo como completado
+  </div>
+</div>
+
+<script>
+let done = new Set();
+
+function toggleStep(n) {
+  const row = document.getElementById('sr-' + n);
+  if (done.has(n)) {
+    done.delete(n);
+    row.classList.remove('done');
+  } else {
+    done.add(n);
+    row.classList.add('done');
+  }
+  updateProgress();
+}
+
+function updateProgress() {
+  const count = done.size;
+  document.getElementById('done-count').textContent = count;
+  document.getElementById('q-bar').style.width = (count / 7 * 100) + '%';
+
+  if (count === 7) {
+    document.getElementById('fin-card').style.display = 'block';
+    document.getElementById('fin-hint').style.display = 'none';
+    document.getElementById('fin-card').scrollIntoView({ behavior: 'smooth' });
+  } else {
+    document.getElementById('fin-card').style.display = 'none';
+    document.getElementById('fin-hint').style.display = 'block';
+  }
+}
+</script>
+{% endblock %}
