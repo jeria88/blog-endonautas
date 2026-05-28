@@ -30,12 +30,14 @@ TAREAS = [
     ('0', 'listo', 3, 'Blog submission pipeline', 'Modal postular en mirrorwork'),
     ('0', 'listo', 4, 'Renombre MirrorWork → Endonautas (46 archivos)', ''),
     ('0', 'listo', 5, 'Fix aurora background (fondo púrpura)', 'opacity: 0.0 en las 3 auroras'),
+    ('0', 'listo', 6, 'Wagtail CMS operativo — HomePage + Blog publicados', 'seed_wagtail recrea HomePage automáticamente en cada deploy limpio'),
+    ('0', 'listo', 7, 'GA4 configurado — endonautas.cl + app.endonautas.cl', 'G-MY610BSBE8 en platform, G-5R7E1N116S en mirrorwork'),
+    ('0', 'listo', 8, 'Google Search Console + sitemap.xml activo', 'Verificación DNS Cloudflare, sitemap en /sitemap.xml'),
     # Etapa 0 — pendientes
     ('0', 'pendiente', 0, 'Email vars Railway', 'Para contacto y password reset'),
     ('0', 'pendiente', 1, 'Hotmart packs + vars Railway', '3 productos + offer codes'),
     ('0', 'pendiente', 2, 'www.endonautas.cl en Railway Domains', ''),
-    ('0', 'pendiente', 3, 'Wagtail Site config (hostname + root)', ''),
-    ('0', 'pendiente', 4, 'Conectar fractones en features', 'Espejo + AI insights + onboarding mission'),
+    ('0', 'pendiente', 3, 'Conectar fractones en features', 'Espejo + AI insights + onboarding mission'),
     # Etapa 1 — pendientes
     ('1', 'pendiente', 0, 'ManyChat 3 flujos activos y probados', 'MASCARA + MAPA + ESPEJO'),
     ('1', 'pendiente', 1, 'Brevo secuencia 3 emails activa', 'Post-MASCARA días 1, 3, 7'),

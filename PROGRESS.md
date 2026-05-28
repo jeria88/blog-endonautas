@@ -1,5 +1,39 @@
 # endonautas-platform — Registro de progreso
 
+## 2026-05-28 — Deploy estable, Wagtail operativo, GA4 + Search Console
+
+### ✅ Completado
+
+#### Deploy Railway — fix BD rota
+- `wsgi.py`: cambiado setdefault a `config.settings.production` (era dev/SQLite → 500 en todo)
+- `prepare_db`: DROP SCHEMA CASCADE cuando `auth_user` ausente → migrate limpio sin estados parciales
+- `seed_superuser`: crea superusuario desde env vars `DJANGO_SUPERUSER_*` (idempotente)
+- `seed_wagtail`: recrea HomePage y Wagtail Site automáticamente en cada deploy limpio
+- `railway.toml` startCommand actualizado con el orden correcto: prepare_db → migrate → seed_superuser → seed_wagtail → seed_centro → collectstatic → gunicorn
+
+#### Wagtail — CMS operativo
+- Homepage publicada en endonautas.cl (seed_wagtail la recrea si BD es reseteada)
+- Blog `/blog/` activo con `BlogIndexPage` publicada en CMS
+- Sitemap Wagtail registrado en urls.py → `endonautas.cl/sitemap.xml` funcional
+
+#### Analytics y SEO
+- GA4 configurado: `G-MY610BSBE8` en `base_editorial.html` (endonautas.cl)
+- GA4 configurado: `G-5R7E1N116S` en mirrorwork `base.html` (app.endonautas.cl)
+- Google Search Console: verificado via DNS Cloudflare, sitemap enviado
+- GEO: `llms.txt` + `robots.txt` con allowlist AI bots ya estaban activos
+
+### 🔶 Pendiente
+
+#### www.endonautas.cl
+- Registrar `www.endonautas.cl` como custom domain en Railway service Settings → Domains
+
+#### Features app
+- Email vars Railway: `EMAIL_HOST`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `EMAIL_PORT`, `EMAIL_USE_TLS`
+- Hotmart packs: 3 productos + vars `HOTMART_PACK_200/600/2000` en Railway
+- Conectar fractones en features: Espejo (spend), AI Insights (spend), onboarding (credit_mission)
+
+---
+
 ## 2026-05-26 — Fix CMS login, DNS, brand audit
 
 ### ✅ Completado
