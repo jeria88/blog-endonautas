@@ -1,127 +1,280 @@
 {% extends "base_editorial.html" %}
-{% load wagtailcore_tags %}
+{% load wagtailcore_tags static %}
 
 {% block title %}Equipo — Endonautas{% endblock %}
-{% block meta_description %}Endonautas es el trabajo de una persona. No porque sea poco — sino porque así es como empieza lo que vale la pena.{% endblock %}
+{% block meta_description %}Endonautas nació de una pregunta. No de un plan de negocios. La misión, la visión y la persona detrás del proyecto.{% endblock %}
 {% block og_title %}Equipo — Endonautas{% endblock %}
 {% block og_url %}/equipo/{% endblock %}
 {% block canonical %}/equipo/{% endblock %}
 
 {% block extra_head %}
 <style data-page-style>
-  .equipo-hero {
-    padding: 10rem 1.5rem 5rem;
-    text-align: center;
+
+  /* ── Hero ── */
+  .eq-hero {
+    padding: 10rem 4rem 6rem;
+    max-width: 820px;
   }
-  .equipo-eyebrow {
+  .eq-tag {
     font-family: var(--font-heading);
-    font-size: 0.7rem; font-weight: 500;
+    font-size: 0.68rem; font-weight: 500;
     letter-spacing: 0.22em; text-transform: uppercase;
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 1.5rem;
     animation: p5 5s ease-in-out infinite;
-    margin-bottom: 2rem;
   }
-  .equipo-title {
+  .eq-tag::before { content:''; display:block; width:24px; height:1px; background:var(--dim); }
+
+  .eq-hero-title {
     font-family: var(--font-heading);
-    font-size: clamp(2.5rem, 6vw, 4.5rem);
-    font-weight: 700; line-height: 1.05;
+    font-size: clamp(3rem, 6vw, 5rem);
+    font-weight: 700;
     letter-spacing: -0.03em;
+    line-height: 1.05;
     color: var(--text);
     margin-bottom: 1.5rem;
   }
-  .equipo-intro {
-    max-width: 620px;
-    margin: 0 auto;
+  .eq-hero-lead {
     font-family: var(--font-ui);
-    font-size: 1.05rem; line-height: 1.8;
-    color: var(--muted); font-weight: 400;
+    font-size: 1.1rem; font-weight: 400;
+    color: var(--muted); line-height: 1.75;
+    max-width: 600px;
   }
 
-  /* Member card */
-  .equipo-section {
-    padding: 4rem 1.5rem 8rem;
-  }
-  .equipo-member {
-    max-width: 780px;
+  /* ── Secciones ── */
+  .eq-section {
+    padding: 6rem 4rem;
+    max-width: 1200px;
     margin: 0 auto;
-    display: flex;
-    gap: 3.5rem;
+  }
+  .eq-section-heading {
+    font-family: var(--font-heading);
+    font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: var(--text);
+    margin-bottom: 1.25rem;
+    line-height: 1.1;
+  }
+  .body-text {
+    font-family: var(--font-ui);
+    font-size: 1rem; font-weight: 400;
+    line-height: 1.8; color: var(--muted);
+  }
+  .body-text p + p { margin-top: 1rem; }
+
+  /* ── Misión — quote grande ── */
+  .mision-section {
+    padding: 5rem 4rem;
+    display: flex; justify-content: center;
+    background: linear-gradient(180deg, transparent, rgba(126,207,168,0.04) 50%, transparent);
+  }
+  .mision-box {
+    max-width: 820px; text-align: center;
+  }
+  .mision-quote {
+    font-family: var(--font-heading);
+    font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    color: var(--text);
+    margin-bottom: 1.5rem;
+  }
+  .mision-quote span { animation: p5 5s ease-in-out infinite; }
+  .mision-body {
+    font-family: var(--font-ui);
+    font-size: 1rem; color: var(--muted);
+    line-height: 1.8; max-width: 620px; margin: 0 auto;
+  }
+
+  /* ── Visión — cards ── */
+  .vision-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.25rem;
+    margin-top: 3rem;
+  }
+  .vision-card {
+    background: #0b0b14;
+    border-left: 2px solid;
+    border-radius: 0 12px 12px 0;
+    padding: 1.75rem 1.75rem 1.75rem 2rem;
+    animation: p5-border-left 5s ease-in-out infinite;
+  }
+  .vision-num {
+    font-family: var(--font-heading);
+    font-size: 0.62rem; font-weight: 500;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--dim); margin-bottom: 0.5rem;
+  }
+  .vision-title {
+    font-family: var(--font-heading);
+    font-size: 1.1rem; font-weight: 600;
+    margin-bottom: 0.5rem;
+    animation: p5 5s ease-in-out infinite;
+  }
+  .vision-desc {
+    font-family: var(--font-ui);
+    font-size: 0.9rem; color: var(--muted); line-height: 1.65; font-weight: 400;
+  }
+
+  /* ── Equipo ── */
+  .member-wrap {
+    max-width: 920px; margin: 0 auto;
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 4rem;
     align-items: flex-start;
     background: #0b0b14;
     border-left: 2px solid;
-    border-radius: 0 16px 16px 0;
-    padding: 2.5rem 2.5rem 2.5rem 2.75rem;
+    border-radius: 0 20px 20px 0;
+    padding: 3rem 3rem 3rem 3.25rem;
     animation: p5-border-left 5s ease-in-out infinite;
   }
-  .equipo-photo {
-    width: 120px; height: 120px;
-    border-radius: 50%;
-    object-fit: cover;
-    flex-shrink: 0;
-    border: 1px solid rgba(126,207,168,0.2);
+  .member-photo-wrap { position: relative; border-radius: 16px; overflow: hidden; }
+  .member-photo {
+    width: 100%; display: block;
+    aspect-ratio: 3/4; object-fit: cover;
+    filter: grayscale(70%) contrast(1.1);
+    transition: filter 0.5s ease;
   }
-  .equipo-member-text { flex: 1; }
-  .equipo-role {
+  .member-photo-wrap:hover .member-photo { filter: grayscale(0%) contrast(1.05); }
+  .member-photo-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  .member-role {
     font-family: var(--font-heading);
-    font-size: 0.68rem; font-weight: 500;
-    letter-spacing: 0.18em; text-transform: uppercase;
+    font-size: 0.65rem; font-weight: 500;
+    letter-spacing: 0.2em; text-transform: uppercase;
     color: var(--dim); margin-bottom: 0.5rem;
   }
-  .equipo-name {
+  .member-name {
     font-family: var(--font-heading);
-    font-size: 1.5rem; font-weight: 700;
-    color: var(--text); margin-bottom: 0.75rem;
+    font-size: clamp(1.6rem, 2.5vw, 2.2rem);
+    font-weight: 700; letter-spacing: -0.02em;
+    color: var(--text); margin-bottom: 1rem;
     animation: p5 5s ease-in-out infinite;
   }
-  .equipo-bio {
+  .member-bio {
     font-family: var(--font-ui);
-    font-size: 0.95rem; line-height: 1.75;
+    font-size: 0.97rem; line-height: 1.8;
     color: var(--muted); font-weight: 400;
   }
+  .member-bio p + p { margin-top: 0.9rem; }
 
-  @media (max-width: 600px) {
-    .equipo-member { flex-direction: column; gap: 1.5rem; padding: 1.75rem 1.5rem 1.75rem 1.75rem; }
-    .equipo-photo { width: 80px; height: 80px; }
+  /* ── Nota paradójica ── */
+  .paradox-note {
+    max-width: 920px; margin: 2rem auto 0;
+    font-family: var(--font-ui);
+    font-size: 0.82rem; color: var(--dim);
+    font-style: italic; line-height: 1.6;
+    padding-left: 3.25rem;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    .eq-hero { padding: 8rem 1.5rem 4rem; }
+    .eq-section { padding: 5rem 1.5rem; }
+    .mision-section { padding: 4rem 1.5rem; }
+    .member-wrap { grid-template-columns: 1fr; gap: 2rem; padding: 2rem 1.75rem 2rem 2rem; }
+    .paradox-note { padding-left: 2rem; }
   }
 </style>
 {% endblock %}
 
 {% block content %}
 
-<section class="equipo-hero">
-  <p class="equipo-eyebrow reveal">Las personas detrás</p>
-  <h1 class="equipo-title reveal" style="transition-delay:0.1s">Equipo</h1>
-  <div class="equipo-intro reveal" style="transition-delay:0.22s">
-    {% if page.intro %}
-      {{ page.intro|richtext }}
-    {% else %}
-      <p>Endonautas es el trabajo de una persona. No porque sea poco — sino porque así es como empieza lo que vale la pena. Un terapeuta, un desarrollador, un autor: el mismo.</p>
-    {% endif %}
+<!-- Hero -->
+<section class="eq-hero">
+  <div class="eq-tag reveal">El proyecto</div>
+  <h1 class="eq-hero-title reveal" style="transition-delay:0.1s">Quiénes<br>somos.</h1>
+  <p class="eq-hero-lead reveal" style="transition-delay:0.22s">
+    Endonautas nació de una pregunta, no de un plan de negocios. La pregunta era simple: ¿por qué la gente sabe que el problema está adentro, pero no tiene el lenguaje para encontrarlo?
+  </p>
+</section>
+
+<hr class="divider">
+
+<!-- Misión -->
+<section class="mision-section">
+  <div class="mision-box">
+    <div class="eq-tag reveal" style="justify-content:center; margin-bottom:1.5rem;">Misión</div>
+    <h2 class="mision-quote reveal" style="transition-delay:0.1s">
+      Construir el lenguaje<br>
+      para el <span>viaje interior</span>.
+    </h2>
+    <p class="mision-body reveal" style="transition-delay:0.2s">
+      No como promesa de transformación. Como práctica real, con herramientas concretas y un mapa que puedas usar — sin perder de vista que el camino ya lo sabes tú.
+    </p>
   </div>
 </section>
 
 <hr class="divider">
 
-<section class="equipo-section">
-  <div class="equipo-member reveal">
-    <img
-      src="{% if page.photo_url %}{{ page.photo_url }}{% else %}https://ebook.endonautas.cl/assets/img/franco-jeria.jpeg{% endif %}"
-      alt="Franco Jeria Castro"
-      class="equipo-photo"
-      loading="lazy"
-    >
-    <div class="equipo-member-text">
-      <p class="equipo-role">Fundador · Terapeuta · Autor</p>
-      <h2 class="equipo-name">Franco Jeria Castro</h2>
-      <div class="equipo-bio">
+<!-- Visión -->
+<section class="eq-section">
+  <div class="eq-tag reveal">Visión</div>
+  <h2 class="eq-section-heading reveal" style="transition-delay:0.1s">Hacia dónde vamos.</h2>
+  <div class="body-text reveal" style="transition-delay:0.2s; max-width:680px;">
+    <p>Un ecosistema donde el autoconocimiento profundo sea accesible — no como terapia, no como autoayuda, sino como una práctica que cualquier persona pueda sostener con su propio ritmo.</p>
+  </div>
+  <div class="vision-grid">
+    <div class="vision-card reveal" style="transition-delay:0.05s">
+      <div class="vision-num">01</div>
+      <div class="vision-title">Herramientas que acompañan</div>
+      <p class="vision-desc">Tests psicométricos, el Espejo de Conflictos, lecturas de nacimiento — no para diagnosticar, sino para leer lo que ya ocurre adentro.</p>
+    </div>
+    <div class="vision-card reveal" style="transition-delay:0.12s">
+      <div class="vision-num">02</div>
+      <div class="vision-title">Contenido que orienta</div>
+      <p class="vision-desc">Un blog, una comunidad y materiales que construyen lenguaje — para que el viaje no sea solo tuyo, pero siga siendo personal.</p>
+    </div>
+    <div class="vision-card reveal" style="transition-delay:0.2s">
+      <div class="vision-num">03</div>
+      <div class="vision-title">Una comunidad con dirección</div>
+      <p class="vision-desc">Personas que ya saben que el problema no está afuera y están dispuestas a mirarlo con honestidad y sin atajos.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- Equipo -->
+<section class="eq-section">
+  <div class="eq-tag reveal">El equipo</div>
+  <h2 class="eq-section-heading reveal" style="transition-delay:0.1s; margin-bottom:3rem;">Las personas detrás.</h2>
+
+  <div class="member-wrap reveal" style="transition-delay:0.15s">
+    <div class="member-photo-wrap">
+      <img
+        src="{% static 'img/franco-jeria.jpeg' %}"
+        alt="Franco Jeria Castro"
+        class="member-photo"
+        loading="lazy"
+      >
+      <div class="member-photo-overlay"></div>
+    </div>
+    <div>
+      <p class="member-role">Fundador · Terapeuta · Autor</p>
+      <h3 class="member-name">Franco Jeria Castro</h3>
+      <div class="member-bio">
         {% if page.bio %}
           {{ page.bio|richtext }}
         {% else %}
-          <p>Terapeuta en salud integrativa desde 2019. Autor de Endonautica. Construye herramientas para que el viaje interior tenga lenguaje, mapa y dirección — no como promesa, sino como práctica real.</p>
-          <p style="margin-top:0.75rem;">Trabaja con personas que ya saben que el problema está adentro, pero todavía no tienen las palabras para encontrarlo.</p>
+          <p>Terapeuta en salud integrativa desde 2019. Crecí comparándome con personajes de anime no como escape, sino como brújula — sus búsquedas decían algo de la mía.</p>
+          <p>Cuando empecé a acompañar a otras personas, noté que la mayoría de sus conflictos no venían de afuera. Venían de no saber leer el propio mapa interior — los patrones, las creencias, la identidad construida para sobrevivir lo que se vivió.</p>
+          <p>Endonautica lo escribí en 2022, cuando encontré el punto de quietud necesario para ordenar lo que habitaba en mi interior desde una perspectiva con sentido.</p>
         {% endif %}
       </div>
     </div>
   </div>
+
+  <p class="paradox-note reveal" style="transition-delay:0.3s">
+    Endonautas es el trabajo de una persona. No porque sea poco — sino porque así es como empieza lo que vale la pena.
+  </p>
 </section>
 
 {% endblock %}

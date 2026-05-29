@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -126,33 +127,48 @@
     .nav {
       display: flex; align-items: center; justify-content: space-between;
       padding: 1.5rem 4rem;
-      background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, transparent 100%);
+      background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 60%, transparent 100%);
     }
     .nav > * { pointer-events: auto; }
 
     .nav-logo {
-      font-family: var(--font-serif);
-      font-size: 1.5rem;
+      font-family: var(--font-heading);
+      font-size: 1.35rem;
+      font-weight: 600;
       color: var(--text);
       text-decoration: none;
-      letter-spacing: 0.02em;
+      letter-spacing: 0.01em;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .nav-logo-img {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      filter: grayscale(100%) brightness(0.7);
+      transition: filter 0.5s ease, transform 0.4s cubic-bezier(0.16,1,0.3,1);
       flex-shrink: 0;
     }
-    .nav-logo em { font-style: italic; color: var(--muted); }
+    .nav-logo:hover .nav-logo-img {
+      filter: grayscale(0%) brightness(1);
+      transform: scale(1.08);
+    }
+    .nav-logo-word { animation: p5 5s ease-in-out infinite; }
 
     .nav-links {
       display: flex; gap: 1.75rem; align-items: center; list-style: none;
     }
     .nav-links a {
-      color: var(--muted);
+      color: rgba(240,232,220,0.5);
       text-decoration: none;
-      font-size: 0.75rem;
+      font-size: 0.78rem;
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      font-weight: 400;
-      transition: color 0.2s;
+      font-weight: 500;
+      transition: color 0.3s;
     }
-    .nav-links a:hover { color: var(--text); }
+    .nav-links a:hover { color: var(--accent); }
     .nav-links .nav-cta {
       color: var(--accent);
       border: 1px solid rgba(126,207,168,0.3);
@@ -325,13 +341,14 @@
 
 <header>
   <nav class="nav" aria-label="Navegación principal">
-    <a href="/" class="nav-logo">Endonautas <em>·</em></a>
+    <a href="/" class="nav-logo" aria-label="Endonautas — Inicio">
+      <img src="{% static 'img/logo.png' %}" alt="" class="nav-logo-img" width="34" height="34" aria-hidden="true">
+      <span class="nav-logo-word">Endonautas</span>
+    </a>
     <ul class="nav-links">
-      <li><a href="/blog/">Blog</a></li>
+      <li class="nav-hide-sm"><a href="/blog/">Blog</a></li>
       <li class="nav-hide-sm"><a href="/endonautica/">Endonautica</a></li>
-      <li class="nav-hide-sm"><a href="/mascara/">MÁSCARA</a></li>
       <li class="nav-hide-md"><a href="/equipo/">Equipo</a></li>
-      <li class="nav-hide-md"><a href="/mision/">Misión</a></li>
       <li><a href="https://app.endonautas.cl/accounts/registro/" class="nav-cta">Empezar →</a></li>
     </ul>
   </nav>
@@ -346,9 +363,7 @@
     <a href="/">Inicio</a>
     <a href="/blog/">Blog</a>
     <a href="/endonautica/">Endonautica</a>
-    <a href="/mascara/">MÁSCARA</a>
     <a href="/equipo/">Equipo</a>
-    <a href="/mision/">Misión</a>
     <a href="/contacto/">Contacto</a>
     <a href="https://app.endonautas.cl/accounts/registro/">Entrar a la app</a>
   </div>
