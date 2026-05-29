@@ -1,0 +1,127 @@
+{% extends "base_editorial.html" %}
+{% load wagtailcore_tags %}
+
+{% block title %}Equipo — Endonautas{% endblock %}
+{% block meta_description %}Endonautas es el trabajo de una persona. No porque sea poco — sino porque así es como empieza lo que vale la pena.{% endblock %}
+{% block og_title %}Equipo — Endonautas{% endblock %}
+{% block og_url %}/equipo/{% endblock %}
+{% block canonical %}/equipo/{% endblock %}
+
+{% block extra_head %}
+<style data-page-style>
+  .equipo-hero {
+    padding: 10rem 1.5rem 5rem;
+    text-align: center;
+  }
+  .equipo-eyebrow {
+    font-family: var(--font-heading);
+    font-size: 0.7rem; font-weight: 500;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    animation: p5 5s ease-in-out infinite;
+    margin-bottom: 2rem;
+  }
+  .equipo-title {
+    font-family: var(--font-heading);
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 700; line-height: 1.05;
+    letter-spacing: -0.03em;
+    color: var(--text);
+    margin-bottom: 1.5rem;
+  }
+  .equipo-intro {
+    max-width: 620px;
+    margin: 0 auto;
+    font-family: var(--font-ui);
+    font-size: 1.05rem; line-height: 1.8;
+    color: var(--muted); font-weight: 400;
+  }
+
+  /* Member card */
+  .equipo-section {
+    padding: 4rem 1.5rem 8rem;
+  }
+  .equipo-member {
+    max-width: 780px;
+    margin: 0 auto;
+    display: flex;
+    gap: 3.5rem;
+    align-items: flex-start;
+    background: #0b0b14;
+    border-left: 2px solid;
+    border-radius: 0 16px 16px 0;
+    padding: 2.5rem 2.5rem 2.5rem 2.75rem;
+    animation: p5-border-left 5s ease-in-out infinite;
+  }
+  .equipo-photo {
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 1px solid rgba(126,207,168,0.2);
+  }
+  .equipo-member-text { flex: 1; }
+  .equipo-role {
+    font-family: var(--font-heading);
+    font-size: 0.68rem; font-weight: 500;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--dim); margin-bottom: 0.5rem;
+  }
+  .equipo-name {
+    font-family: var(--font-heading);
+    font-size: 1.5rem; font-weight: 700;
+    color: var(--text); margin-bottom: 0.75rem;
+    animation: p5 5s ease-in-out infinite;
+  }
+  .equipo-bio {
+    font-family: var(--font-ui);
+    font-size: 0.95rem; line-height: 1.75;
+    color: var(--muted); font-weight: 400;
+  }
+
+  @media (max-width: 600px) {
+    .equipo-member { flex-direction: column; gap: 1.5rem; padding: 1.75rem 1.5rem 1.75rem 1.75rem; }
+    .equipo-photo { width: 80px; height: 80px; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<section class="equipo-hero">
+  <p class="equipo-eyebrow reveal">Las personas detrás</p>
+  <h1 class="equipo-title reveal" style="transition-delay:0.1s">Equipo</h1>
+  <div class="equipo-intro reveal" style="transition-delay:0.22s">
+    {% if page.intro %}
+      {{ page.intro|richtext }}
+    {% else %}
+      <p>Endonautas es el trabajo de una persona. No porque sea poco — sino porque así es como empieza lo que vale la pena. Un terapeuta, un desarrollador, un autor: el mismo.</p>
+    {% endif %}
+  </div>
+</section>
+
+<hr class="divider">
+
+<section class="equipo-section">
+  <div class="equipo-member reveal">
+    <img
+      src="{% if page.photo_url %}{{ page.photo_url }}{% else %}https://ebook.endonautas.cl/assets/img/franco-jeria.jpeg{% endif %}"
+      alt="Franco Jeria Castro"
+      class="equipo-photo"
+      loading="lazy"
+    >
+    <div class="equipo-member-text">
+      <p class="equipo-role">Fundador · Terapeuta · Autor</p>
+      <h2 class="equipo-name">Franco Jeria Castro</h2>
+      <div class="equipo-bio">
+        {% if page.bio %}
+          {{ page.bio|richtext }}
+        {% else %}
+          <p>Terapeuta en salud integrativa desde 2019. Autor de Endonautica. Construye herramientas para que el viaje interior tenga lenguaje, mapa y dirección — no como promesa, sino como práctica real.</p>
+          <p style="margin-top:0.75rem;">Trabaja con personas que ya saben que el problema está adentro, pero todavía no tienen las palabras para encontrarlo.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

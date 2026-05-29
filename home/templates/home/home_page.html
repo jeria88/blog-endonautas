@@ -67,8 +67,8 @@
   }
 
   .hero-title em {
-    font-style: italic;
-    color: var(--gold);
+    font-style: normal;
+    animation: p5 5s ease-in-out infinite;
   }
 
   .hero-tagline {
@@ -128,26 +128,30 @@
   }
 
   .feature-icon {
-    font-size: 1.4rem;
-    margin-bottom: 1rem;
-    opacity: 0.85;
+    font-size: 1.2rem;
+    margin-bottom: 0.8rem;
+    display: block;
+    animation: p5-glow 5s ease-in-out infinite;
   }
 
   .feature-title {
-    font-family: var(--font-serif);
-    font-size: 1.15rem;
-    font-weight: 400;
-    color: var(--text);
-    margin-bottom: 0.5rem;
-    letter-spacing: 0.01em;
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.45rem;
+    letter-spacing: -0.01em;
+    animation: p5 5s ease-in-out infinite;
   }
 
   .feature-desc {
-    font-size: 0.86rem;
+    font-family: var(--font-ui);
+    font-size: 0.88rem;
     color: var(--muted);
     line-height: 1.65;
-    font-weight: 300;
+    font-weight: 500;
   }
+
+  .feature-card { padding: 1.2rem 1.2rem 1.2rem 1.4rem; }
 
   /* ── CTA band ── */
   /* ── Autor ── */
@@ -194,7 +198,7 @@
   .cta-band {
     padding: 7rem 1.5rem;
     text-align: center;
-    background: linear-gradient(180deg, transparent, rgba(234,179,8,0.04) 50%, transparent);
+    background: linear-gradient(180deg, transparent, rgba(126,207,168,0.04) 50%, transparent);
   }
 
   .cta-band-inner {
@@ -213,8 +217,8 @@
   }
 
   .cta-band h2 em {
-    font-style: italic;
-    color: var(--gold);
+    font-style: normal;
+    animation: p5 5s ease-in-out infinite;
   }
 
   .cta-band p {
@@ -254,7 +258,7 @@
     <a href="{% if page.cta_app_url %}{{ page.cta_app_url }}{% else %}https://app.endonautas.cl{% endif %}" class="btn-primary">
       {% if page.cta_app_text %}{{ page.cta_app_text }}{% else %}Entrar a la App{% endif %} →
     </a>
-    <a href="{% if page.cta_ebook_url %}{{ page.cta_ebook_url }}{% else %}https://ebook.endonautas.cl{% endif %}" class="btn-ghost">
+    <a href="{% if page.cta_ebook_url %}{{ page.cta_ebook_url }}{% else %}/endonautica/{% endif %}" class="btn-ghost">
       {% if page.cta_ebook_text %}{{ page.cta_ebook_text }}{% else %}Leer Endonautica{% endif %}
     </a>
   </div>

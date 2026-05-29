@@ -1,0 +1,202 @@
+{% extends "base_editorial.html" %}
+{% load wagtailcore_tags %}
+
+{% block title %}Descubre tu MÁSCARA — Guía gratuita{% endblock %}
+{% block meta_description %}¿Qué patrón usas para sobrevivir que ya no te sirve? Descarga gratis el capítulo sobre la MÁSCARA de Endonautica.{% endblock %}
+{% block og_title %}Descubre tu MÁSCARA — Endonautas{% endblock %}
+{% block og_url %}/mascara/{% endblock %}
+{% block canonical %}/mascara/{% endblock %}
+
+{% block extra_head %}
+<style data-page-style>
+  .mascara-hero {
+    min-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 8rem 1.5rem 5rem;
+  }
+  .mascara-eyebrow {
+    font-family: var(--font-heading);
+    font-size: 0.7rem; font-weight: 500;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    animation: p5 5s ease-in-out infinite;
+    margin-bottom: 2rem;
+  }
+  .mascara-title {
+    font-family: var(--font-heading);
+    font-size: clamp(2.8rem, 7vw, 5rem);
+    font-weight: 700; line-height: 1.05;
+    letter-spacing: -0.03em;
+    color: var(--text);
+    margin-bottom: 1.25rem;
+  }
+  .mascara-sub {
+    font-family: var(--font-ui);
+    font-size: clamp(1rem, 2vw, 1.12rem);
+    color: var(--muted); max-width: 500px;
+    margin: 0 auto 3rem; line-height: 1.75; font-weight: 400;
+  }
+
+  /* Form */
+  .mascara-form-wrap {
+    width: 100%; max-width: 420px;
+    margin: 0 auto;
+  }
+  .mascara-form {
+    display: flex; flex-direction: column; gap: 0.75rem;
+  }
+  .mascara-input {
+    background: rgba(11,11,20,0.9);
+    border: 1px solid rgba(126,207,168,0.25);
+    border-radius: 12px;
+    color: var(--text);
+    font-family: var(--font-ui);
+    font-size: 0.95rem; font-weight: 400;
+    padding: 0.9rem 1.25rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .mascara-input::placeholder { color: var(--dim); }
+  .mascara-input:focus { border-color: rgba(126,207,168,0.5); }
+  .mascara-submit {
+    width: 100%;
+    background: #F0E8DC; color: #000;
+    font-family: var(--font-heading); font-weight: 600; font-size: 0.9rem;
+    letter-spacing: 0.04em;
+    padding: 0.9rem 1.5rem; border-radius: 999px; border: none;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .mascara-submit:hover { background: #e0d8cc; transform: scale(1.02); }
+  .mascara-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+  .mascara-notice {
+    font-size: 0.75rem; color: var(--dim);
+    text-align: center; margin-top: 0.5rem;
+  }
+
+  /* Thank you state */
+  .mascara-thanks {
+    display: none;
+    padding: 2rem;
+    background: #0b0b14;
+    border-left: 2px solid;
+    border-radius: 0 12px 12px 0;
+    animation: p5-border-left 5s ease-in-out infinite;
+    text-align: left;
+  }
+  .mascara-thanks h3 {
+    font-family: var(--font-heading);
+    font-size: 1.1rem; font-weight: 600;
+    animation: p5 5s ease-in-out infinite;
+    margin-bottom: 0.5rem;
+  }
+  .mascara-thanks p {
+    font-family: var(--font-ui);
+    font-size: 0.9rem; color: var(--muted); line-height: 1.65;
+  }
+
+  .mascara-thanks-cta {
+    margin-top: 1.5rem;
+  }
+
+  @media (max-width: 500px) {
+    .mascara-form-wrap { padding: 0 0.5rem; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<section class="mascara-hero">
+  <p class="mascara-eyebrow reveal">Capítulo gratuito de Endonautica</p>
+  <h1 class="mascara-title reveal" style="transition-delay:0.12s">
+    {% if page.headline %}{{ page.headline }}{% else %}Descubre tu MÁSCARA{% endif %}
+  </h1>
+  <p class="mascara-sub reveal" style="transition-delay:0.25s">
+    {% if page.subheadline %}{{ page.subheadline }}{% else %}El patrón que usas para sobrevivir — y que ya no te sirve. Una guía gratuita de Franco Jeria Castro.{% endif %}
+  </p>
+
+  <div class="mascara-form-wrap reveal" style="transition-delay:0.4s">
+    <form class="mascara-form" id="mascara-form">
+      {% csrf_token %}
+      <input
+        type="email"
+        name="email"
+        class="mascara-input"
+        placeholder="tu@email.com"
+        required
+        autocomplete="email"
+      >
+      <button type="submit" class="mascara-submit" id="mascara-btn">
+        Quiero mi guía gratuita →
+      </button>
+      <p class="mascara-notice">Sin spam. Solo el PDF y un seguimiento de 3 correos.</p>
+    </form>
+
+    <div class="mascara-thanks" id="mascara-thanks">
+      <h3>¡Listo! Revisa tu correo.</h3>
+      <p>{% if page.thank_you_text %}{{ page.thank_you_text }}{% else %}Te enviamos el PDF a tu correo. Lleva 5 minutos leerlo — vale la pena.{% endif %}</p>
+      {% if page.hotmart_url %}
+      <div class="mascara-thanks-cta">
+        <a href="{{ page.hotmart_url }}" class="btn-ghost" target="_blank" rel="noopener" style="font-size:0.85rem;">
+          Ver el libro completo →
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{% if page.description %}
+<hr class="divider">
+<section style="padding: 5rem 1.5rem;">
+  <div class="container">
+    <div class="reveal" style="font-family: var(--font-ui); font-size: 1rem; line-height: 1.8; color: var(--muted);">
+      {{ page.description|richtext }}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+  const form = document.getElementById('mascara-form');
+  const thanks = document.getElementById('mascara-thanks');
+  const btn = document.getElementById('mascara-btn');
+  if (!form) return;
+
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    btn.disabled = true;
+    btn.textContent = 'Enviando…';
+
+    const data = new FormData(form);
+    data.set('list_id', '{{ page.brevo_list_id|default:3 }}');
+
+    try {
+      const resp = await fetch('/suscribir/', { method: 'POST', body: data });
+      const json = await resp.json();
+      if (json.ok) {
+        form.style.display = 'none';
+        thanks.style.display = 'block';
+      } else {
+        btn.disabled = false;
+        btn.textContent = 'Quiero mi guía gratuita →';
+        alert(json.error || 'Hubo un problema. Intenta de nuevo.');
+      }
+    } catch {
+      btn.disabled = false;
+      btn.textContent = 'Quiero mi guía gratuita →';
+      alert('Error de conexión. Intenta de nuevo.');
+    }
+  });
+})();
+</script>
+{% endblock %}

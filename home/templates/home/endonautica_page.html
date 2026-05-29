@@ -1,0 +1,201 @@
+{% extends "base_editorial.html" %}
+{% load wagtailcore_tags wagtailimages_tags %}
+
+{% block title %}Endonautica — El libro de Franco Jeria Castro{% endblock %}
+{% block meta_description %}Un mapa del viaje interior. Endonautica es el libro que construye el lenguaje para lo que ya sabes pero no has podido decir.{% endblock %}
+{% block og_title %}Endonautica — Franco Jeria Castro{% endblock %}
+{% block og_url %}/endonautica/{% endblock %}
+{% block canonical %}/endonautica/{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Book",
+  "name": "Endonautica",
+  "author": {"@type": "Person", "name": "Franco Jeria Castro"},
+  "url": "https://endonautas.cl/endonautica/"
+}
+</script>
+{% endblock %}
+
+{% block extra_head %}
+<style data-page-style>
+  .book-hero {
+    min-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 8rem 1.5rem 5rem;
+  }
+  .book-eyebrow {
+    font-family: var(--font-heading);
+    font-size: 0.7rem; font-weight: 500;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    animation: p5 5s ease-in-out infinite;
+    margin-bottom: 2rem;
+  }
+  .book-title {
+    font-family: var(--font-heading);
+    font-size: clamp(3rem, 8vw, 5.5rem);
+    font-weight: 700;
+    line-height: 1.0;
+    letter-spacing: -0.03em;
+    color: var(--text);
+    margin-bottom: 1.25rem;
+  }
+  .book-subtitle {
+    font-family: var(--font-ui);
+    font-size: clamp(1rem, 2vw, 1.15rem);
+    color: var(--muted);
+    max-width: 520px;
+    margin: 0 auto 3rem;
+    line-height: 1.75;
+    font-weight: 400;
+  }
+  .book-ctas {
+    display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;
+  }
+
+  /* Excerpt */
+  .book-excerpt-section {
+    padding: 6rem 1.5rem;
+  }
+  .book-excerpt {
+    max-width: 680px;
+    margin: 0 auto;
+    font-family: var(--font-ui);
+    font-size: 1.05rem;
+    font-weight: 400;
+    line-height: 1.85;
+    color: rgba(240,232,220,0.75);
+    border-left: 2px solid;
+    animation: p5-border-left 5s ease-in-out infinite;
+    padding: 1.5rem 0 1.5rem 2rem;
+    font-style: italic;
+  }
+
+  /* Features */
+  .book-features {
+    padding: 4rem 1.5rem 6rem;
+  }
+  .book-features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.25rem;
+    max-width: 1100px;
+    margin: 3rem auto 0;
+  }
+  .book-feature {
+    background: #0b0b14;
+    border-left: 2px solid;
+    border-radius: 0 12px 12px 0;
+    padding: 1.2rem 1.2rem 1.2rem 1.4rem;
+    animation: p5-border-left 5s ease-in-out infinite;
+  }
+  .book-feature-icon {
+    font-size: 1.1rem; display: block; margin-bottom: 0.7rem;
+    animation: p5-glow 5s ease-in-out infinite;
+  }
+  .book-feature-title {
+    font-family: var(--font-heading);
+    font-size: 0.95rem; font-weight: 600;
+    margin-bottom: 0.4rem;
+    animation: p5 5s ease-in-out infinite;
+  }
+  .book-feature-desc {
+    font-family: var(--font-ui);
+    font-size: 0.87rem; color: var(--muted); line-height: 1.6; font-weight: 400;
+  }
+
+  /* CTA final */
+  .book-cta-band {
+    padding: 7rem 1.5rem;
+    text-align: center;
+    background: linear-gradient(180deg, transparent, rgba(126,207,168,0.04) 50%, transparent);
+  }
+  .book-cta-band h2 {
+    font-family: var(--font-heading);
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 700; letter-spacing: -0.02em;
+    color: var(--text); margin-bottom: 0.75rem;
+  }
+  .book-cta-band p {
+    color: var(--muted); font-size: 0.95rem;
+    max-width: 440px; margin: 0 auto 2.5rem; line-height: 1.7;
+  }
+
+  @media (max-width: 600px) {
+    .book-features-grid { grid-template-columns: 1fr; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<section class="book-hero">
+  <p class="book-eyebrow reveal">Un libro de Franco Jeria Castro</p>
+  <h1 class="book-title reveal" style="transition-delay:0.12s">
+    {% if page.headline %}{{ page.headline }}{% else %}Endonautica{% endif %}
+  </h1>
+  <p class="book-subtitle reveal" style="transition-delay:0.25s">
+    {% if page.intro %}{{ page.intro|richtext }}{% else %}Un mapa del viaje interior. El lenguaje para lo que ya sabes pero no has podido decir.{% endif %}
+  </p>
+  <div class="book-ctas reveal" style="transition-delay:0.38s">
+    {% if page.hotmart_url %}
+    <a href="{{ page.hotmart_url }}" class="btn-primary" target="_blank" rel="noopener">
+      {{ page.hotmart_cta|default:"Conseguir el libro" }} →
+    </a>
+    {% endif %}
+    <a href="/mascara/" class="btn-ghost">Descargar capítulo gratis</a>
+  </div>
+</section>
+
+<hr class="divider">
+
+{% if page.excerpt %}
+<section class="book-excerpt-section">
+  <div class="reveal">
+    <blockquote class="book-excerpt">{{ page.excerpt }}</blockquote>
+  </div>
+</section>
+<hr class="divider">
+{% endif %}
+
+{% if page.features %}
+<section class="book-features">
+  <div class="container-wide">
+    <span class="tag-label reveal">Lo que encontrarás</span>
+    <div class="book-features-grid">
+      {% for block in page.features %}
+      {% if block.block_type == 'feature' %}
+      <div class="book-feature reveal">
+        <span class="book-feature-icon">{{ block.value.icon }}</span>
+        <div class="book-feature-title">{{ block.value.title }}</div>
+        <p class="book-feature-desc">{{ block.value.description }}</p>
+      </div>
+      {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+<hr class="divider">
+{% endif %}
+
+<section class="book-cta-band">
+  <div style="max-width:540px; margin:0 auto;">
+    <h2 class="reveal">El viaje siempre estuvo adentro.</h2>
+    <p class="reveal" style="transition-delay:0.15s">Endonautica construye el lenguaje para que puedas orientarte — sin perder de vista que tú ya sabes el camino.</p>
+    {% if page.hotmart_url %}
+    <div class="reveal" style="transition-delay:0.25s">
+      <a href="{{ page.hotmart_url }}" class="btn-primary" target="_blank" rel="noopener">
+        {{ page.hotmart_cta|default:"Conseguir el libro" }} →
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+{% endblock %}

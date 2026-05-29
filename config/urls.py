@@ -4,7 +4,7 @@ from django.contrib import admin
 from django.urls import include, path
 from django.views.generic import TemplateView
 
-from home.views import contacto_view
+from home.views import contacto_view, brevo_subscribe
 
 from wagtail import urls as wagtail_urls
 from wagtail.admin import urls as wagtailadmin_urls
@@ -32,6 +32,7 @@ urlpatterns = [
     path('blog/', include('blog.urls')),
 
     # Páginas editoriales
+    path('suscribir/', brevo_subscribe, name='brevo_subscribe'),
     path('contacto/', contacto_view, name='contacto'),
     path('mision/', TemplateView.as_view(template_name='home/mision.html'), name='mision'),
     path('comunidad/', TemplateView.as_view(template_name='home/comunidad.html'), name='comunidad_editorial'),

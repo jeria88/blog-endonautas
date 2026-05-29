@@ -27,6 +27,9 @@ SECURE_SSL_REDIRECT = False  # Cloudflare handles SSL
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
+BREVO_API_KEY = os.environ.get('BREVO_API_KEY', '')
+BREVO_DEFAULT_LIST_ID = int(os.environ.get('BREVO_DEFAULT_LIST_ID', '3'))
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
