@@ -23,7 +23,7 @@ Proyecto unificado de Endonautas. Incluye el sitio editorial (home + blog con Wa
 ### Editorial (Wagtail)
 | App | Descripción |
 |---|---|
-| `home` | HomePage con hero, features, CTAs. Gestionable desde `/cms/` |
+| `home` | HomePage, EndonauticaPage, EquipoPage, MascaraPage. Gestionable desde `/cms/` |
 | `blog` | BlogIndexPage + BlogPost (StreamField). Sistema de postulaciones de usuarios |
 | `search` | Búsqueda Wagtail |
 
@@ -73,16 +73,21 @@ Los usuarios de la app pueden postular contenido al blog desde cualquier sesión
 
 ## Design system — editorial
 
-Paleta EB Garamond + aurora + gold:
+Paleta P5 (Space Grotesk + Plus Jakarta Sans):
 ```css
---bg: #000000          --text: #ffffff         --muted: #a1a1aa
---dim: #52525b         --gold: #EAB308         --teal: #4ecdc4
+--bg: #000000          --text: #F0E8DC         --muted: #888899
+--dim: #555566         --accent: #7ecfa8       --accent2: #7ec8cf
 --glass-bg: rgba(255,255,255,0.03)
---font-serif: 'EB Garamond', Georgia, serif
---font-ui: 'Inter', system-ui, sans-serif
+--font-heading: 'Space Grotesk', sans-serif
+--font-serif: 'EB Garamond', Georgia, serif   /* solo títulos editoriales */
+--font-ui: 'Plus Jakarta Sans', sans-serif
 ```
 
-Fondo: 3 blobs aurora (purple `#3b0764`, deep blue `#172554`, dark `#0f2027`) + canvas de 160 estrellas animadas.
+Animaciones P5: `@keyframes p5` (color jade↔turquoise), `p5-glow` (text-shadow), `p5-border-left`, `p5-border`, `p5-bg`.
+
+V4 cards: `background: #0b0b14; border-left: 2px solid; border-radius: 0 12px 12px 0; animation: p5-border-left`.
+
+Fondo: 3 blobs aurora (purple, deep blue, dark) + 160 estrellas animadas.
 
 ---
 
@@ -112,6 +117,7 @@ DJANGO_SETTINGS_MODULE=config.settings.production
 DEEPSEEK_API_KEY=
 ADMIN_EMAIL=           # email del superuser (default: fjeriacastro@gmail.com)
 ADMIN_PASSWORD=        # contraseña del superuser (sin ! — Railway lo interpreta como history expansion)
+BREVO_API_KEY=         # requerido por POST /suscribir/ (lead magnet MascaraPage)
 ```
 
 ---
@@ -127,12 +133,16 @@ El `railway.toml` startCommand ejecuta en orden: `migrate → seed_admin → col
 2. `seed_admin` corre automáticamente en cada deploy y crea/actualiza el superuser
 3. En `/cms/` → Settings → Sites → hostname `endonautas.cl`, puerto 443, apuntar a `HomePage`
 
-### Estado actual (2026-05-26)
+### Estado actual (2026-05-29)
 - ✅ endonautas.cl — live, Wagtail CMS accesible en `/cms/`
 - ✅ DNS Cloudflare configurado (CNAME → Railway)
 - ✅ Superuser creado vía `seed_admin`
-- ⚠️ www.endonautas.cl → 404 (CNAME configurado en Cloudflare, falta registrar dominio en Railway service)
-- ⚠️ `wagtail.contrib.settings` debe estar en INSTALLED_APPS (requerido por wagtailseo — sin él, login CMS da 500)
+- ✅ HomePage, EndonauticaPage, BlogIndexPage publicadas en CMS
+- ✅ GA4 + Google Search Console activos
+- ✅ Design system P5 activo (Space Grotesk + Plus Jakarta Sans)
+- ⚠️ www.endonautas.cl → 404 (CNAME en Cloudflare, falta registrar en Railway service)
+- ⚠️ EquipoPage y MascaraPage: modelos listos, pendiente crear instancias en CMS
+- ⚠️ `BREVO_API_KEY` pendiente en Railway env vars
 
 ---
 

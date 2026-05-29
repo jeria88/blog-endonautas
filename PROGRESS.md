@@ -1,5 +1,56 @@
 # endonautas-platform — Registro de progreso
 
+## 2026-05-29 — Design system P5, nuevas páginas Wagtail, copy finalizado
+
+### ✅ Completado
+
+#### Design system — rework completo
+- Tipografía: `EB Garamond + Inter` → `Space Grotesk` (headings/UI) + `Plus Jakarta Sans` (body)
+- Paleta: gold `#EAB308` → P5 jade `#7ecfa8` ↔ turquoise `#7ec8cf`
+- Animaciones CSS: `@keyframes p5` (color shift), `p5-glow` (text-shadow), `p5-border-left`, `p5-border`, `p5-bg`
+- V4 cards: `background: #0b0b14; border-left: 2px solid; animation: p5-border-left 5s`
+- Logo en nav con efecto grayscale→color en hover + `.nav-logo-word` con animación P5
+- WhatsApp FAB: position fixed bottom-right, P5 glow
+
+#### Nuevas páginas Wagtail — `home/models.py`
+- `EndonauticaPage`: headline, intro, hotmart_url, hotmart_cta, features (StreamField), excerpt
+- `MascaraPage`: headline, subheadline, description, brevo_list_id, hotmart_url, thank_you_text
+- `EquipoPage`: intro, bio, photo_url
+- Migración `0002_endonauticapage_equipopage_mascarapage` aplicada
+
+#### Templates nuevos
+- `endonautica_page.html`: redesign completo — H1 "Endonautica.", img-wrap grayscale→color, quote, tres territorios, "el endonauta se reconoce", CTA
+- `equipo_page.html`: hero, misión (quote grande), visión (3 cards V4), Franco portrait, paradox note, comunidad con CTAs
+- `mascara_page.html`: lead magnet con form AJAX → Brevo API v3
+
+#### Nav y rutas
+- Nav actualizado: Blog · Endonautica · Equipo · Empezar → (eliminados MÁSCARA y Misión)
+- Eliminadas rutas `/mision/` y `/comunidad/` de `config/urls.py` — contenido integrado en `/equipo/`
+- Brevo subscribe endpoint: `POST /suscribir/` — `@csrf_exempt @require_POST`, JSON `{ok: true/false}`
+- `settings/production.py`: `BREVO_API_KEY`, `BREVO_DEFAULT_LIST_ID`
+
+#### Auditoría de links y copy
+- Audit completo: todos los `ebook.endonautas.cl` → `endonautas.cl/endonautica/` (platform + mirrorwork)
+- Copy finalizado en todas las páginas: home, endonautica, equipo, blog
+- H1 home: "El mundo interior tiene estructura", eyebrow "Método endonauta"
+- Blog: H1 "Blog", sub con voz propia, empty state con links contextuales
+
+### 🔶 Pendiente
+
+#### CMS — instancias a crear
+- `EquipoPage` (slug: `equipo`) como hija de HomePage
+- `MascaraPage` (slug: `mascara`) como hija de HomePage
+- EndonauticaPage `hotmart_url` → vacío hasta crear productos en Hotmart
+
+#### Railway env vars
+- `BREVO_API_KEY` — requerido por `/suscribir/`
+- `HOTMART_PACK_200/600/2000` — cuando se creen los packs en Hotmart
+
+#### Dominio
+- Registrar `www.endonautas.cl` como custom domain en Railway service Settings → Domains
+
+---
+
 ## 2026-05-28 — Deploy estable, Wagtail operativo, GA4 + Search Console
 
 ### ✅ Completado
