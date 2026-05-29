@@ -6,7 +6,7 @@ Endonautas es un ecosistema digital para el autoconocimiento profundo, la integr
 ## Servicios principales
 - **MirrorWork App** (app.endonautas.cl): Plataforma de mapeo interior con 35 tests psicométricos, Espejo de Conflictos (IA terapéutica), cartas natales y sistema de fractones.
 - **Blog** (endonautas.cl/blog): Artículos sobre psicología integrativa, autoconocimiento y desarrollo interior.
-- **Endonautica** (ebook.endonautas.cl): Libro fundacional del método endonauta.
+- **Endonautica** (endonautas.cl/endonautica): Libro fundacional del método endonauta.
 
 ## Autor
 Franco Jeria Castro — Terapeuta en salud integrativa, autor de Endonautica.

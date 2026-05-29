@@ -1,5 +1,5 @@
 {% extends "base_editorial.html" %}
-{% load wagtailcore_tags wagtailimages_tags %}
+{% load wagtailcore_tags wagtailimages_tags static %}
 
 {% block title %}Endonautas — Autoconocimiento profundo e integración psicológica{% endblock %}
 {% block meta_description %}{{ page.tagline|default:"Autoconocimiento profundo e integración psicológica. Explora tu mundo interior con herramientas psicométricas, el Espejo de Conflictos y lecturas de nacimiento." }}{% endblock %}
@@ -307,7 +307,7 @@
   <div class="author-inner">
     <div class="author-photo-wrap reveal">
       <img
-        src="https://ebook.endonautas.cl/assets/img/franco-jeria.jpeg"
+        src="{% static 'img/franco-jeria.jpeg' %}"
         alt="Franco Jeria Castro"
         class="author-photo"
         loading="lazy"
