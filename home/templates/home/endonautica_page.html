@@ -1,8 +1,8 @@
 {% extends "base_editorial.html" %}
-{% load wagtailcore_tags wagtailimages_tags %}
+{% load wagtailcore_tags static %}
 
-{% block title %}Endonautica — El libro de Franco Jeria Castro{% endblock %}
-{% block meta_description %}Un mapa del viaje interior. Endonautica es el libro que construye el lenguaje para lo que ya sabes pero no has podido decir.{% endblock %}
+{% block title %}Endonautica — Teoría del Autoconocimiento{% endblock %}
+{% block meta_description %}El mapa del viaje interior. Si el problema siempre estuvo adentro... también la solución. Libro de Franco Jeria Castro.{% endblock %}
 {% block og_title %}Endonautica — Franco Jeria Castro{% endblock %}
 {% block og_url %}/endonautica/{% endblock %}
 {% block canonical %}/endonautica/{% endblock %}
@@ -14,187 +14,351 @@
   "@type": "Book",
   "name": "Endonautica",
   "author": {"@type": "Person", "name": "Franco Jeria Castro"},
-  "url": "https://endonautas.cl/endonautica/"
+  "url": "https://endonautas.cl/endonautica/",
+  "description": "El mapa del viaje interior. Teoría del autoconocimiento."
 }
 </script>
 {% endblock %}
 
 {% block extra_head %}
 <style data-page-style>
-  .book-hero {
-    min-height: 88vh;
-    display: flex;
-    flex-direction: column;
+
+  /* ── Hero ── */
+  .en-hero {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 8rem 1.5rem 5rem;
+    gap: 4rem;
+    padding: 10rem 4rem 6rem;
+    max-width: 1200px;
+    margin: 0 auto;
   }
-  .book-eyebrow {
+
+  .en-hero-text { display: flex; flex-direction: column; gap: 0; }
+
+  .en-eyebrow {
     font-family: var(--font-heading);
     font-size: 0.7rem; font-weight: 500;
     letter-spacing: 0.22em; text-transform: uppercase;
     animation: p5 5s ease-in-out infinite;
-    margin-bottom: 2rem;
-  }
-  .book-title {
-    font-family: var(--font-heading);
-    font-size: clamp(3rem, 8vw, 5.5rem);
-    font-weight: 700;
-    line-height: 1.0;
-    letter-spacing: -0.03em;
-    color: var(--text);
-    margin-bottom: 1.25rem;
-  }
-  .book-subtitle {
-    font-family: var(--font-ui);
-    font-size: clamp(1rem, 2vw, 1.15rem);
-    color: var(--muted);
-    max-width: 520px;
-    margin: 0 auto 3rem;
-    line-height: 1.75;
-    font-weight: 400;
-  }
-  .book-ctas {
-    display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;
+    margin-bottom: 1.5rem;
   }
 
-  /* Excerpt */
-  .book-excerpt-section {
-    padding: 6rem 1.5rem;
+  .en-title {
+    font-family: var(--font-heading);
+    font-size: clamp(4rem, 7vw, 6.5rem);
+    font-weight: 700;
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    color: var(--text);
+    margin-bottom: 0.5rem;
   }
-  .book-excerpt {
-    max-width: 680px;
-    margin: 0 auto;
+
+  .en-subtitle {
+    font-family: var(--font-heading);
+    font-size: clamp(1rem, 1.5vw, 1.25rem);
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 2.5rem;
+  }
+
+  .en-tagline {
     font-family: var(--font-ui);
     font-size: 1.05rem;
     font-weight: 400;
-    line-height: 1.85;
-    color: rgba(240,232,220,0.75);
+    color: rgba(240,232,220,0.7);
+    line-height: 1.75;
+    max-width: 440px;
+    margin-bottom: 3rem;
     border-left: 2px solid;
+    padding-left: 1.25rem;
     animation: p5-border-left 5s ease-in-out infinite;
-    padding: 1.5rem 0 1.5rem 2rem;
     font-style: italic;
   }
 
-  /* Features */
-  .book-features {
-    padding: 4rem 1.5rem 6rem;
+  .en-ctas { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+  /* ── Mockup ── */
+  .en-hero-visual {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
   }
-  .book-features-grid {
+
+  .en-mockup {
+    width: 100%;
+    max-width: 480px;
+    border-radius: 12px;
+    filter: drop-shadow(0 40px 80px rgba(0,0,0,0.8));
+    animation: floatBook 6s ease-in-out infinite;
+    position: relative;
+    z-index: 1;
+  }
+
+  @keyframes floatBook {
+    0%, 100% { transform: translateY(0px) rotate(-1deg); }
+    50%       { transform: translateY(-18px) rotate(1deg); }
+  }
+
+  .en-glow-behind {
+    position: absolute;
+    width: 300px; height: 300px;
+    border-radius: 50%;
+    filter: blur(80px);
+    background: radial-gradient(circle, rgba(126,207,168,0.12), transparent);
+    animation: p5-bg 5s ease-in-out infinite;
+    z-index: 0;
+  }
+
+  /* ── Divisor con texto ── */
+  .en-divider-text {
+    text-align: center;
+    padding: 4rem 1.5rem;
+    font-family: var(--font-heading);
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    max-width: 720px;
+    margin: 0 auto;
+    line-height: 1.2;
+  }
+  .en-divider-text span { animation: p5 5s ease-in-out infinite; }
+
+  /* ── Secciones del libro (MÁSCARA / MAPA / ESPEJO) ── */
+  .en-sections {
+    padding: 5rem 1.5rem;
+  }
+  .en-sections-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 1.25rem;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
     max-width: 1100px;
     margin: 3rem auto 0;
   }
-  .book-feature {
+  .en-section-card {
     background: #0b0b14;
     border-left: 2px solid;
-    border-radius: 0 12px 12px 0;
-    padding: 1.2rem 1.2rem 1.2rem 1.4rem;
+    border-radius: 0 16px 16px 0;
+    padding: 2rem 1.75rem 2rem 2rem;
     animation: p5-border-left 5s ease-in-out infinite;
+    display: flex; flex-direction: column; gap: 0.75rem;
   }
-  .book-feature-icon {
-    font-size: 1.1rem; display: block; margin-bottom: 0.7rem;
-    animation: p5-glow 5s ease-in-out infinite;
-  }
-  .book-feature-title {
+  .en-section-num {
     font-family: var(--font-heading);
-    font-size: 0.95rem; font-weight: 600;
-    margin-bottom: 0.4rem;
+    font-size: 0.65rem; font-weight: 500;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--dim);
+  }
+  .en-section-title {
+    font-family: var(--font-heading);
+    font-size: 1.5rem; font-weight: 700;
+    letter-spacing: -0.02em;
     animation: p5 5s ease-in-out infinite;
   }
-  .book-feature-desc {
+  .en-section-desc {
     font-family: var(--font-ui);
-    font-size: 0.87rem; color: var(--muted); line-height: 1.6; font-weight: 400;
+    font-size: 0.92rem;
+    color: var(--muted);
+    line-height: 1.7;
+    font-weight: 400;
+    flex: 1;
   }
 
-  /* CTA final */
-  .book-cta-band {
-    padding: 7rem 1.5rem;
-    text-align: center;
-    background: linear-gradient(180deg, transparent, rgba(126,207,168,0.04) 50%, transparent);
+  /* ── Autor ── */
+  .en-autor {
+    padding: 6rem 1.5rem;
   }
-  .book-cta-band h2 {
+  .en-autor-inner {
+    max-width: 920px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 4rem;
+    align-items: center;
+  }
+  .en-foto {
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid rgba(126,207,168,0.2);
+    filter: grayscale(20%);
+  }
+  .en-autor-eyebrow {
     font-family: var(--font-heading);
-    font-size: clamp(1.8rem, 4vw, 2.8rem);
-    font-weight: 700; letter-spacing: -0.02em;
-    color: var(--text); margin-bottom: 0.75rem;
+    font-size: 0.68rem; font-weight: 500;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--dim); margin-bottom: 0.6rem;
   }
-  .book-cta-band p {
-    color: var(--muted); font-size: 0.95rem;
-    max-width: 440px; margin: 0 auto 2.5rem; line-height: 1.7;
+  .en-autor-nombre {
+    font-family: var(--font-heading);
+    font-size: clamp(1.5rem, 2.5vw, 2rem);
+    font-weight: 700; letter-spacing: -0.02em;
+    color: var(--text); margin-bottom: 0.9rem;
+  }
+  .en-autor-bio {
+    font-family: var(--font-ui);
+    font-size: 0.97rem; line-height: 1.8;
+    color: var(--muted); font-weight: 400;
+    margin-bottom: 1.5rem;
   }
 
+  /* ── CTA final ── */
+  .en-cta-final {
+    padding: 8rem 1.5rem;
+    text-align: center;
+    background: linear-gradient(180deg, transparent, rgba(126,207,168,0.05) 50%, transparent);
+  }
+  .en-cta-final h2 {
+    font-family: var(--font-heading);
+    font-size: clamp(2rem, 4.5vw, 3.5rem);
+    font-weight: 700; letter-spacing: -0.03em;
+    color: var(--text); margin-bottom: 0.75rem; line-height: 1.05;
+  }
+  .en-cta-final h2 span { animation: p5 5s ease-in-out infinite; }
+  .en-cta-final p {
+    font-family: var(--font-ui);
+    color: var(--muted); font-size: 1rem;
+    max-width: 460px; margin: 0 auto 2.75rem; line-height: 1.7;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    .en-hero { grid-template-columns: 1fr; padding: 8rem 2rem 4rem; gap: 3rem; }
+    .en-hero-visual { order: -1; }
+    .en-mockup { max-width: 320px; }
+    .en-sections-grid { grid-template-columns: 1fr; }
+    .en-autor-inner { grid-template-columns: 1fr; gap: 2rem; }
+    .en-foto { width: 120px; height: 120px; }
+  }
   @media (max-width: 600px) {
-    .book-features-grid { grid-template-columns: 1fr; }
+    .en-hero { padding: 7rem 1.25rem 3rem; }
   }
 </style>
 {% endblock %}
 
 {% block content %}
 
-<section class="book-hero">
-  <p class="book-eyebrow reveal">Un libro de Franco Jeria Castro</p>
-  <h1 class="book-title reveal" style="transition-delay:0.12s">
-    {% if page.headline %}{{ page.headline }}{% else %}Endonautica{% endif %}
-  </h1>
-  <p class="book-subtitle reveal" style="transition-delay:0.25s">
-    {% if page.intro %}{{ page.intro|richtext }}{% else %}Un mapa del viaje interior. El lenguaje para lo que ya sabes pero no has podido decir.{% endif %}
-  </p>
-  <div class="book-ctas reveal" style="transition-delay:0.38s">
-    {% if page.hotmart_url %}
-    <a href="{{ page.hotmart_url }}" class="btn-primary" target="_blank" rel="noopener">
-      {{ page.hotmart_cta|default:"Conseguir el libro" }} →
-    </a>
-    {% endif %}
-    <a href="/mascara/" class="btn-ghost">Descargar capítulo gratis</a>
-  </div>
-</section>
-
-<hr class="divider">
-
-{% if page.excerpt %}
-<section class="book-excerpt-section">
-  <div class="reveal">
-    <blockquote class="book-excerpt">{{ page.excerpt }}</blockquote>
-  </div>
-</section>
-<hr class="divider">
-{% endif %}
-
-{% if page.features %}
-<section class="book-features">
-  <div class="container-wide">
-    <span class="tag-label reveal">Lo que encontrarás</span>
-    <div class="book-features-grid">
-      {% for block in page.features %}
-      {% if block.block_type == 'feature' %}
-      <div class="book-feature reveal">
-        <span class="book-feature-icon">{{ block.value.icon }}</span>
-        <div class="book-feature-title">{{ block.value.title }}</div>
-        <p class="book-feature-desc">{{ block.value.description }}</p>
-      </div>
-      {% endif %}
-      {% endfor %}
-    </div>
-  </div>
-</section>
-<hr class="divider">
-{% endif %}
-
-<section class="book-cta-band">
-  <div style="max-width:540px; margin:0 auto;">
-    <h2 class="reveal">El viaje siempre estuvo adentro.</h2>
-    <p class="reveal" style="transition-delay:0.15s">Endonautica construye el lenguaje para que puedas orientarte — sin perder de vista que tú ya sabes el camino.</p>
-    {% if page.hotmart_url %}
-    <div class="reveal" style="transition-delay:0.25s">
+<!-- Hero: texto + mockup -->
+<section class="en-hero">
+  <div class="en-hero-text">
+    <p class="en-eyebrow reveal">Franco Jeria Castro</p>
+    <h1 class="en-title reveal" style="transition-delay:0.1s">ENDONAUTICA</h1>
+    <p class="en-subtitle reveal" style="transition-delay:0.18s">Teoría del Autoconocimiento</p>
+    <p class="en-tagline reveal" style="transition-delay:0.28s">
+      Si el problema siempre estuvo adentro... también la solución.
+    </p>
+    <div class="en-ctas reveal" style="transition-delay:0.4s">
+      {% if page.hotmart_url %}
       <a href="{{ page.hotmart_url }}" class="btn-primary" target="_blank" rel="noopener">
         {{ page.hotmart_cta|default:"Conseguir el libro" }} →
       </a>
+      {% else %}
+      <a href="https://app.endonautas.cl/accounts/registro/" class="btn-primary">
+        Comenzar gratis →
+      </a>
+      {% endif %}
+      <a href="/mascara/" class="btn-ghost">Descargar capítulo gratis</a>
     </div>
-    {% endif %}
+  </div>
+
+  <div class="en-hero-visual reveal" style="transition-delay:0.2s">
+    <div class="en-glow-behind"></div>
+    <img
+      src="{% static 'img/epic-ebook.png' %}"
+      alt="Endonautica — libro de Franco Jeria Castro"
+      class="en-mockup"
+      loading="eager"
+    >
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- Frase central -->
+<div class="container">
+  <p class="en-divider-text reveal">
+    Un mapa del viaje interior.<br>
+    El lenguaje para lo que ya sabes<br>
+    pero no has podido <span>decir</span>.
+  </p>
+</div>
+
+<hr class="divider">
+
+<!-- Las tres partes del libro -->
+<section class="en-sections">
+  <div class="container-wide">
+    <span class="tag-label reveal">Las tres partes</span>
+    <div class="en-sections-grid">
+
+      <div class="en-section-card reveal" style="transition-delay:0.05s">
+        <span class="en-section-num">Parte I</span>
+        <div class="en-section-title">La MÁSCARA</div>
+        <p class="en-section-desc">El patrón que desarrollaste para sobrevivir lo que no podías entender. Funciona tan bien que ya no sabes que lo usas — hasta que deja de funcionar.</p>
+      </div>
+
+      <div class="en-section-card reveal" style="transition-delay:0.12s">
+        <span class="en-section-num">Parte II</span>
+        <div class="en-section-title">El MAPA</div>
+        <p class="en-section-desc">El territorio interior visto desde arriba. Tus sistemas, tus capas, tus puntos ciegos — organizados en un modelo que puedes usar para orientarte sin perderte.</p>
+      </div>
+
+      <div class="en-section-card reveal" style="transition-delay:0.2s">
+        <span class="en-section-num">Parte III</span>
+        <div class="en-section-title">El ESPEJO</div>
+        <p class="en-section-desc">Las herramientas para leer lo que ocurre adentro en tiempo real. No para analizarte — para que puedas verte y seguir caminando con más claridad.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- Autor -->
+<section class="en-autor">
+  <div class="en-autor-inner">
+    <div class="reveal">
+      <img
+        src="{% static 'img/franco-jeria.jpeg' %}"
+        alt="Franco Jeria Castro"
+        class="en-foto"
+        loading="lazy"
+      >
+    </div>
+    <div>
+      <p class="en-autor-eyebrow reveal">Autor</p>
+      <h2 class="en-autor-nombre reveal" style="transition-delay:0.1s">Franco Jeria Castro</h2>
+      <p class="en-autor-bio reveal" style="transition-delay:0.2s">
+        Terapeuta en salud integrativa desde 2019. Construye herramientas para que el viaje interior tenga lenguaje, mapa y dirección — no como promesa, sino como práctica real. Endonautica nació de años de trabajo clínico con personas que sabían que el problema estaba adentro, pero no tenían las palabras para encontrarlo.
+      </p>
+      <a href="/mision/" class="btn-ghost reveal" style="font-size:0.85rem; transition-delay:0.3s">Leer la historia →</a>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- CTA final -->
+<section class="en-cta-final">
+  <div class="container">
+    <h2 class="reveal">El viaje siempre<br><span>estuvo adentro.</span></h2>
+    <p class="reveal" style="transition-delay:0.15s">Endonautica construye el lenguaje para orientarte — sin perder de vista que tú ya sabes el camino.</p>
+    <div class="reveal" style="transition-delay:0.28s; display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+      {% if page.hotmart_url %}
+      <a href="{{ page.hotmart_url }}" class="btn-primary" target="_blank" rel="noopener">
+        {{ page.hotmart_cta|default:"Conseguir el libro" }} →
+      </a>
+      {% else %}
+      <a href="https://app.endonautas.cl/accounts/registro/" class="btn-primary">Comenzar gratis →</a>
+      {% endif %}
+      <a href="/mascara/" class="btn-ghost">Descargar capítulo gratis</a>
+    </div>
   </div>
 </section>
 
