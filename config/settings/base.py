@@ -17,6 +17,8 @@ INSTALLED_APPS = [
     'search',
     'centro',
     'crm',
+    'django_celery_results',
+    'django_celery_beat',
 
     # Wagtail
     'wagtail.contrib.forms',
@@ -135,8 +137,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = "hola@endonautas.cl"
 
 # Celery
-CELERY_BROKER_URL = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
-CELERY_RESULT_BACKEND = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
+CELERY_BROKER_URL = os.environ.get("REDIS_URL", "django-db://")
+CELERY_RESULT_BACKEND = os.environ.get("REDIS_URL", "django-cache")
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
