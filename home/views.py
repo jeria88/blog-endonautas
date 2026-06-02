@@ -12,40 +12,48 @@ from django.conf import settings
 def brevo_subscribe(request):
     email = request.POST.get('email', '').strip()
     name = request.POST.get('name', '').strip()
-    list_id = int(request.POST.get('list_id', getattr(settings, 'BREVO_DEFAULT_LIST_ID', 3)))
+    list_id = int(request.POST.get('list_id', 0))
+    source = request.POST.get('source', '')
+    
     if not email or '@' not in email:
         return JsonResponse({'ok': False, 'error': 'Email inválido'}, status=400)
 
-    api_key = getattr(settings, 'BREVO_API_KEY', '')
-    if not api_key:
-        return JsonResponse({'ok': False, 'error': 'Servicio no configurado'}, status=503)
+    from crm.models import Subscriber, EmailList, Subscription
+    from crm.tasks import trigger_sequence
 
     try:
-        payload = {
-            'email': email,
-            'listIds': [list_id],
-            'updateEnabled': True,
-        }
-        if name:
-            payload['attributes'] = {'FIRSTNAME': name}
-
-        resp = requests.post(
-            'https://api.brevo.com/v3/contacts',
-            json=payload,
-            headers={
-                'api-key': api_key,
-                'content-type': 'application/json',
-                'accept': 'application/json',
-            },
-            timeout=8,
+        # Crear o actualizar suscriptor
+        subscriber, created = Subscriber.objects.get_or_create(
+            email=email,
+            defaults={'name': name}
         )
-        if resp.status_code in (200, 201, 204):
-            return JsonResponse({'ok': True})
-        if resp.status_code == 400 and 'already' in resp.text.lower():
-            return JsonResponse({'ok': True})
-        return JsonResponse({'ok': False, 'error': 'No se pudo suscribir'}, status=502)
-    except requests.RequestException:
-        return JsonResponse({'ok': False, 'error': 'Error de conexión'}, status=502)
+        if name and not subscriber.name:
+            subscriber.name = name
+            subscriber.save()
+
+        # Obtener la lista por slug
+        list_slug = request.POST.get('list_slug', '')
+        email_list = EmailList.objects.filter(slug=list_slug).first()
+        if not email_list:
+            return JsonResponse({'ok': False, 'error': 'Lista no encontrada'}, status=404)
+
+        # Crear suscripción
+        subscription, sub_created = Subscription.objects.get_or_create(
+            subscriber=subscriber,
+            email_list=email_list,
+            defaults={'source': source}
+        )
+
+        # Gatillar secuencia de emails
+        from crm.models import EmailSequence
+        sequence = EmailSequence.objects.filter(email_list=email_list, is_active=True).first()
+        if sequence:
+            trigger_sequence.delay(subscriber.id, sequence.id)
+
+        return JsonResponse({'ok': True})
+
+    except Exception as e:
+        return JsonResponse({'ok': False, 'error': str(e)}, status=500)
 
 
 def contacto_view(request):

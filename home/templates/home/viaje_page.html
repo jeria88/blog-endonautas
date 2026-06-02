@@ -162,6 +162,7 @@
   <div class="viaje-form-wrap reveal" style="transition-delay:0.45s">
     <form class="viaje-form" id="viaje-form">
       {% csrf_token %}
+<input type="hidden" name="source" value="viaje">
       <input
         type="text"
         name="name"
@@ -213,7 +214,7 @@
     btn.textContent = 'Enviando…';
 
     const data = new FormData(form);
-    data.set('list_id', '9');
+    data.set('list_slug', 'viaje');
 
     try {
       const resp = await fetch('/suscribir/', { method: 'POST', body: data });

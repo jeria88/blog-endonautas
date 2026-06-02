@@ -16,6 +16,7 @@ INSTALLED_APPS = [
     'blog',
     'search',
     'centro',
+    'crm',
 
     # Wagtail
     'wagtail.contrib.forms',
@@ -129,4 +130,14 @@ WAGTAILDOCS_MAX_UPLOAD_SIZE = 10 * 1024 * 1024
 # Blog API — token compartido con mirrorwork para recibir postulaciones
 BLOG_SUBMIT_TOKEN = os.environ.get('BLOG_SUBMIT_TOKEN', '')
 
+# Email
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = "hola@endonautas.cl"
+
+# Celery
+CELERY_BROKER_URL = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
+CELERY_RESULT_BACKEND = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = "America/Santiago"

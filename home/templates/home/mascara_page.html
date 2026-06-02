@@ -127,6 +127,7 @@
   <div class="mascara-form-wrap reveal" style="transition-delay:0.4s">
     <form class="mascara-form" id="mascara-form">
       {% csrf_token %}
+<input type="hidden" name="source" value="mascara">
       <input
         type="text"
         name="name"
@@ -191,7 +192,7 @@
     btn.textContent = 'Enviando…';
 
     const data = new FormData(form);
-    data.set('list_id', '{{ page.brevo_list_id|default:3 }}');
+    data.set('list_slug', 'mascara');
 
     try {
       const resp = await fetch('/suscribir/', { method: 'POST', body: data });

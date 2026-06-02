@@ -35,6 +35,9 @@ urlpatterns = [
     path('suscribir/', brevo_subscribe, name='brevo_subscribe'),
     path('contacto/', contacto_view, name='contacto'),
 
+    # CRM
+    path('crm/', include('crm.urls', namespace='crm')),
+
     # Wagtail catch-all — MUST be last
     path('', include(wagtail_urls)),
 ]
