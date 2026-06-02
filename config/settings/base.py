@@ -17,6 +17,7 @@ INSTALLED_APPS = [
     'search',
     'centro',
     'crm',
+    'post_office',
     'django_celery_results',
     'django_celery_beat',
 
@@ -132,9 +133,20 @@ WAGTAILDOCS_MAX_UPLOAD_SIZE = 10 * 1024 * 1024
 # Blog API — token compartido con mirrorwork para recibir postulaciones
 BLOG_SUBMIT_TOKEN = os.environ.get('BLOG_SUBMIT_TOKEN', '')
 
-# Email
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# Email — post_office como backend, console como transporte en dev
+EMAIL_BACKEND = 'post_office.EmailBackend'
 DEFAULT_FROM_EMAIL = "hola@endonautas.cl"
+
+POST_OFFICE = {
+    'BACKENDS': {
+        'default': 'django.core.mail.backends.console.EmailBackend',
+    },
+    'DEFAULT_PRIORITY': 'medium',
+    'BATCH_SIZE': 20,
+    'LOG_LEVEL': 1,
+    'CELERY_ENABLED': True,
+    'DEFAULT_FROM_EMAIL': 'hola@endonautas.cl',
+}
 
 # Celery
 CELERY_BROKER_URL = os.environ.get("REDIS_URL", "django-db://")

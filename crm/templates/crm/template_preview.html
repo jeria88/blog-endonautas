@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preview: {{ tmpl.name }}</title>
+<style>
+body { margin: 0; background: #f4f4f0; font-family: sans-serif; }
+.preview-bar { background: #1a1916; color: #9c9589; padding: 0.75rem 1.5rem; font-size: 0.8rem; display: flex; gap: 2rem; align-items: center; }
+.preview-bar strong { color: #e8e4dc; }
+.preview-content { max-width: 680px; margin: 2rem auto; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.1); }
+</style>
+</head>
+<body>
+<div class="preview-bar">
+    <span><strong>{{ tmpl.name }}</strong></span>
+    <span>Asunto: <strong>{{ tmpl.subject }}</strong></span>
+    <span>Slug: <code>{{ tmpl.slug }}</code></span>
+</div>
+<div class="preview-content">
+    {{ tmpl.html_content|safe }}
+</div>
+</body>
+</html>

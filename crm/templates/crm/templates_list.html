@@ -1,0 +1,47 @@
+{% extends "admin/base_site.html" %}
+{% block title %}Plantillas | CRM{% endblock %}
+{% block extrahead %}
+<style>
+:root { --crm-surface: #12121e; --crm-border: rgba(255,255,255,0.07); --crm-muted: #6b6878; --crm-text: #e8e4dc; --crm-accent: #c4813a; }
+.crm { padding: 2rem; max-width: 1280px; margin: 0 auto; }
+.crm-nav { display: flex; gap: 0.25rem; margin-bottom: 2rem; border-bottom: 1px solid var(--crm-border); padding-bottom: 1rem; }
+.crm-nav a { color: var(--crm-muted); text-decoration: none; font-size: 0.875rem; padding: 0.4rem 0.9rem; border-radius: 6px; }
+.crm-nav a:hover { color: var(--crm-text); background: rgba(255,255,255,0.05); }
+.crm-nav a.active { color: var(--crm-text); background: rgba(255,255,255,0.08); }
+.tmpl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+.tmpl-card { background: var(--crm-surface); border: 1px solid var(--crm-border); border-radius: 10px; padding: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; }
+.tmpl-name { font-size: 0.95rem; font-weight: 600; color: var(--crm-text); }
+.tmpl-subject { font-size: 0.8rem; color: var(--crm-muted); }
+.tmpl-slug { font-size: 0.72rem; color: rgba(196,129,58,0.7); font-family: monospace; }
+.tmpl-actions { margin-top: 0.5rem; display: flex; gap: 0.5rem; }
+.tmpl-btn { display: inline-block; padding: 0.3rem 0.75rem; border-radius: 6px; font-size: 0.78rem; text-decoration: none; border: 1px solid var(--crm-border); color: var(--crm-muted); }
+.tmpl-btn:hover { color: var(--crm-text); border-color: rgba(255,255,255,0.2); }
+.tmpl-btn.primary { background: rgba(196,129,58,0.15); border-color: rgba(196,129,58,0.3); color: var(--crm-accent); }
+</style>
+{% endblock %}
+{% block content %}
+<div class="crm">
+    <nav class="crm-nav">
+        <a href="{% url 'crm:dashboard' %}">Dashboard</a>
+        <a href="{% url 'crm:subscribers' %}">Suscriptores</a>
+        <a href="{% url 'crm:sequences' %}">Secuencias</a>
+        <a href="{% url 'crm:templates' %}" class="active">Plantillas</a>
+    </nav>
+
+    <div class="tmpl-grid">
+        {% for tmpl in templates %}
+        <div class="tmpl-card">
+            <div class="tmpl-name">{{ tmpl.name }}</div>
+            <div class="tmpl-subject">{{ tmpl.subject }}</div>
+            <div class="tmpl-slug">{{ tmpl.slug }}</div>
+            <div class="tmpl-actions">
+                <a class="tmpl-btn primary" href="{% url 'crm:template_preview' tmpl.id %}" target="_blank">Vista previa</a>
+                <a class="tmpl-btn" href="/admin/crm/emailtemplate/{{ tmpl.id }}/change/">Editar</a>
+            </div>
+        </div>
+        {% empty %}
+        <div style="color:var(--crm-muted);padding:2rem">Sin plantillas. Ejecuta <code>setup_flywheel</code>.</div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

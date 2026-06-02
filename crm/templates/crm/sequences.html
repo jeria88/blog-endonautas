@@ -1,25 +1,62 @@
 {% extends "admin/base_site.html" %}
 {% block title %}Secuencias | CRM{% endblock %}
+{% block extrahead %}
+<style>
+:root { --crm-bg: #0b0b14; --crm-surface: #12121e; --crm-border: rgba(255,255,255,0.07); --crm-muted: #6b6878; --crm-text: #e8e4dc; --crm-accent: #c4813a; --crm-green: #3d7a5e; }
+.crm { padding: 2rem; max-width: 1280px; margin: 0 auto; }
+.crm-nav { display: flex; gap: 0.25rem; margin-bottom: 2rem; border-bottom: 1px solid var(--crm-border); padding-bottom: 1rem; }
+.crm-nav a { color: var(--crm-muted); text-decoration: none; font-size: 0.875rem; padding: 0.4rem 0.9rem; border-radius: 6px; transition: all 0.15s; }
+.crm-nav a:hover { color: var(--crm-text); background: rgba(255,255,255,0.05); }
+.crm-nav a.active { color: var(--crm-text); background: rgba(255,255,255,0.08); }
+.crm-badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.72rem; background: rgba(196,129,58,0.15); color: var(--crm-accent); border: 1px solid rgba(196,129,58,0.25); }
+.seq-card { background: var(--crm-surface); border: 1px solid var(--crm-border); border-radius: 10px; margin-bottom: 1.25rem; overflow: hidden; }
+.seq-header { padding: 1.1rem 1.25rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid var(--crm-border); }
+.seq-name { font-size: 1rem; font-weight: 600; color: var(--crm-text); }
+.seq-list { font-size: 0.8rem; color: var(--crm-muted); }
+.seq-active { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #5aad84; margin-right: 0.35rem; }
+.seq-inactive { background: var(--crm-muted); }
+.seq-steps { padding: 0.75rem 1.25rem; display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+.step-item { display: flex; align-items: center; gap: 0.4rem; background: rgba(255,255,255,0.03); border: 1px solid var(--crm-border); border-radius: 8px; padding: 0.45rem 0.8rem; font-size: 0.78rem; }
+.step-num { color: var(--crm-accent); font-weight: 700; }
+.step-day { color: var(--crm-muted); }
+.step-name { color: var(--crm-text); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.step-arrow { color: var(--crm-border); font-size: 1rem; }
+</style>
+{% endblock %}
 {% block content %}
-<h1>Secuencias de Emails</h1>
-<table style="width:100%;border-collapse:collapse;">
-<thead><tr style="background:#1a1916;color:#fff;">
-<th style="padding:8px;text-align:left;">Nombre</th>
-<th style="padding:8px;text-align:left;">Lista</th>
-<th style="padding:8px;text-align:left;">Pasos</th>
-<th style="padding:8px;text-align:left;">Estado</th>
-<th style="padding:8px;text-align:left;">Acción</th>
-</tr></thead>
-<tbody>
-{% for seq in sequences %}
-<tr style="border-bottom:1px solid #eee;">
-<td style="padding:8px;">{{ seq.name }}</td>
-<td style="padding:8px;">{{ seq.email_list.name }}</td>
-<td style="padding:8px;">{{ seq.steps.count }} emails</td>
-<td style="padding:8px;">{% if seq.is_active %}✅ Activo{% else %}⏸️ Pausado{% endif %}</td>
-<td style="padding:8px;"><a href="{% url 'crm:sequence_run' seq.id %}">Ejecutar</a></td>
-</tr>
-{% endfor %}
-</tbody>
-</table>
+<div class="crm">
+    <nav class="crm-nav">
+        <a href="{% url 'crm:dashboard' %}">Dashboard</a>
+        <a href="{% url 'crm:subscribers' %}">Suscriptores</a>
+        <a href="{% url 'crm:sequences' %}" class="active">Secuencias</a>
+        <a href="{% url 'crm:templates' %}">Plantillas</a>
+    </nav>
+
+    {% for seq in sequences %}
+    <div class="seq-card">
+        <div class="seq-header">
+            <span class="seq-active {% if not seq.is_active %}seq-inactive{% endif %}"></span>
+            <div>
+                <div class="seq-name">{{ seq.name }}</div>
+                <div class="seq-list">Lista: {{ seq.email_list.name }} · {{ seq.steps.count }} email{{ seq.steps.count|pluralize:"s" }}</div>
+            </div>
+            <span class="crm-badge" style="margin-left:auto">{% if seq.is_active %}Activa{% else %}Pausada{% endif %}</span>
+        </div>
+        <div class="seq-steps">
+            {% for step in seq.steps.all %}
+            {% if not forloop.first %}<span class="step-arrow">→</span>{% endif %}
+            <div class="step-item">
+                <span class="step-num">#{{ step.step_number }}</span>
+                <span class="step-name">{{ step.template.name }}</span>
+                <span class="step-day">día {{ step.delay_days }}</span>
+            </div>
+            {% empty %}
+            <span style="color:var(--crm-muted);font-size:0.85rem">Sin pasos configurados</span>
+            {% endfor %}
+        </div>
+    </div>
+    {% empty %}
+    <div style="text-align:center;color:var(--crm-muted);padding:3rem">Sin secuencias configuradas. Ejecuta <code>setup_flywheel</code>.</div>
+    {% endfor %}
+</div>
 {% endblock %}

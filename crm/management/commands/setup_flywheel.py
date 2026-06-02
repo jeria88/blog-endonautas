@@ -1,3 +1,4 @@
+import json
 from django.core.management.base import BaseCommand
 from crm.models import EmailList, EmailTemplate, EmailSequence, SequenceStep
 
@@ -162,6 +163,42 @@ class Command(BaseCommand):
             )
             self.stdout.write(f"    Paso {step_num} (día {delay}): {'Creado' if created else 'Existe'}")
 
+        self.stdout.write("\nRegistrando tareas periódicas (celery-beat)...")
+        self._setup_periodic_tasks()
+
         self.stdout.write(self.style.SUCCESS("\n✅ Flywheel de emails configurado"))
         self.stdout.write(f"  Lista Mascara: {email_lists['mascara'].subscribers.count()} suscriptores")
         self.stdout.write(f"  Secuencia: {seq.steps.count()} emails programados")
+
+    def _setup_periodic_tasks(self):
+        from django_celery_beat.models import PeriodicTask, IntervalSchedule
+
+        # Cada 5 minutos: despachar cola de post_office
+        every_5, _ = IntervalSchedule.objects.get_or_create(
+            every=5, period=IntervalSchedule.MINUTES
+        )
+        PeriodicTask.objects.update_or_create(
+            name="Despachar cola de emails (post_office)",
+            defaults={
+                "interval": every_5,
+                "task": "post_office.tasks.send_queued_mail",
+                "args": json.dumps([]),
+                "enabled": True,
+            },
+        )
+        self.stdout.write("  ✓ send_queued_mail — cada 5 min")
+
+        # Cada hora: procesar pasos de secuencias del flywheel
+        every_hour, _ = IntervalSchedule.objects.get_or_create(
+            every=1, period=IntervalSchedule.HOURS
+        )
+        PeriodicTask.objects.update_or_create(
+            name="Flywheel — procesar pasos de secuencias",
+            defaults={
+                "interval": every_hour,
+                "task": "crm.tasks.process_sequence_steps",
+                "args": json.dumps([]),
+                "enabled": True,
+            },
+        )
+        self.stdout.write("  ✓ process_sequence_steps — cada hora")

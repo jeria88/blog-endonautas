@@ -5,71 +5,117 @@
 
 {% block extrahead %}
 <style>
-    .crm-dashboard { padding: 2rem; max-width: 1200px; margin: 0 auto; }
-    .crm-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
-    .crm-stat-card { background: #0b0b14; border-left: 2px solid; border-radius: 0 12px 12px 0; padding: 1.5rem; }
-    .crm-stat-number { font-size: 2.5rem; font-weight: 700; color: var(--text); }
-    .crm-stat-label { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
-    .crm-section { margin-top: 2rem; }
-    .crm-section h2 { font-size: 1.3rem; margin-bottom: 1rem; color: var(--text); }
-    .crm-table { width: 100%; border-collapse: collapse; }
-    .crm-table th, .crm-table td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.06); }
-    .crm-table th { color: var(--muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
-    .crm-table td { color: var(--text); font-size: 0.9rem; }
-    .crm-status { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
-    .crm-status-sent { background: rgba(61, 122, 94, 0.2); color: #3d7a5e; }
-    .crm-status-pending { background: rgba(196, 129, 58, 0.2); color: #c4813a; }
-    .crm-status-failed { background: rgba(168, 75, 60, 0.2); color: #a84b3c; }
-    .crm-nav { display: flex; gap: 1rem; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.06); }
-    .crm-nav a { color: var(--muted); text-decoration: none; font-size: 0.9rem; padding: 0.5rem 1rem; border-radius: 8px; }
-    .crm-nav a:hover, .crm-nav a.active { color: var(--text); background: rgba(255,255,255,0.04); }
+:root { --crm-bg: #0b0b14; --crm-surface: #12121e; --crm-border: rgba(255,255,255,0.07); --crm-muted: #6b6878; --crm-text: #e8e4dc; --crm-accent: #c4813a; --crm-green: #3d7a5e; --crm-red: #a84b3c; }
+.crm { padding: 2rem; max-width: 1280px; margin: 0 auto; }
+.crm-nav { display: flex; gap: 0.25rem; margin-bottom: 2rem; border-bottom: 1px solid var(--crm-border); padding-bottom: 1rem; }
+.crm-nav a { color: var(--crm-muted); text-decoration: none; font-size: 0.875rem; padding: 0.4rem 0.9rem; border-radius: 6px; transition: all 0.15s; }
+.crm-nav a:hover { color: var(--crm-text); background: rgba(255,255,255,0.05); }
+.crm-nav a.active { color: var(--crm-text); background: rgba(255,255,255,0.08); }
+.crm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+.crm-stat { background: var(--crm-surface); border: 1px solid var(--crm-border); border-radius: 10px; padding: 1.25rem; }
+.crm-stat-n { font-size: 2rem; font-weight: 700; color: var(--crm-text); line-height: 1; }
+.crm-stat-l { font-size: 0.78rem; color: var(--crm-muted); margin-top: 0.4rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.crm-stat.accent { border-color: var(--crm-accent); }
+.crm-stat.green { border-color: var(--crm-green); }
+.crm-stat.red { border-color: var(--crm-red); }
+.crm-section { margin-bottom: 2.5rem; }
+.crm-section-title { font-size: 0.85rem; font-weight: 600; color: var(--crm-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 1rem; }
+.crm-lists { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
+.crm-list-card { background: var(--crm-surface); border: 1px solid var(--crm-border); border-radius: 10px; padding: 1.25rem; }
+.crm-list-name { font-size: 1rem; font-weight: 600; color: var(--crm-text); margin-bottom: 0.25rem; }
+.crm-list-count { font-size: 1.5rem; font-weight: 700; color: var(--crm-accent); }
+.crm-list-label { font-size: 0.78rem; color: var(--crm-muted); }
+.crm-list-seqs { margin-top: 0.75rem; display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.crm-badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.72rem; background: rgba(196,129,58,0.15); color: var(--crm-accent); border: 1px solid rgba(196,129,58,0.25); }
+.crm-landing-link { font-size: 0.75rem; color: var(--crm-muted); text-decoration: none; margin-top: 0.5rem; display: block; }
+.crm-landing-link:hover { color: var(--crm-accent); }
+.crm-table { width: 100%; border-collapse: collapse; background: var(--crm-surface); border-radius: 10px; overflow: hidden; border: 1px solid var(--crm-border); }
+.crm-table th { padding: 0.7rem 1rem; text-align: left; font-size: 0.75rem; color: var(--crm-muted); text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid var(--crm-border); }
+.crm-table td { padding: 0.65rem 1rem; font-size: 0.85rem; color: var(--crm-text); border-bottom: 1px solid var(--crm-border); }
+.crm-table tr:last-child td { border-bottom: none; }
+.crm-pill { display: inline-block; padding: 0.18rem 0.6rem; border-radius: 999px; font-size: 0.72rem; font-weight: 600; }
+.pill-sent { background: rgba(61,122,94,0.2); color: #5aad84; }
+.pill-pending { background: rgba(196,129,58,0.2); color: var(--crm-accent); }
+.pill-failed { background: rgba(168,75,60,0.2); color: #d96355; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="crm-dashboard">
-    <div class="crm-nav">
+<div class="crm">
+    <nav class="crm-nav">
         <a href="{% url 'crm:dashboard' %}" class="active">Dashboard</a>
         <a href="{% url 'crm:subscribers' %}">Suscriptores</a>
         <a href="{% url 'crm:sequences' %}">Secuencias</a>
-    </div>
+        <a href="{% url 'crm:templates' %}">Plantillas</a>
+    </nav>
 
-    <div class="crm-stats">
-        <div class="crm-stat-card">
-            <div class="crm-stat-number">{{ total_subscribers }}</div>
-            <div class="crm-stat-label">Suscriptores activos</div>
+    <div class="crm-grid">
+        <div class="crm-stat accent">
+            <div class="crm-stat-n">{{ total_subscribers }}</div>
+            <div class="crm-stat-l">Suscriptores activos</div>
         </div>
-        <div class="crm-stat-card">
-            <div class="crm-stat-number">{{ total_lists }}</div>
-            <div class="crm-stat-label">Listas</div>
+        <div class="crm-stat">
+            <div class="crm-stat-n">{{ total_sequences }}</div>
+            <div class="crm-stat-l">Secuencias activas</div>
         </div>
-        <div class="crm-stat-card">
-            <div class="crm-stat-number">{{ total_sequences }}</div>
-            <div class="crm-stat-label">Secuencias activas</div>
+        <div class="crm-stat">
+            <div class="crm-stat-n">{{ total_templates }}</div>
+            <div class="crm-stat-l">Plantillas</div>
+        </div>
+        <div class="crm-stat green">
+            <div class="crm-stat-n">{{ sent_total }}</div>
+            <div class="crm-stat-l">Emails enviados</div>
+        </div>
+        <div class="crm-stat red">
+            <div class="crm-stat-n">{{ failed_total }}</div>
+            <div class="crm-stat-l">Fallidos</div>
         </div>
     </div>
 
     <div class="crm-section">
-        <h2>Emails recientes</h2>
+        <div class="crm-section-title">Listas del flywheel</div>
+        <div class="crm-lists">
+            {% for item in lists_data %}
+            <div class="crm-list-card">
+                <div class="crm-list-name">{{ item.list.name }}</div>
+                <div class="crm-list-count">{{ item.count }}</div>
+                <div class="crm-list-label">suscriptores</div>
+                {% if item.sequences %}
+                <div class="crm-list-seqs">
+                    {% for seq in item.sequences %}
+                    <span class="crm-badge">{{ seq.name }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <a class="crm-landing-link" href="/{{ item.list.slug }}/" target="_blank">↗ /{{ item.list.slug }}/</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="crm-section">
+        <div class="crm-section-title">Actividad reciente</div>
         <table class="crm-table">
             <thead>
                 <tr>
                     <th>Suscriptor</th>
                     <th>Plantilla</th>
+                    <th>Secuencia</th>
                     <th>Estado</th>
                     <th>Fecha</th>
                 </tr>
             </thead>
             <tbody>
-                {% for email in recent_emails %}
+                {% for e in recent_emails %}
                 <tr>
-                    <td>{{ email.subscriber }}</td>
-                    <td>{{ email.template.name }}</td>
-                    <td><span class="crm-status crm-status-{{ email.status }}">{{ email.status }}</span></td>
-                    <td>{{ email.sent_at|date:"d/m/Y H:i" }}</td>
+                    <td>{{ e.subscriber.email }}</td>
+                    <td>{{ e.template.name }}</td>
+                    <td>{{ e.sequence.name|default:"—" }}</td>
+                    <td><span class="crm-pill pill-{{ e.status }}">{{ e.get_status_display }}</span></td>
+                    <td style="color:var(--crm-muted)">{{ e.sent_at|date:"d/m H:i" }}</td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="4" style="text-align:center; color: var(--muted);">No hay emails enviados todavía</td></tr>
+                <tr><td colspan="5" style="text-align:center;color:var(--crm-muted);padding:2rem">Sin actividad todavía</td></tr>
                 {% endfor %}
             </tbody>
         </table>
