@@ -1,5 +1,5 @@
 [deploy]
-startCommand = "python manage.py prepare_db --settings=config.settings.production && python manage.py migrate --settings=config.settings.production && python manage.py seed_superuser --settings=config.settings.production && python manage.py seed_wagtail --settings=config.settings.production && python manage.py seed_centro --settings=config.settings.production && python manage.py setup_flywheel --settings=config.settings.production && python manage.py collectstatic --noinput --settings=config.settings.production && python manage.py run_scheduler --settings=config.settings.production & gunicorn config.wsgi --bind 0.0.0.0:$PORT --workers 2 --timeout 120"
+startCommand = "bash scripts/start.sh"
 
 [build]
 builder = "NIXPACKS"
