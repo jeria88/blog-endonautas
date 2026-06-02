@@ -1,0 +1,25 @@
+{% extends "admin/base_site.html" %}
+{% block title %}Secuencias | CRM{% endblock %}
+{% block content %}
+<h1>Secuencias de Emails</h1>
+<table style="width:100%;border-collapse:collapse;">
+<thead><tr style="background:#1a1916;color:#fff;">
+<th style="padding:8px;text-align:left;">Nombre</th>
+<th style="padding:8px;text-align:left;">Lista</th>
+<th style="padding:8px;text-align:left;">Pasos</th>
+<th style="padding:8px;text-align:left;">Estado</th>
+<th style="padding:8px;text-align:left;">Acción</th>
+</tr></thead>
+<tbody>
+{% for seq in sequences %}
+<tr style="border-bottom:1px solid #eee;">
+<td style="padding:8px;">{{ seq.name }}</td>
+<td style="padding:8px;">{{ seq.email_list.name }}</td>
+<td style="padding:8px;">{{ seq.steps.count }} emails</td>
+<td style="padding:8px;">{% if seq.is_active %}✅ Activo{% else %}⏸️ Pausado{% endif %}</td>
+<td style="padding:8px;"><a href="{% url 'crm:sequence_run' seq.id %}">Ejecutar</a></td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+{% endblock %}

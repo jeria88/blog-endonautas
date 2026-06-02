@@ -37,7 +37,7 @@ class Command(BaseCommand):
 
 <p>Algo que noté: la mayoría de las personas que llegan a esta guía llevan años sabiendo que algo se repite en sus vidas. No saben exactamente qué, pero lo sienten.</p>
 
-<p>Esta guía no va a resolver tu vida. Pero va va a hacer algo más útil: va a ponerle nombre a lo que ya sabes.</p>
+<p>Esta guía no va a resolver tu vida. Pero va a hacer algo más útil: va a ponerle nombre a lo que ya sabes.</p>
 
 <p style="color:#9C9589;font-size:0.85rem;margin-top:1.5rem;">⚠️ Si este correo llegó a spam, marcá "no spam" para recibir los siguientes.</p>
 

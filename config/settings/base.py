@@ -138,7 +138,7 @@ DEFAULT_FROM_EMAIL = "hola@endonautas.cl"
 
 # Celery
 CELERY_BROKER_URL = os.environ.get("REDIS_URL", "django-db://")
-CELERY_RESULT_BACKEND = os.environ.get("REDIS_URL", "django-cache")
+CELERY_RESULT_BACKEND = "django-db"
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"

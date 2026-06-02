@@ -51,7 +51,7 @@ def crm_sequences(request):
 @staff_member_required
 def crm_sequence_run(request, sequence_id):
     """Ejecutar una secuencia manualmente para testing."""
-    from .tasks import run_sequence
+    from .tasks import trigger_sequence
     sequence = get_object_or_404(EmailSequence, id=sequence_id)
-    run_sequence.delay(sequence.id)
+    trigger_sequence.delay(sequence.id)
     return JsonResponse({"status": "ok", "message": f"Secuencia '{sequence.name}' iniciada"})
