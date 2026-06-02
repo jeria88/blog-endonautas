@@ -94,7 +94,7 @@ class MascaraPage(Page):
     headline = models.CharField(max_length=200, blank=True, verbose_name='Titular')
     subheadline = models.CharField(max_length=300, blank=True, verbose_name='Subtitular')
     description = RichTextField(blank=True, verbose_name='Descripción del lead magnet')
-    brevo_list_id = models.PositiveIntegerField(default=3, verbose_name='ID de lista Brevo')
+    brevo_list_id = models.PositiveIntegerField(default=7, verbose_name='ID de lista Brevo')
     hotmart_url = models.URLField(blank=True, verbose_name='URL Hotmart (upsell post-suscripción)')
     thank_you_text = models.TextField(
         blank=True,
