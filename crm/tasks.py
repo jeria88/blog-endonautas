@@ -6,74 +6,53 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-@shared_task
-def send_sequence_email(subscriber_id, step_id):
-    """Renderiza y encola un email de secuencia vía post_office."""
+def _send_sequence_email(subscriber_id, step_id):
+    """Lógica pura de envío — llamable sin Celery."""
     from post_office import mail as po_mail
     from django.template import Template, Context
     from .models import Subscriber, SequenceStep, SentEmail
 
-    try:
-        subscriber = Subscriber.objects.get(id=subscriber_id, is_active=True)
-        step = SequenceStep.objects.select_related("template", "sequence").get(id=step_id)
+    subscriber = Subscriber.objects.get(id=subscriber_id, is_active=True)
+    step = SequenceStep.objects.select_related("template", "sequence").get(id=step_id)
 
-        already_sent = SentEmail.objects.filter(
-            subscriber=subscriber,
-            template=step.template,
-            sequence=step.sequence,
-            status="sent",
-        ).exists()
-        if already_sent:
-            return f"Ya enviado: {step.template} → {subscriber.email}"
+    already_sent = SentEmail.objects.filter(
+        subscriber=subscriber,
+        template=step.template,
+        sequence=step.sequence,
+        status="sent",
+    ).exists()
+    if already_sent:
+        return f"Ya enviado: {step.template} → {subscriber.email}"
 
-        context = Context({
-            "nombre": subscriber.name or "amigo",
-            "email": subscriber.email,
-        })
-        subject = Template(step.template.subject).render(context)
-        html = Template(step.template.html_content).render(context)
-        plain = Template(step.template.plain_text_content).render(context) if step.template.plain_text_content else ""
+    context = Context({
+        "nombre": subscriber.name or "amigo",
+        "email": subscriber.email,
+    })
+    subject = Template(step.template.subject).render(context)
+    html = Template(step.template.html_content).render(context)
+    plain = Template(step.template.plain_text_content).render(context) if step.template.plain_text_content else ""
 
-        po_mail.send(
-            recipients=[subscriber.email],
-            subject=subject,
-            html_message=html,
-            message=plain,
-        )
+    po_mail.send(
+        recipients=[subscriber.email],
+        subject=subject,
+        html_message=html,
+        message=plain,
+    )
 
-        SentEmail.objects.create(
-            subscriber=subscriber,
-            template=step.template,
-            sequence=step.sequence,
-            status="sent",
-        )
-        logger.info(f"Encolado: {subject} → {subscriber.email}")
-        return f"ok: {subscriber.email}"
-
-    except Exception as e:
-        logger.error(f"Error encolando email: {e}")
-        try:
-            from .models import Subscriber, SequenceStep, SentEmail
-            sub = Subscriber.objects.get(id=subscriber_id)
-            step = SequenceStep.objects.select_related("template", "sequence").get(id=step_id)
-            SentEmail.objects.create(
-                subscriber=sub,
-                template=step.template,
-                sequence=step.sequence,
-                status="failed",
-                error_message=str(e),
-            )
-        except Exception:
-            pass
-        raise
+    SentEmail.objects.create(
+        subscriber=subscriber,
+        template=step.template,
+        sequence=step.sequence,
+        status="sent",
+    )
+    logger.info(f"Encolado: {subject} → {subscriber.email}")
+    return f"ok: {subscriber.email}"
 
 
-@shared_task
-def process_sequence_steps():
+def _process_sequence_steps():
     """
-    Cron principal del flywheel. Corre cada hora.
-    Para cada suscripción activa revisa qué pasos de secuencia están vencidos
-    y los encola si no se enviaron ya.
+    Lógica pura del flywheel — llamable sin Celery.
+    Para cada suscripción activa revisa qué pasos están vencidos y los envía.
     """
     from .models import Subscription, EmailSequence, SentEmail
 
@@ -107,11 +86,26 @@ def process_sequence_steps():
                 if already:
                     continue
 
-                send_sequence_email.delay(subscription.subscriber_id, step.id)
-                processed += 1
+                try:
+                    _send_sequence_email(subscription.subscriber_id, step.id)
+                    processed += 1
+                except Exception as e:
+                    logger.error(f"Error enviando paso {step.id} a {subscription.subscriber.email}: {e}")
 
     logger.info(f"process_sequence_steps: {processed} emails encolados")
     return f"Encolados: {processed}"
+
+
+# ── Celery tasks (wrappean las funciones puras) ──────────────────────────────
+
+@shared_task
+def send_sequence_email(subscriber_id, step_id):
+    return _send_sequence_email(subscriber_id, step_id)
+
+
+@shared_task
+def process_sequence_steps():
+    return _process_sequence_steps()
 
 
 @shared_task
@@ -122,7 +116,7 @@ def trigger_sequence_for_subscriber(subscriber_id, sequence_id):
     sequence = EmailSequence.objects.get(id=sequence_id, is_active=True)
     for step in sequence.steps.order_by("step_number"):
         if step.delay_days == 0:
-            send_sequence_email.delay(subscriber_id, step.id)
+            _send_sequence_email(subscriber_id, step.id)
         else:
             eta = timezone.now() + timedelta(days=step.delay_days)
             send_sequence_email.apply_async(args=[subscriber_id, step.id], eta=eta)
