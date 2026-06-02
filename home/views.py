@@ -11,6 +11,7 @@ from django.conf import settings
 @require_POST
 def brevo_subscribe(request):
     email = request.POST.get('email', '').strip()
+    name = request.POST.get('name', '').strip()
     list_id = int(request.POST.get('list_id', getattr(settings, 'BREVO_DEFAULT_LIST_ID', 3)))
     if not email or '@' not in email:
         return JsonResponse({'ok': False, 'error': 'Email inválido'}, status=400)
@@ -20,13 +21,17 @@ def brevo_subscribe(request):
         return JsonResponse({'ok': False, 'error': 'Servicio no configurado'}, status=503)
 
     try:
+        payload = {
+            'email': email,
+            'listIds': [list_id],
+            'updateEnabled': True,
+        }
+        if name:
+            payload['attributes'] = {'FIRSTNAME': name}
+
         resp = requests.post(
             'https://api.brevo.com/v3/contacts',
-            json={
-                'email': email,
-                'listIds': [list_id],
-                'updateEnabled': True,
-            },
+            json=payload,
             headers={
                 'api-key': api_key,
                 'content-type': 'application/json',

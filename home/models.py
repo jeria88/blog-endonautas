@@ -134,3 +134,45 @@ class EquipoPage(Page):
 
     class Meta:
         verbose_name = 'Página Equipo'
+
+
+class HacksPage(Page):
+    subheadline = models.CharField(max_length=300, blank=True, verbose_name='Subtitular')
+    description = RichTextField(blank=True, verbose_name='Descripción')
+    brevo_list_id = models.PositiveIntegerField(default=5, verbose_name='ID de lista Brevo')
+    thank_you_text = models.TextField(
+        blank=True,
+        default='¡Listo! Revisa tu correo. No la leas de corrido — lee un hack, desaparece un día, vuelve al siguiente.',
+        verbose_name='Mensaje de confirmación',
+    )
+
+    content_panels = Page.content_panels + [
+        FieldPanel('subheadline'),
+        FieldPanel('description'),
+        FieldPanel('thank_you_text'),
+        FieldPanel('brevo_list_id'),
+    ]
+
+    class Meta:
+        verbose_name = 'Página Hacks (3 Hacks de Endonáutica)'
+
+
+class ViajePage(Page):
+    subheadline = models.CharField(max_length=300, blank=True, verbose_name='Subtitular')
+    description = RichTextField(blank=True, verbose_name='Descripción')
+    brevo_list_id = models.PositiveIntegerField(default=6, verbose_name='ID de lista Brevo')
+    thank_you_text = models.TextField(
+        blank=True,
+        default='¡Listo! Revisa tu correo. El viaje no tiene deadline — pero hoy es un buen día para arrancar.',
+        verbose_name='Mensaje de confirmación',
+    )
+
+    content_panels = Page.content_panels + [
+        FieldPanel('subheadline'),
+        FieldPanel('description'),
+        FieldPanel('thank_you_text'),
+        FieldPanel('brevo_list_id'),
+    ]
+
+    class Meta:
+        verbose_name = 'Página Viaje (Guía Viaje Interior)'

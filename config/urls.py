@@ -5,7 +5,6 @@ from django.urls import include, path
 from django.views.generic import TemplateView
 
 from home.views import contacto_view, brevo_subscribe
-from home.fix_site import fix_wagtail_site_view
 
 from wagtail import urls as wagtail_urls
 from wagtail.admin import urls as wagtailadmin_urls
@@ -35,9 +34,6 @@ urlpatterns = [
     # Páginas editoriales
     path('suscribir/', brevo_subscribe, name='brevo_subscribe'),
     path('contacto/', contacto_view, name='contacto'),
-
-    # TEMPORAL: Fix Wagtail Site (REMOVE AFTER USE)
-    path('fix-site/', fix_wagtail_site_view, name='fix_site'),
 
     # Wagtail catch-all — MUST be last
     path('', include(wagtail_urls)),

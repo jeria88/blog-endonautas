@@ -1,0 +1,232 @@
+{% extends "base_editorial.html" %}
+{% load wagtailcore_tags %}
+
+{% block title %}3 Hacks de Endonáutica — Guía gratuita{% endblock %}
+{% block meta_description %}Tus patrones tienen estructura. No son azar — son arquitectura. Descarga gratis la guía de 3 Hacks de Endonáutica para tu Viaje Interior.{% endblock %}
+{% block og_title %}3 Hacks de Endonáutica — Endonautas{% endblock %}
+{% block og_url %}/hacks/{% endblock %}
+{% block canonical %}/hacks/{% endblock %}
+
+{% block extra_head %}
+<style data-page-style>
+  .hacks-hero {
+    min-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 8rem 1.5rem 5rem;
+  }
+  .hacks-eyebrow {
+    font-family: var(--font-heading);
+    font-size: 0.7rem; font-weight: 500;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    animation: p5 5s ease-in-out infinite;
+    margin-bottom: 2rem;
+  }
+  .hacks-title {
+    font-family: var(--font-heading);
+    font-size: clamp(2.8rem, 7vw, 5rem);
+    font-weight: 700; line-height: 1.05;
+    letter-spacing: -0.03em;
+    color: var(--text);
+    margin-bottom: 1.25rem;
+  }
+  .hacks-sub {
+    font-family: var(--font-ui);
+    font-size: clamp(1rem, 2vw, 1.12rem);
+    color: var(--muted); max-width: 520px;
+    margin: 0 auto 2rem; line-height: 1.75; font-weight: 400;
+  }
+  .hacks-bullets {
+    text-align: left;
+    max-width: 480px;
+    margin: 0 auto 3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .hacks-bullet {
+    font-family: var(--font-ui);
+    font-size: 0.9rem;
+    color: var(--muted);
+    line-height: 1.6;
+    padding-left: 1.25rem;
+    position: relative;
+  }
+  .hacks-bullet::before {
+    content: '';
+    display: block;
+    width: 5px; height: 5px;
+    background: var(--text);
+    border-radius: 50%;
+    opacity: 0.35;
+    position: absolute;
+    left: 0;
+    top: 0.55rem;
+  }
+
+  /* Form */
+  .hacks-form-wrap {
+    width: 100%; max-width: 420px;
+    margin: 0 auto;
+  }
+  .hacks-form {
+    display: flex; flex-direction: column; gap: 0.75rem;
+  }
+  .hacks-input {
+    background: rgba(11,11,20,0.9);
+    border: 1px solid rgba(126,207,168,0.25);
+    border-radius: 12px;
+    color: var(--text);
+    font-family: var(--font-ui);
+    font-size: 0.95rem; font-weight: 400;
+    padding: 0.9rem 1.25rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .hacks-input::placeholder { color: var(--dim); }
+  .hacks-input:focus { border-color: rgba(126,207,168,0.5); }
+  .hacks-submit {
+    width: 100%;
+    background: #F0E8DC; color: #000;
+    font-family: var(--font-heading); font-weight: 600; font-size: 0.9rem;
+    letter-spacing: 0.04em;
+    padding: 0.9rem 1.5rem; border-radius: 999px; border: none;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .hacks-submit:hover { background: #e0d8cc; transform: scale(1.02); }
+  .hacks-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  .hacks-notice {
+    font-size: 0.75rem; color: var(--dim);
+    text-align: center; margin-top: 0.5rem;
+  }
+
+  /* Thank you state */
+  .hacks-thanks {
+    display: none;
+    padding: 2rem;
+    background: #0b0b14;
+    border-left: 2px solid;
+    border-radius: 0 12px 12px 0;
+    animation: p5-border-left 5s ease-in-out infinite;
+    text-align: left;
+  }
+  .hacks-thanks h3 {
+    font-family: var(--font-heading);
+    font-size: 1.1rem; font-weight: 600;
+    animation: p5 5s ease-in-out infinite;
+    margin-bottom: 0.5rem;
+  }
+  .hacks-thanks p {
+    font-family: var(--font-ui);
+    font-size: 0.9rem; color: var(--muted); line-height: 1.65;
+  }
+  .hacks-thanks-cta {
+    margin-top: 1.5rem;
+  }
+
+  @media (max-width: 500px) {
+    .hacks-form-wrap { padding: 0 0.5rem; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<section class="hacks-hero">
+  <p class="hacks-eyebrow reveal">Guía gratuita — 19 páginas</p>
+  <h1 class="hacks-title reveal" style="transition-delay:0.12s">
+    Tus patrones tienen estructura.<br>
+    <span style="font-weight:400;">No son azar — son arquitectura.</span>
+  </h1>
+  <p class="hacks-sub reveal" style="transition-delay:0.25s">
+    Durante años leíste sobre la sombra, los patrones, el trabajo interior. Y algo sigue sin cuadrar: entiendes los conceptos, pero no ves el tuyo.
+  </p>
+  <p class="hacks-sub reveal" style="transition-delay:0.3s">
+    Esta guía de 19 páginas te muestra tres formas de leer lo que ya está pasando en tu vida.
+  </p>
+
+  <div class="hacks-bullets reveal" style="transition-delay:0.35s">
+    <div class="hacks-bullet">Hack 1: El origen del patrón. Dónde empezó todo — y por qué ahí.</div>
+    <div class="hacks-bullet">Hack 2: La sombra que guarda algo tuyo. Lo que rechazas de ti mismo y cómo decide por ti sin que lo notes.</div>
+    <div class="hacks-bullet">Hack 3: La lógica fractal de tu historia. Por qué lo mismo se repite con distinta gente, en distintos lugares, con el mismo resultado.</div>
+  </div>
+
+  <div class="hacks-form-wrap reveal" style="transition-delay:0.4s">
+    <form class="hacks-form" id="hacks-form">
+      {% csrf_token %}
+      <input
+        type="text"
+        name="name"
+        class="hacks-input"
+        placeholder="Tu nombre"
+        required
+        autocomplete="name"
+      >
+      <input
+        type="email"
+        name="email"
+        class="hacks-input"
+        placeholder="tu@email.com"
+        required
+        autocomplete="email"
+      >
+      <button type="submit" class="hacks-submit" id="hacks-btn">
+        Descargar la guía gratuita →
+      </button>
+      <p class="hacks-notice">Sin spam. Solo la guía y un seguimiento de 3 correos.</p>
+    </form>
+
+    <div class="hacks-thanks" id="hacks-thanks">
+      <h3>¡Listo! Revisa tu correo.</h3>
+      <p>Te enviamos la guía. No la leas de corrido — lee un hack, desaparece un día, vuelve al siguiente.</p>
+      <div class="hacks-thanks-cta">
+        <a href="https://app.endonautas.cl/accounts/registro/" class="btn-ghost" style="font-size:0.85rem;">
+          Crear cuenta gratuita en la app →
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+  const form = document.getElementById('hacks-form');
+  const thanks = document.getElementById('hacks-thanks');
+  const btn = document.getElementById('hacks-btn');
+  if (!form) return;
+
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    btn.disabled = true;
+    btn.textContent = 'Enviando…';
+
+    const data = new FormData(form);
+    data.set('list_id', '5');
+
+    try {
+      const resp = await fetch('/suscribir/', { method: 'POST', body: data });
+      const json = await resp.json();
+      if (json.ok) {
+        form.style.display = 'none';
+        thanks.style.display = 'block';
+      } else {
+        btn.disabled = false;
+        btn.textContent = 'Descargar la guía gratuita →';
+        alert(json.error || 'Hubo un problema. Intenta de nuevo.');
+      }
+    } catch {
+      btn.disabled = false;
+      btn.textContent = 'Descargar la guía gratuita →';
+      alert('Error de conexión. Intenta de nuevo.');
+    }
+  });
+})();
+</script>
+{% endblock %}

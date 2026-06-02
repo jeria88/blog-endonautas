@@ -1,0 +1,236 @@
+{% extends "base_editorial.html" %}
+{% load wagtailcore_tags %}
+
+{% block title %}Guía Viaje Interior — Guía gratuita{% endblock %}
+{% block meta_description %}El viaje interior no empiezas con una respuesta. Empiezas con una pregunta que nadie te enseñó a hacerte. Descarga gratis la guía paso a paso.{% endblock %}
+{% block og_title %}Guía Viaje Interior — Endonautas{% endblock %}
+{% block og_url %}/viaje/{% endblock %}
+{% block canonical %}/viaje/{% endblock %}
+
+{% block extra_head %}
+<style data-page-style>
+  .viaje-hero {
+    min-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 8rem 1.5rem 5rem;
+  }
+  .viaje-eyebrow {
+    font-family: var(--font-heading);
+    font-size: 0.7rem; font-weight: 500;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    animation: p5 5s ease-in-out infinite;
+    margin-bottom: 2rem;
+  }
+  .viaje-title {
+    font-family: var(--font-heading);
+    font-size: clamp(2.8rem, 7vw, 5rem);
+    font-weight: 700; line-height: 1.05;
+    letter-spacing: -0.03em;
+    color: var(--text);
+    margin-bottom: 1.25rem;
+  }
+  .viaje-sub {
+    font-family: var(--font-ui);
+    font-size: clamp(1rem, 2vw, 1.12rem);
+    color: var(--muted); max-width: 520px;
+    margin: 0 auto 2rem; line-height: 1.75; font-weight: 400;
+  }
+  .viaje-bullets {
+    text-align: left;
+    max-width: 480px;
+    margin: 0 auto 3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .viaje-bullet {
+    font-family: var(--font-ui);
+    font-size: 0.9rem;
+    color: var(--muted);
+    line-height: 1.6;
+    padding-left: 1.25rem;
+    position: relative;
+  }
+  .viaje-bullet::before {
+    content: '';
+    display: block;
+    width: 5px; height: 5px;
+    background: var(--text);
+    border-radius: 50%;
+    opacity: 0.35;
+    position: absolute;
+    left: 0;
+    top: 0.55rem;
+  }
+
+  /* Form */
+  .viaje-form-wrap {
+    width: 100%; max-width: 420px;
+    margin: 0 auto;
+  }
+  .viaje-form {
+    display: flex; flex-direction: column; gap: 0.75rem;
+  }
+  .viaje-input {
+    background: rgba(11,11,20,0.9);
+    border: 1px solid rgba(126,207,168,0.25);
+    border-radius: 12px;
+    color: var(--text);
+    font-family: var(--font-ui);
+    font-size: 0.95rem; font-weight: 400;
+    padding: 0.9rem 1.25rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .viaje-input::placeholder { color: var(--dim); }
+  .viaje-input:focus { border-color: rgba(126,207,168,0.5); }
+  .viaje-submit {
+    width: 100%;
+    background: #F0E8DC; color: #000;
+    font-family: var(--font-heading); font-weight: 600; font-size: 0.9rem;
+    letter-spacing: 0.04em;
+    padding: 0.9rem 1.5rem; border-radius: 999px; border: none;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .viaje-submit:hover { background: #e0d8cc; transform: scale(1.02); }
+  .viaje-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  .viaje-notice {
+    font-size: 0.75rem; color: var(--dim);
+    text-align: center; margin-top: 0.5rem;
+  }
+
+  /* Thank you state */
+  .viaje-thanks {
+    display: none;
+    padding: 2rem;
+    background: #0b0b14;
+    border-left: 2px solid;
+    border-radius: 0 12px 12px 0;
+    animation: p5-border-left 5s ease-in-out infinite;
+    text-align: left;
+  }
+  .viaje-thanks h3 {
+    font-family: var(--font-heading);
+    font-size: 1.1rem; font-weight: 600;
+    animation: p5 5s ease-in-out infinite;
+    margin-bottom: 0.5rem;
+  }
+  .viaje-thanks p {
+    font-family: var(--font-ui);
+    font-size: 0.9rem; color: var(--muted); line-height: 1.65;
+  }
+  .viaje-thanks-cta {
+    margin-top: 1.5rem;
+  }
+
+  @media (max-width: 500px) {
+    .viaje-form-wrap { padding: 0 0.5rem; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<section class="viaje-hero">
+  <p class="viaje-eyebrow reveal">Guía gratuita — 8 páginas</p>
+  <h1 class="viaje-title reveal" style="transition-delay:0.12s">
+    El viaje interior no empiezas<br>
+    <span style="font-weight:400;">con una respuesta.</span>
+  </h1>
+  <p class="viaje-sub reveal" style="transition-delay:0.25s">
+    Empiezas con una pregunta que nadie te enseñó a hacerte.
+  </p>
+  <p class="viaje-sub reveal" style="transition-delay:0.3s">
+    Sabes que hay algo adentro tuyo que merece ser explorado. Lo sientes. Pero cada vez que intentas arrancar, terminas con un libro de autoayuda que no te dice nada, o un video de YouTube que te deja igual.
+  </p>
+  <p class="viaje-sub reveal" style="transition-delay:0.35s">
+    Esta guía de 8 páginas es ese primer mapa. No es teórica. Es práctica. Te dice exactamente qué hacer, en qué orden, y por qué.
+  </p>
+
+  <div class="viaje-bullets reveal" style="transition-delay:0.4s">
+    <div class="viaje-bullet">Qué es el viaje interior (y qué NO es)</div>
+    <div class="viaje-bullet">Las 3 etapas que todos atraviesan (y por dónde vas tú)</div>
+    <div class="viaje-bullet">Ejercicios simples para arrancar hoy</div>
+    <div class="viaje-bullet">El error que comete el 90% de la gente que quiere conocerse</div>
+  </div>
+
+  <div class="viaje-form-wrap reveal" style="transition-delay:0.45s">
+    <form class="viaje-form" id="viaje-form">
+      {% csrf_token %}
+      <input
+        type="text"
+        name="name"
+        class="viaje-input"
+        placeholder="Tu nombre"
+        required
+        autocomplete="name"
+      >
+      <input
+        type="email"
+        name="email"
+        class="viaje-input"
+        placeholder="tu@email.com"
+        required
+        autocomplete="email"
+      >
+      <button type="submit" class="viaje-submit" id="viaje-btn">
+        Descargar la guía gratuita →
+      </button>
+      <p class="viaje-notice">Sin spam. Solo la guía y un seguimiento de 3 correos.</p>
+    </form>
+
+    <div class="viaje-thanks" id="viaje-thanks">
+      <h3>¡Listo! Revisa tu correo.</h3>
+      <p>Te enviamos la guía. El viaje no tiene deadline — pero hoy es un buen día para arrancar.</p>
+      <div class="viaje-thanks-cta">
+        <a href="https://app.endonautas.cl/accounts/registro/" class="btn-ghost" style="font-size:0.85rem;">
+          Crear cuenta gratuita en la app →
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+  const form = document.getElementById('viaje-form');
+  const thanks = document.getElementById('viaje-thanks');
+  const btn = document.getElementById('viaje-btn');
+  if (!form) return;
+
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    btn.disabled = true;
+    btn.textContent = 'Enviando…';
+
+    const data = new FormData(form);
+    data.set('list_id', '6');
+
+    try {
+      const resp = await fetch('/suscribir/', { method: 'POST', body: data });
+      const json = await resp.json();
+      if (json.ok) {
+        form.style.display = 'none';
+        thanks.style.display = 'block';
+      } else {
+        btn.disabled = false;
+        btn.textContent = 'Descargar la guía gratuita →';
+        alert(json.error || 'Hubo un problema. Intenta de nuevo.');
+      }
+    } catch {
+      btn.disabled = false;
+      btn.textContent = 'Descargar la guía gratuita →';
+      alert('Error de conexión. Intenta de nuevo.');
+    }
+  });
+})();
+</script>
+{% endblock %}

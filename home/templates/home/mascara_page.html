@@ -112,17 +112,29 @@
 {% block content %}
 
 <section class="mascara-hero">
-  <p class="mascara-eyebrow reveal">Capítulo gratuito de Endonautica</p>
+  <p class="mascara-eyebrow reveal">Guía gratuita — 6 páginas</p>
   <h1 class="mascara-title reveal" style="transition-delay:0.12s">
-    {% if page.headline %}{{ page.headline }}{% else %}Descubre tu MÁSCARA{% endif %}
+    Tu máscara no eres tú.<br>
+    <span style="font-weight:400;">Pero llevas tanto tiempo usándola que ya no la ves.</span>
   </h1>
   <p class="mascara-sub reveal" style="transition-delay:0.25s">
-    {% if page.subheadline %}{{ page.subheadline }}{% else %}El patrón que usas para sobrevivir — y que ya no te sirve. Una guía gratuita de Franco Jeria Castro.{% endif %}
+    Hay algo que construiste de niño para sobrevivir. Funcionó. El problema es que sigue funcionando — 20, 30, 40 años después — en situaciones que ya no lo necesitan.
+  </p>
+  <p class="mascara-sub reveal" style="transition-delay:0.3s">
+    Esta guía de 6 páginas no es un test. Es un espejo breve que te muestra qué tipo de máscara construiste y de qué herida nació. No para que la destruyas. Para que la veas.
   </p>
 
   <div class="mascara-form-wrap reveal" style="transition-delay:0.4s">
     <form class="mascara-form" id="mascara-form">
       {% csrf_token %}
+      <input
+        type="text"
+        name="name"
+        class="mascara-input"
+        placeholder="Tu nombre"
+        required
+        autocomplete="name"
+      >
       <input
         type="email"
         name="email"
@@ -132,9 +144,9 @@
         autocomplete="email"
       >
       <button type="submit" class="mascara-submit" id="mascara-btn">
-        Quiero mi guía gratuita →
+        Descargar la guía gratuita →
       </button>
-      <p class="mascara-notice">Sin spam. Solo el PDF y un seguimiento de 3 correos.</p>
+      <p class="mascara-notice">Sin spam. Solo la guía y un seguimiento de 3 correos.</p>
     </form>
 
     <div class="mascara-thanks" id="mascara-thanks">
