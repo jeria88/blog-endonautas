@@ -1,5 +1,64 @@
 # endonautas-platform — Registro de progreso
 
+## 2026-06-02 — CRM flywheel completo + scheduler interno
+
+### ✅ Completado
+
+#### CRM — módulo completo (`crm/`)
+- Modelos: `Subscriber`, `EmailList`, `Subscription`, `EmailTemplate`, `EmailSequence`, `SequenceStep`, `SentEmail`
+- Email engine: `django-post-office` como backend, despacho a Brevo SMTP en producción
+- Lógica pura en `_send_sequence_email` y `_process_sequence_steps` (llamables sin Celery)
+- Wrappers Celery como capa opcional, no requerida
+- Admin Django completo con todos los modelos registrados
+
+#### Frontend CRM (`/crm/`)
+- Dashboard con stats (suscriptores, secuencias, plantillas, enviados, fallidos)
+- Cards por lista del flywheel con contador y secuencias activas
+- Vista suscriptores con filtro por lista y búsqueda por email
+- Vista secuencias como cards con visualización de pasos encadenados
+- Vista plantillas con preview en iframe
+- Design system CSS consistente (dark, variables `--crm-*`)
+
+#### Flywheel de emails — 3 listas con secuencias completas (`setup_flywheel`)
+- **Mascara**: 4 emails (días 0/2/4/6) — entrega, profundización, conexión, CTA app
+- **Hacks**: 3 emails (días 0/3/6) — entrega, el error más común, CTA app
+- **Viaje**: 3 emails (días 0/3/6) — entrega, por qué se da vueltas, CTA app
+- Copy en español neutro (sin argentinismos)
+- Comando idempotente (get_or_create en todo)
+
+#### Scheduler interno (`run_scheduler.py`)
+- Loop liviano en background dentro del container
+- Flywheel: cada 1 hora (`_process_sequence_steps`)
+- Despacho SMTP: cada 5 minutos (`send_queued_mail`)
+- Arranca automáticamente con el deploy via `scripts/start.sh &`
+- No requiere Celery worker, Redis, ni Railway Cron Jobs manuales
+
+#### Infraestructura
+- `scripts/start.sh`: extrae startCommand de railway.toml a script legible con `set -e`
+- `railway.toml`: `startCommand = "bash scripts/start.sh"` (antes era 1 línea de 400 chars)
+
+#### Bugs corregidos
+- `home/views.py`: ImportError `trigger_sequence` → `_send_sequence_email`
+- `home/views.py`: `.delay()` sin worker reemplazado por llamada síncrona del paso 0
+- `production.py`: `POST_OFFICE CELERY_ENABLED: False` (sin worker real)
+- `setup_flywheel`: eliminado `_setup_periodic_tasks` (celery-beat sin worker)
+
+### 🔶 Pendiente
+
+#### Railway env vars — confirmar que existen
+- `EMAIL_HOST_USER` — email login SMTP Brevo
+- `EMAIL_HOST_PASSWORD` — SMTP key de Brevo
+
+#### CMS — instancias Wagtail por crear en /cms/
+- `HacksPage` (slug: `hacks`) como hija de HomePage
+- `ViajePage` (slug: `viaje`) como hija de HomePage
+- `EquipoPage` (slug: `equipo`) como hija de HomePage
+
+#### Hotmart
+- `HOTMART_PACK_200/600/2000` — cuando se creen los packs
+
+---
+
 ## 2026-05-29 — Design system P5, nuevas páginas Wagtail, copy finalizado
 
 ### ✅ Completado
