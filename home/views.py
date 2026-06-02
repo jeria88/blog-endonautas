@@ -1,3 +1,4 @@
+import logging
 import requests
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
@@ -6,20 +7,21 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core.mail import send_mail
 from django.conf import settings
 
+logger = logging.getLogger(__name__)
+
 
 @csrf_exempt
 @require_POST
 def brevo_subscribe(request):
     email = request.POST.get('email', '').strip()
     name = request.POST.get('name', '').strip()
-    list_id = int(request.POST.get('list_id', 0))
     source = request.POST.get('source', '')
-    
+
     if not email or '@' not in email:
         return JsonResponse({'ok': False, 'error': 'Email inválido'}, status=400)
 
-    from crm.models import Subscriber, EmailList, Subscription
-    from crm.tasks import trigger_sequence
+    from crm.models import Subscriber, EmailList, Subscription, EmailSequence
+    from crm.tasks import _send_sequence_email
 
     try:
         # Crear o actualizar suscriptor
@@ -44,11 +46,16 @@ def brevo_subscribe(request):
             defaults={'source': source}
         )
 
-        # Gatillar secuencia de emails
-        from crm.models import EmailSequence
+        # Enviar solo el paso inmediato (delay_days=0) de forma síncrona.
+        # Los pasos con delay > 0 los procesa el Railway Cron Job run_flywheel cada hora.
         sequence = EmailSequence.objects.filter(email_list=email_list, is_active=True).first()
         if sequence:
-            trigger_sequence.delay(subscriber.id, sequence.id)
+            first_step = sequence.steps.filter(delay_days=0).order_by('step_number').first()
+            if first_step:
+                try:
+                    _send_sequence_email(subscriber.id, first_step.id)
+                except Exception as e:
+                    logger.error(f"Error enviando email inmediato a {email}: {e}")
 
         return JsonResponse({'ok': True})
 

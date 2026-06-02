@@ -44,7 +44,7 @@ POST_OFFICE = {
     'DEFAULT_PRIORITY': 'medium',
     'BATCH_SIZE': 20,
     'LOG_LEVEL': 1,
-    'CELERY_ENABLED': True,
+    'CELERY_ENABLED': False,  # Sin worker Celery — Railway Cron Job ejecuta send_queued_mail
     'DEFAULT_FROM_EMAIL': 'hola@endonautas.cl',
 }
 
