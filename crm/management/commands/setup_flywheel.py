@@ -29,7 +29,7 @@ class Command(BaseCommand):
                 "name": "Mascara - Email 1 - Entrega",
                 "slug": "mascara-1",
                 "subject": "Tu guía está acá (y una cosa que noté)",
-                "html": """<div style="max-width:600px;margin:0 auto;font-family:Georgia,serif;color:#1A1916;">
+                "html_content": """<div style="max-width:600px;margin:0 auto;font-family:Georgia,serif;color:#1A1916;">
 <div style="padding:2rem;">
 <p style="color:#9C9589;font-size:0.85rem;margin-bottom:1.5rem;">Hola {{ nombre }},</p>
 
@@ -51,7 +51,7 @@ class Command(BaseCommand):
                 "name": "Mascara - Email 2 - Profundización",
                 "slug": "mascara-2",
                 "subject": "Tu máscara no es tu enemiga",
-                "html": """<div style="max-width:600px;margin:0 auto;font-family:Georgia,serif;color:#1A1916;">
+                "html_content": """<div style="max-width:600px;margin:0 auto;font-family:Georgia,serif;color:#1A1916;">
 <div style="padding:2rem;">
 <p style="color:#9C9589;font-size:0.85rem;margin-bottom:1.5rem;">Hola {{ nombre }},</p>
 
@@ -73,7 +73,7 @@ class Command(BaseCommand):
                 "name": "Mascara - Email 3 - Conexión",
                 "slug": "mascara-3",
                 "subject": "Lo que me enseñó mi propia máscara",
-                "html": """<div style="max-width:600px;margin:0 auto;font-family:Georgia,serif;color:#1A1916;">
+                "html_content": """<div style="max-width:600px;margin:0 auto;font-family:Georgia,serif;color:#1A1916;">
 <div style="padding:2rem;">
 <p style="color:#9C9589;font-size:0.85rem;margin-bottom:1.5rem;">Hola {{ nombre }},</p>
 
@@ -95,7 +95,7 @@ class Command(BaseCommand):
                 "name": "Mascara - Email 4 - Invitación app",
                 "slug": "mascara-4",
                 "subject": "Ahora que la viste, ¿querés ver más?",
-                "html": """<div style="max-width:600px;margin:0 auto;font-family:Georgia,serif;color:#1A1916;">
+                "html_content": """<div style="max-width:600px;margin:0 auto;font-family:Georgia,serif;color:#1A1916;">
 <div style="padding:2rem;">
 <p style="color:#9C9589;font-size:0.85rem;margin-bottom:1.5rem;">Hola {{ nombre }},</p>
 
