@@ -10,6 +10,6 @@ Pillow==12.2.0
 django-taggit==6.1.0
 django-modelcluster==6.5
 django-post-office==3.9.1
-django-celery-beat==2.7.0
+django-celery-beat>=2.8.0
 celery==5.4.0
 django-celery-results==2.5.1
