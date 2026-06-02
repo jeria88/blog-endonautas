@@ -146,12 +146,13 @@
       <button type="submit" class="mascara-submit" id="mascara-btn">
         Descargar la guía gratuita →
       </button>
-      <p class="mascara-notice">Sin spam. Solo la guía y un seguimiento de 3 correos.</p>
+      <p class="mascara-notice">Sin spam. Solo la guía y un seguimiento de 3 correos.<br><span style="font-size:0.7rem; opacity:0.7;">Si no te llega, revisa spam y marca como "no spam".</span></p>
     </form>
 
     <div class="mascara-thanks" id="mascara-thanks">
       <h3>¡Listo! Revisa tu correo.</h3>
-      <p>{% if page.thank_you_text %}{{ page.thank_you_text }}{% else %}Te enviamos el PDF a tu correo. Lleva 5 minutos leerlo — vale la pena.{% endif %}</p>
+      <p>{% if page.thank_you_text %}{{ page.thank_you_text }}{% else %}Te enviamos el PDF a tu correo.{% endif %}</p>
+      <p style="font-size:0.8rem; color:var(--dim); margin-top:0.75rem;">⚠️ Si no te llega en 5 minutos, revisa tu carpeta de spam. marca el correo como "no spam" para recibir los siguientes.</p>
       {% if page.hotmart_url %}
       <div class="mascara-thanks-cta">
         <a href="{{ page.hotmart_url }}" class="btn-ghost" target="_blank" rel="noopener" style="font-size:0.85rem;">
