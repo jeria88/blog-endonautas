@@ -14,7 +14,6 @@ def export_csv(modeladmin, request, queryset):
     response = HttpResponse(content_type="text/csv")
     response["Content-Disposition"] = f"attachment; filename={modeladmin.model._meta.model_name}.csv"
     writer = csv.writer(response)
-    # Headers dinámicos según el modelo
     model = modeladmin.model
     field_names = [f.name for f in model._meta.fields]
     writer.writerow(field_names)
@@ -67,6 +66,13 @@ class SequenceStepInline(admin.TabularInline):
     fields = ["step_number", "template", "delay_days"]
     autocomplete_fields = ["template"]
     ordering = ["step_number"]
+    classes = ["collapse"]
+
+
+class ContactNoteInline(admin.TabularInline):
+    model = ContactNote
+    extra = 0
+    fields = ["content", "created_by", "is_pinned"]
     classes = ["collapse"]
 
 
@@ -124,7 +130,7 @@ class EmailTemplateAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("name",)}
     readonly_fields = ["created_at", "updated_at"]
     fieldsets = [
-        ("Información", {"fields": ["name", "slug", "subject"]}),
+        ("Informacion", {"fields": ["name", "slug", "subject"]}),
         ("Contenido", {"fields": ["html_content", "plain_text_content"], "classes": ["wide"]}),
         ("Metadatos", {"fields": ["created_at", "updated_at"], "classes": ["collapse"]}),
     ]
@@ -198,13 +204,6 @@ class PipelineLogAdmin(admin.ModelAdmin):
     list_filter = ["stage", "entered_at"]
     search_fields = ["subscriber__email", "subscriber__name"]
     date_hierarchy = "entered_at"
-
-
-class ContactNoteInline(admin.TabularInline):
-    model = ContactNote
-    extra = 0
-    fields = ["content", "created_by", "is_pinned"]
-    classes = ["collapse"]
 
 
 @admin.register(ContactNote)
