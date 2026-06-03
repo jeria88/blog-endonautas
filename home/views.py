@@ -20,8 +20,9 @@ def brevo_subscribe(request):
     if not email or '@' not in email:
         return JsonResponse({'ok': False, 'error': 'Email inválido'}, status=400)
 
-    from crm.models import Subscriber, EmailList, Subscription, EmailSequence
-    from crm.tasks import _send_sequence_email
+    from crm.models import Subscriber, EmailList, Subscription, EmailSequence, SentEmail, SequenceStep
+    from django.template import Template, Context
+    from django.core.mail import EmailMultiAlternatives
 
     try:
         # Crear o actualizar suscriptor
@@ -46,14 +47,32 @@ def brevo_subscribe(request):
             defaults={'source': source}
         )
 
-        # Enviar solo el paso inmediato (delay_days=0) de forma síncrona.
-        # Los pasos con delay > 0 los procesa el Railway Cron Job run_flywheel cada hora.
+        # Enviar email inmediato (delay_days=0) vía SMTP directo, sin post_office.
+        # Así no depende del scheduler para el primer email.
         sequence = EmailSequence.objects.filter(email_list=email_list, is_active=True).first()
         if sequence:
-            first_step = sequence.steps.filter(delay_days=0).order_by('step_number').first()
+            first_step = sequence.steps.filter(delay_days=0).select_related('template', 'sequence').order_by('step_number').first()
             if first_step:
                 try:
-                    _send_sequence_email(subscriber.id, first_step.id)
+                    tmpl = first_step.template
+                    ctx = Context({'nombre': subscriber.name or 'amigo', 'email': subscriber.email})
+                    subject = Template(tmpl.subject).render(ctx)
+                    html = Template(tmpl.html_content).render(ctx)
+                    msg = EmailMultiAlternatives(
+                        subject=subject,
+                        body='',
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        to=[subscriber.email],
+                    )
+                    msg.attach_alternative(html, 'text/html')
+                    msg.send()
+                    SentEmail.objects.create(
+                        subscriber=subscriber,
+                        template=tmpl,
+                        sequence=first_step.sequence,
+                        status='sent',
+                    )
+                    logger.info(f"Email inmediato enviado: {subject} -> {subscriber.email}")
                 except Exception as e:
                     logger.error(f"Error enviando email inmediato a {email}: {e}")
 

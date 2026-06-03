@@ -1,5 +1,7 @@
 from celery import shared_task
 from django.utils import timezone
+from django.core.mail import EmailMultiAlternatives
+from django.conf import settings
 from datetime import timedelta
 import logging
 
@@ -32,12 +34,14 @@ def _send_sequence_email(subscriber_id, step_id):
     html = Template(step.template.html_content).render(context)
     plain = Template(step.template.plain_text_content).render(context) if step.template.plain_text_content else ""
 
-    po_mail.send(
-        recipients=[subscriber.email],
+    msg = EmailMultiAlternatives(
         subject=subject,
-        html_message=html,
-        message=plain,
+        body=plain or '',
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[subscriber.email],
     )
+    msg.attach_alternative(html, 'text/html')
+    msg.send()
 
     SentEmail.objects.create(
         subscriber=subscriber,
