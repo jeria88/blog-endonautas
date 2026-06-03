@@ -11,6 +11,71 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        # Modelos que estaban en models.py pero nunca fueron migrados
+        migrations.CreateModel(
+            name='Segment',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('name', models.CharField(max_length=120, unique=True)),
+                ('slug', models.SlugField(unique=True)),
+                ('description', models.TextField(blank=True)),
+                ('criteria', models.JSONField(blank=True, default=dict)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
+            ],
+            options={
+                'verbose_name': 'Segmento',
+                'verbose_name_plural': 'Segmentos',
+                'ordering': ['name'],
+            },
+        ),
+        migrations.CreateModel(
+            name='PipelineStage',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('name', models.CharField(max_length=60, unique=True)),
+                ('slug', models.SlugField(unique=True)),
+                ('order', models.PositiveIntegerField(default=0)),
+                ('description', models.TextField(blank=True)),
+            ],
+            options={
+                'verbose_name': 'Etapa del pipeline',
+                'verbose_name_plural': 'Etapas del pipeline',
+                'ordering': ['order'],
+            },
+        ),
+        migrations.CreateModel(
+            name='PipelineLog',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('entered_at', models.DateTimeField(auto_now_add=True)),
+                ('notes', models.TextField(blank=True)),
+                ('stage', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='crm.pipelinestage')),
+                ('subscriber', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='pipeline_logs', to='crm.subscriber')),
+            ],
+            options={
+                'verbose_name': 'Cambio de etapa',
+                'verbose_name_plural': 'Cambios de etapa',
+                'ordering': ['-entered_at'],
+            },
+        ),
+        migrations.CreateModel(
+            name='ContactNote',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('content', models.TextField()),
+                ('created_by', models.CharField(blank=True, help_text='Quien creo la nota', max_length=120)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('is_pinned', models.BooleanField(default=False)),
+                ('subscriber', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='notes', to='crm.subscriber')),
+            ],
+            options={
+                'verbose_name': 'Nota',
+                'verbose_name_plural': 'Notas',
+                'ordering': ['-is_pinned', '-created_at'],
+            },
+        ),
+        # Nuevos modelos de la Capa 1
         migrations.CreateModel(
             name='Tag',
             fields=[
