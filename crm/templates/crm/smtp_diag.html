@@ -1,0 +1,44 @@
+{% extends "admin/base_site.html" %}
+{% block title %}Diagnóstico SMTP | CRM{% endblock %}
+{% block extrahead %}
+<style>
+:root { --crm-surface: #12121e; --crm-border: rgba(255,255,255,0.07); --crm-muted: #6b6878; --crm-text: #e8e4dc; --crm-accent: #c4813a; --crm-green: #3d7a5e; --crm-red: #a84b3c; }
+.crm { padding: 2rem; max-width: 720px; margin: 0 auto; }
+.crm h1 { font-size: 1.25rem; font-weight: 600; color: var(--crm-text); margin-bottom: 1.5rem; }
+.crm-card { background: var(--crm-surface); border: 1px solid var(--crm-border); border-radius: 10px; overflow: hidden; }
+.crm-row { display: flex; padding: 0.8rem 1.25rem; border-bottom: 1px solid var(--crm-border); font-size: 0.85rem; }
+.crm-row:last-child { border-bottom: none; }
+.crm-label { color: var(--crm-muted); min-width: 180px; font-weight: 500; }
+.crm-value { color: var(--crm-text); font-family: monospace; word-break: break-all; }
+.crm-ok { color: #5aad84; }
+.crm-fail { color: var(--crm-red); }
+.crm-nav { display: flex; gap: 0.25rem; margin-bottom: 2rem; border-bottom: 1px solid var(--crm-border); padding-bottom: 1rem; }
+.crm-nav a { color: var(--crm-muted); text-decoration: none; font-size: 0.875rem; padding: 0.4rem 0.9rem; border-radius: 6px; }
+.crm-nav a:hover { color: var(--crm-text); background: rgba(255,255,255,0.05); }
+</style>
+{% endblock %}
+{% block content %}
+<div class="crm">
+    <nav class="crm-nav">
+        <a href="{% url 'crm:dashboard' %}">Dashboard</a>
+        <a href="{% url 'crm:campaigns' %}">Campañas</a>
+        <a href="{% url 'crm:lists' %}">Listas</a>
+        <a href="{% url 'crm:subscribers' %}">Suscriptores</a>
+        <a href="{% url 'crm:sequences' %}">Secuencias</a>
+        <a href="{% url 'crm:templates' %}">Plantillas</a>
+    </nav>
+
+    <h1>Diagnóstico SMTP</h1>
+    <div class="crm-card">
+        {% for label, value in results %}
+        <div class="crm-row">
+            <span class="crm-label">{{ label }}</span>
+            <span class="crm-value
+                {% if value == 'OK' or value == 'LOGIN OK' or '✅' in value %}crm-ok
+                {% elif 'FALLO' in value or 'VACIA' in value or 'NO CONFIGURADO' in value %}crm-fail
+                {% endif %}">{{ value }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

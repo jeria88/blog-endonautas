@@ -266,8 +266,11 @@ def crm_subscriber_detail(request, subscriber_id):
             from .tasks import _send_sequence_email
             step = SequenceStep.objects.filter(sequence=sent.sequence, template=sent.template).first()
             if step:
-                _send_sequence_email(subscriber.id, step.id)
-                messages.success(request, "Email reenviado.")
+                result = _send_sequence_email(subscriber.id, step.id)
+                if result.startswith("ok"):
+                    messages.success(request, "Email reenviado.")
+                else:
+                    messages.error(request, f"Fallo al reenviar: revisa el detalle.")
         return redirect("crm:subscriber_detail", subscriber_id=subscriber.id)
 
     sent_emails = SentEmail.objects.filter(subscriber=subscriber).select_related("template", "sequence").order_by("-sent_at")
@@ -279,6 +282,50 @@ def crm_subscriber_detail(request, subscriber_id):
         "subscriptions": subscriptions,
         "lists": EmailList.objects.all(),
     })
+
+
+@staff_member_required
+def crm_test_smtp(request):
+    """Diagnóstico SMTP completo."""
+    import smtplib, socket
+    from django.conf import settings
+
+    results = []
+    host = settings.EMAIL_HOST
+    port = settings.EMAIL_PORT
+    user = settings.EMAIL_HOST_USER
+    password = settings.EMAIL_HOST_PASSWORD
+
+    results.append(("EMAIL_HOST", host or "NO CONFIGURADO"))
+    results.append(("EMAIL_PORT", str(port)))
+    results.append(("EMAIL_HOST_USER", user[:10] + "..." if user else "NO CONFIGURADO"))
+    results.append(("PASSWORD length", str(len(password)) if password else "0  VACIA"))
+
+    # Probar conexion TCP
+    try:
+        sock = socket.create_connection((host, port), timeout=10)
+        sock.close()
+        results.append(("Conexion TCP", "OK"))
+    except Exception as e:
+        results.append(("Conexion TCP", f"FALLO: {e}"))
+
+    # Probar handshake + STARTTLS + login
+    if user and password:
+        try:
+            server = smtplib.SMTP(host, port, timeout=15)
+            server.ehlo()
+            if port == 587:
+                server.starttls()
+                server.ehlo()
+            server.login(user, password)
+            results.append(("Autenticacion SMTP", "LOGIN OK"))
+            server.quit()
+        except Exception as e:
+            results.append(("Autenticacion SMTP", f"FALLO: {e}"))
+    else:
+        results.append(("Autenticacion SMTP", "Saltado: sin credenciales"))
+
+    return render(request, "crm/smtp_diag.html", {"results": results})
 
 # ── Formularios ──────────────────────────────────────────────────────────────
 

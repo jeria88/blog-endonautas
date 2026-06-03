@@ -14,6 +14,7 @@ urlpatterns = [
     path("lists/<int:list_id>/delete/", views.crm_list_delete, name="list_delete"),
     path("subscribers/<int:subscriber_id>/", views.crm_subscriber_detail, name="subscriber_detail"),
     path("subscribers/", views.crm_subscribers, name="subscribers"),
+    path("smtp-test/", views.crm_test_smtp, name="smtp_test"),
     path("sequences/", views.crm_sequences, name="sequences"),
     path("sequences/<int:sequence_id>/run/", views.crm_sequence_run, name="sequence_run"),
     path("templates/", views.crm_templates, name="templates"),
