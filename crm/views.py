@@ -6,7 +6,7 @@ from django.core.paginator import Paginator
 from django.db import models
 from django.db.models import Count
 from django import forms
-from .models import Subscriber, EmailList, EmailSequence, SentEmail, Subscription, EmailTemplate, PipelineStage, PipelineLog, ContactNote, Segment, Tag, ContactTag, Broadcast
+from .models import Subscriber, EmailList, EmailSequence, SentEmail, Subscription, EmailTemplate, PipelineStage, PipelineLog, ContactNote, Segment, Tag, ContactTag, Broadcast, EmailEvent
 
 import logging
 
@@ -32,6 +32,29 @@ def crm_dashboard(request):
     sent_total = SentEmail.objects.filter(status="sent").count()
     failed_total = SentEmail.objects.filter(status="failed").count()
 
+    # Métricas de engagement (Capa 3) — últimos 30 días
+    from django.utils import timezone
+    from datetime import timedelta
+    engagement = None
+    try:
+        thirty_days_ago = timezone.now() - timedelta(days=30)
+        recent_events = EmailEvent.objects.filter(occurred_at__gte=thirty_days_ago)
+        total_opens = recent_events.filter(event_type="opened").count()
+        total_clicks = recent_events.filter(event_type="clicked").count()
+        total_bounces = recent_events.filter(event_type="bounced").count()
+        total_unsubscribes = recent_events.filter(event_type="unsubscribed").count()
+        recent_sent = SentEmail.objects.filter(sent_at__gte=thirty_days_ago, status="sent").count()
+        engagement = {
+            "total_opens": total_opens,
+            "total_clicks": total_clicks,
+            "total_bounces": total_bounces,
+            "total_unsubscribes": total_unsubscribes,
+            "open_rate": round((total_opens / recent_sent) * 100, 1) if recent_sent > 0 else None,
+            "click_rate": round((total_clicks / recent_sent) * 100, 1) if recent_sent > 0 else None,
+        }
+    except Exception:
+        pass
+
     return render(request, "crm/dashboard.html", {
         "total_subscribers": total_subscribers,
         "total_sequences": total_sequences,
@@ -40,6 +63,7 @@ def crm_dashboard(request):
         "failed_total": failed_total,
         "lists_data": lists_data,
         "recent_emails": recent_emails,
+        "engagement": engagement,
     })
 
 
@@ -292,6 +316,7 @@ def crm_subscriber_detail(request, subscriber_id):
         "all_tags": all_tags,
         "subscriber_tag_ids": subscriber_tag_ids,
         "pipeline_logs": subscriber.pipeline_logs.select_related("stage").order_by("-entered_at")[:10],
+        "email_events": subscriber.email_events.select_related("sent_email__template").order_by("-occurred_at")[:50],
     })
 
 

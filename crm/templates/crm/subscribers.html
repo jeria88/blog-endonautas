@@ -1,107 +1,79 @@
-{% extends "admin/base_site.html" %}
-{% block title %}Suscriptores | CRM{% endblock %}
-{% block extrahead %}
-<style>
-:root { --crm-surface: #12121e; --crm-border: rgba(255,255,255,0.07); --crm-muted: #6b6878; --crm-text: #e8e4dc; --crm-accent: #c4813a; }
-.crm { padding: 2rem; max-width: 1280px; margin: 0 auto; }
-.crm-nav { display: flex; gap: 0.25rem; margin-bottom: 2rem; border-bottom: 1px solid var(--crm-border); padding-bottom: 1rem; }
-.crm-nav a { color: var(--crm-muted); text-decoration: none; font-size: 0.875rem; padding: 0.4rem 0.9rem; border-radius: 6px; }
-.crm-nav a:hover { color: var(--crm-text); background: rgba(255,255,255,0.05); }
-.crm-nav a.active { color: var(--crm-text); background: rgba(255,255,255,0.08); }
-.crm-badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.72rem; background: rgba(196,129,58,0.15); color: var(--crm-accent); border: 1px solid rgba(196,129,58,0.25); }
-.crm-table { width: 100%; border-collapse: collapse; background: var(--crm-surface); border-radius: 10px; overflow: hidden; border: 1px solid var(--crm-border); }
-.crm-table th { padding: 0.7rem 1rem; text-align: left; font-size: 0.75rem; color: var(--crm-muted); text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid var(--crm-border); }
-.crm-table td { padding: 0.65rem 1rem; font-size: 0.85rem; color: var(--crm-text); border-bottom: 1px solid var(--crm-border); }
-.crm-table tr:last-child td { border-bottom: none; }
-.crm-filters { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; align-items: center; }
-.crm-input { background: #12121e; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 0.45rem 0.8rem; color: #e8e4dc; font-size: 0.875rem; outline: none; }
-.crm-input:focus { border-color: #c4813a; }
-.crm-select { background: #12121e; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 0.45rem 0.8rem; color: #e8e4dc; font-size: 0.875rem; outline: none; cursor: pointer; }
-.crm-btn { background: rgba(196,129,58,0.15); border: 1px solid rgba(196,129,58,0.3); color: #c4813a; border-radius: 6px; padding: 0.45rem 1rem; font-size: 0.875rem; cursor: pointer; text-decoration: none; }
-.crm-pager { margin-top: 1rem; display: flex; gap: 0.5rem; align-items: center; font-size: 0.85rem; color: #6b6878; }
-.crm-pager a { color: #c4813a; text-decoration: none; }
-</style>
-{% endblock %}
-{% block content %}
-<div class="crm">
-    <nav class="crm-nav">
-        <a href="{% url 'crm:dashboard' %}">Dashboard</a>
-        <a href="{% url 'crm:campaigns' %}">Campañas</a>
-        <a href="{% url 'crm:broadcasts' %}">Broadcasts</a>
-        <a href="{% url 'crm:lists' %}">Listas</a>
-        <a href="{% url 'crm:subscribers' %}" class="active">Suscriptores</a>
-        <a href="{% url 'crm:pipeline' %}">Pipeline</a>
-        <a href="{% url 'crm:segments' %}">Segmentos</a>
-        <a href="{% url 'crm:tags' %}">Tags</a>
-        <a href="{% url 'crm:sequences' %}">Secuencias</a>
-        <a href="{% url 'crm:templates' %}">Plantillas</a>
-    </nav>
+{% extends "crm/crm_base.html" %}
+{% block crm_title %}Suscriptores{% endblock %}
 
-    <form method="get" class="crm-filters">
-        <input class="crm-input" type="text" name="q" value="{{ search }}" placeholder="Buscar email...">
-        <select class="crm-select" name="list" onchange="this.form.submit()">
-            <option value="">Todas las listas</option>
-            {% for lst in lists %}
-            <option value="{{ lst.slug }}" {% if current_list == lst.slug %}selected{% endif %}>{{ lst.name }}</option>
-            {% endfor %}
-        </select>
-        <select class="crm-select" name="tag" onchange="this.form.submit()">
-            <option value="">Todos los tags</option>
-            {% for t in all_tags %}
-            <option value="{{ t.id }}" {% if current_tag == t.id|stringformat:"s" %}selected{% endif %}>{{ t.name }}</option>
-            {% endfor %}
-        </select>
-        <button class="crm-btn" type="submit">Filtrar</button>
-        {% if search or current_list %}
-        <a class="crm-btn" href="{% url 'crm:subscribers' %}" style="background:transparent;border-color:rgba(255,255,255,0.1);color:#6b6878">✕ Limpiar</a>
-        {% endif %}
-        <span style="margin-left:auto;font-size:0.8rem;color:#6b6878">{{ total }} suscriptor{{ total|pluralize:"es" }}</span>
-    </form>
-
-    <table class="crm-table">
-        <thead>
-            <tr>
-                <th>Email</th>
-                <th>Nombre</th>
-                <th>Listas</th>
-                <th>Tags</th>
-                <th>Origen</th>
-                <th>Registro</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for s in subscribers %}
-            <tr>
-                <td><a href="{% url 'crm:subscriber_detail' s.id %}" style="color:var(--crm-accent);text-decoration:none;">{{ s.email }}</a></td>
-                <td style="color:var(--crm-muted)">{{ s.name|default:"—" }}</td>
-                <td>
-                    {% for sub in s.subscriptions.all %}
-                    <span class="crm-badge">{{ sub.email_list.name|truncatechars:20 }}</span>
-                    {% empty %}<span style="color:var(--crm-muted)">—</span>
-                    {% endfor %}
-                </td>
-                <td>
-                    {% for ct in s.contact_tags.all %}
-                    <span class="crm-badge" style="background:{{ ct.tag.color }}22;color:{{ ct.tag.color }};border-color:{{ ct.tag.color }}44;">{{ ct.tag.name }}</span>
-                    {% endfor %}
-                </td>
-                <td style="color:var(--crm-muted);font-size:0.78rem">
-                    {% for sub in s.subscriptions.all %}{{ sub.source|default:"—" }}{% if not forloop.last %}, {% endif %}{% endfor %}
-                </td>
-                <td style="color:var(--crm-muted)">{{ s.created_at|date:"d/m/Y" }}</td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="5" style="text-align:center;color:var(--crm-muted);padding:2rem">Sin suscriptores</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    {% if subscribers.has_other_pages %}
-    <div class="crm-pager">
-        {% if subscribers.has_previous %}<a href="?page={{ subscribers.previous_page_number }}&q={{ search }}&list={{ current_list }}">← Anterior</a>{% endif %}
-        <span>Página {{ subscribers.number }} de {{ subscribers.paginator.num_pages }}</span>
-        {% if subscribers.has_next %}<a href="?page={{ subscribers.next_page_number }}&q={{ search }}&list={{ current_list }}">Siguiente →</a>{% endif %}
-    </div>
-    {% endif %}
+{% block crm_content %}
+<div class="crm-page-header">
+  <h1>Suscriptores</h1>
+  <span class="text-sm text-muted">{{ total }} total</span>
 </div>
+
+<form method="get" class="crm-filters">
+  <input class="crm-input" type="text" name="q" value="{{ search }}" placeholder="Buscar email..." style="width:200px;">
+  <select class="crm-select" name="list" onchange="this.form.submit()" style="width:auto;">
+    <option value="">Todas las listas</option>
+    {% for lst in lists %}
+    <option value="{{ lst.slug }}" {% if current_list == lst.slug %}selected{% endif %}>{{ lst.name }}</option>
+    {% endfor %}
+  </select>
+  <select class="crm-select" name="tag" onchange="this.form.submit()" style="width:auto;">
+    <option value="">Todos los tags</option>
+    {% for t in all_tags %}
+    <option value="{{ t.id }}" {% if current_tag == t.id|stringformat:"s" %}selected{% endif %}>{{ t.name }}</option>
+    {% endfor %}
+  </select>
+  <button class="btn" type="submit">Filtrar</button>
+  {% if search or current_list or current_tag %}
+  <a class="btn" href="{% url 'crm:subscribers' %}">✕ Limpiar</a>
+  {% endif %}
+</form>
+
+{% if subscribers %}
+<table class="crm-table">
+  <thead>
+    <tr>
+      <th>Email</th>
+      <th>Nombre</th>
+      <th>Listas</th>
+      <th>Tags</th>
+      <th>Registro</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for s in subscribers %}
+    <tr>
+      <td><a href="{% url 'crm:subscriber_detail' s.id %}" style="color:var(--accent);text-decoration:none;font-weight:500;">{{ s.email }}</a></td>
+      <td class="text-muted">{{ s.name|default:"—" }}</td>
+      <td>
+        {% for sub in s.subscriptions.all %}
+        <span class="pill pill-blue" style="font-size:0.65rem;margin:1px;">{{ sub.email_list.name|truncatechars:18 }}</span>
+        {% empty %}<span class="text-dim">—</span>{% endfor %}
+      </td>
+      <td>
+        {% for ct in s.contact_tags.all %}
+        <span class="pill" style="font-size:0.65rem;margin:1px;background:{{ ct.tag.color }}22;color:{{ ct.tag.color }};">{{ ct.tag.name }}</span>
+        {% endfor %}
+      </td>
+      <td class="text-sm text-muted">{{ s.created_at|date:"d/m/Y" }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% if subscribers.has_other_pages %}
+<div style="margin-top:16px;display:flex;gap:8px;align-items:center;">
+  {% if subscribers.has_previous %}
+  <a href="?page={{ subscribers.previous_page_number }}&q={{ search }}&list={{ current_list }}&tag={{ current_tag }}" class="btn btn-sm">← Anterior</a>
+  {% endif %}
+  <span class="text-sm text-muted">Página {{ subscribers.number }} de {{ subscribers.paginator.num_pages }}</span>
+  {% if subscribers.has_next %}
+  <a href="?page={{ subscribers.next_page_number }}&q={{ search }}&list={{ current_list }}&tag={{ current_tag }}" class="btn btn-sm">Siguiente →</a>
+  {% endif %}
+</div>
+{% endif %}
+
+{% else %}
+<div class="crm-card crm-empty">
+  <p>Sin suscriptores</p>
+</div>
+{% endif %}
 {% endblock %}

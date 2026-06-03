@@ -1,120 +1,65 @@
-{% extends "admin/base_site.html" %}
-{% block title %}Campañas | CRM{% endblock %}
-{% block extrahead %}
-<style>
-:root { --crm-bg: #0b0b14; --crm-surface: #12121e; --crm-border: rgba(255,255,255,0.07); --crm-muted: #6b6878; --crm-text: #e8e4dc; --crm-accent: #c4813a; --crm-green: #3d7a5e; --crm-red: #a84b3c; --crm-warn: #d4a84b; }
-.crm { padding: 2rem; max-width: 1280px; margin: 0 auto; }
-.crm-nav { display: flex; gap: 0.25rem; margin-bottom: 2rem; border-bottom: 1px solid var(--crm-border); padding-bottom: 1rem; flex-wrap: wrap; }
-.crm-nav a { color: var(--crm-muted); text-decoration: none; font-size: 0.875rem; padding: 0.4rem 0.9rem; border-radius: 6px; }
-.crm-nav a:hover { color: var(--crm-text); background: rgba(255,255,255,0.05); }
-.crm-nav a.active { color: var(--crm-text); background: rgba(255,255,255,0.08); }
-.crm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-.crm-stat { background: var(--crm-surface); border: 1px solid var(--crm-border); border-radius: 10px; padding: 1.25rem; }
-.crm-stat-n { font-size: 2rem; font-weight: 700; color: var(--crm-text); line-height: 1; }
-.crm-stat-l { font-size: 0.78rem; color: var(--crm-muted); margin-top: 0.4rem; text-transform: uppercase; letter-spacing: 0.06em; }
-.crm-stat.accent { border-color: var(--crm-accent); }
-.crm-stat.green { border-color: var(--crm-green); }
-.crm-stat.red { border-color: var(--crm-red); }
-.crm-stat.warn { border-color: var(--crm-warn); }
-.crm-campaign { background: var(--crm-surface); border: 1px solid var(--crm-border); border-radius: 10px; margin-bottom: 1rem; overflow: hidden; }
-.crm-campaign-header { padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid var(--crm-border); }
-.crm-campaign-name { font-size: 1rem; font-weight: 600; color: var(--crm-text); }
-.crm-campaign-list { font-size: 0.8rem; color: var(--crm-muted); }
-.crm-steps { padding: 0.75rem 1.25rem; }
-.crm-step { display: flex; align-items: center; gap: 1rem; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
-.crm-step:last-child { border-bottom: none; }
-.crm-step-name { flex: 1; font-size: 0.85rem; color: var(--crm-text); }
-.crm-step-day { font-size: 0.72rem; color: var(--crm-muted); min-width: 65px; }
-.crm-step-bars { display: flex; gap: 0.25rem; align-items: center; }
-.crm-bar { height: 6px; border-radius: 3px; min-width: 4px; }
-.bar-sent { background: var(--crm-green); }
-.bar-pending { background: var(--crm-warn); }
-.bar-failed { background: var(--crm-red); }
-.crm-step-count { font-size: 0.78rem; color: var(--crm-muted); min-width: 60px; text-align: right; }
-.crm-step-empty { color: var(--crm-muted); font-size: 0.78rem; font-style: italic; }
-.crm-actions { margin-top: 1rem; display: flex; gap: 0.5rem; }
-.crm-btn { display: inline-block; padding: 0.45rem 1rem; border-radius: 6px; font-size: 0.85rem; text-decoration: none; cursor: pointer; border: 1px solid var(--crm-border); color: var(--crm-muted); background: transparent; }
-.crm-btn:hover { color: var(--crm-text); border-color: rgba(255,255,255,0.2); }
-.crm-btn.primary { background: rgba(196,129,58,0.15); border-color: rgba(196,129,58,0.3); color: var(--crm-accent); }
-.crm-btn.danger { background: rgba(168,75,60,0.15); border-color: rgba(168,75,60,0.3); color: var(--crm-red); }
-.crm-btn.warn { background: rgba(212,168,75,0.15); border-color: rgba(212,168,75,0.3); color: var(--crm-warn); }
-</style>
-{% endblock %}
-{% block content %}
-<div class="crm">
-    <nav class="crm-nav">
-        <a href="{% url 'crm:dashboard' %}">Dashboard</a>
-        <a href="{% url 'crm:campaigns' %}" class="active">Campañas</a>
-        <a href="{% url 'crm:broadcasts' %}">Broadcasts</a>
-        <a href="{% url 'crm:lists' %}">Listas</a>
-        <a href="{% url 'crm:subscribers' %}">Suscriptores</a>
-        <a href="{% url 'crm:sequences' %}">Secuencias</a>
-        <a href="{% url 'crm:templates' %}">Plantillas</a>
-    </nav>
+{% extends "crm/crm_base.html" %}
+{% block crm_title %}Campañas{% endblock %}
 
-    <div class="crm-grid">
-        <div class="crm-stat accent">
-            <div class="crm-stat-n">{{ total_subscribers }}</div>
-            <div class="crm-stat-l">Suscriptores</div>
-        </div>
-        <div class="crm-stat green">
-            <div class="crm-stat-n">{{ total_sent }}</div>
-            <div class="crm-stat-l">Enviados</div>
-        </div>
-        <div class="crm-stat warn">
-            <div class="crm-stat-n">{{ total_pending }}</div>
-            <div class="crm-stat-l">Pendientes</div>
-        </div>
-        <div class="crm-stat red">
-            <div class="crm-stat-n">{{ total_failed }}</div>
-            <div class="crm-stat-l">Fallidos</div>
-        </div>
-    </div>
+{% block crm_content %}
+<div class="crm-page-header">
+  <h1>Campañas</h1>
+  <a href="{% url 'crm:run_scheduler' %}" class="btn btn-sm" onclick="return confirm('¿Ejecutar flywheel ahora?')">▶ Forzar scheduler</a>
+</div>
 
-    <div class="crm-actions">
-        <a href="{% url 'crm:run_scheduler' %}" class="crm-btn warn" onclick="return confirm('¿Ejecutar flywheel ahora?')">▶ Forzar scheduler</a>
-    </div>
+<div class="crm-stats" style="margin-bottom:24px;">
+  <div class="crm-stat accent">
+    <div class="crm-stat-n">{{ total_subscribers }}</div>
+    <div class="crm-stat-l">Suscriptores</div>
+  </div>
+  <div class="crm-stat green">
+    <div class="crm-stat-n">{{ total_sent }}</div>
+    <div class="crm-stat-l">Enviados</div>
+  </div>
+  <div class="crm-stat warn">
+    <div class="crm-stat-n">{{ total_pending }}</div>
+    <div class="crm-stat-l">Pendientes</div>
+  </div>
+  <div class="crm-stat red">
+    <div class="crm-stat-n">{{ total_failed }}</div>
+    <div class="crm-stat-l">Fallidos</div>
+  </div>
+</div>
 
-    {% for campaign in campaigns %}
-    <div class="crm-campaign">
-        <div class="crm-campaign-header">
-            <span class="crm-badge">{{ campaign.list.name }}</span>
-            <span class="crm-campaign-name">{{ campaign.sequence.name }}</span>
-            <span style="margin-left:auto;display:flex;gap:1rem;font-size:0.78rem;">
-                <span style="color:var(--crm-green)">✓ {{ campaign.total_sent }}</span>
-                <span style="color:var(--crm-warn)">◌ {{ campaign.total_pending }}</span>
-                <span style="color:var(--crm-red)">✗ {{ campaign.total_failed }}</span>
-            </span>
-        </div>
-        <div class="crm-steps">
-            {% for step_data in campaign.steps %}
-            <div class="crm-step">
-                <span class="crm-step-day">día {{ step_data.step.delay_days }}</span>
-                <span class="crm-step-name">{{ step_data.step.template.name }}</span>
-                <div class="crm-step-bars">
-                    {% if step_data.total > 0 %}
-                    <div class="crm-bar bar-sent" style="flex:{{ step_data.sent }}"></div>
-                    <div class="crm-bar bar-pending" style="flex:{{ step_data.pending }}"></div>
-                    <div class="crm-bar bar-failed" style="flex:{{ step_data.failed }}"></div>
-                    {% endif %}
-                </div>
-                <span class="crm-step-count">
-                    {% if step_data.total > 0 %}
-                    {{ step_data.sent }}/{{ step_data.total }}
-                    {% else %}
-                    <span class="crm-step-empty">Sin datos</span>
-                    {% endif %}
-                </span>
-            </div>
-            {% empty %}
-            <div style="color:var(--crm-muted);padding:1rem;text-align:center;font-size:0.85rem;">Sin pasos configurados</div>
-            {% endfor %}
-        </div>
+{% for campaign in campaigns %}
+<div class="crm-card">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+    <span class="pill pill-accent">{{ campaign.list.name }}</span>
+    <strong style="color:var(--text);">{{ campaign.sequence.name }}</strong>
+    <div style="margin-left:auto;display:flex;gap:16px;font-size:0.8rem;">
+      <span class="text-green">✓ {{ campaign.total_sent }}</span>
+      <span class="text-muted">◌ {{ campaign.total_pending }}</span>
+      <span class="text-red">✗ {{ campaign.total_failed }}</span>
     </div>
-    {% empty %}
-    <div style="text-align:center;color:var(--crm-muted);padding:3rem;">
-        No hay campañas activas. Ejecuta <code>setup_flywheel</code> para crearlas.
+  </div>
+  <div style="display:flex;flex-direction:column;gap:8px;">
+    {% for step_data in campaign.steps %}
+    <div style="display:flex;align-items:center;gap:12px;padding:8px 12px;background:var(--surface-alt);border-radius:var(--radius);">
+      <span class="text-xs text-dim" style="min-width:50px;">Día {{ step_data.step.delay_days }}</span>
+      <span style="flex:1;color:var(--text);font-size:0.85rem;">{{ step_data.step.template.name }}</span>
+      {% if step_data.total > 0 %}
+      <div style="display:flex;gap:4px;align-items:center;">
+        <div style="height:6px;border-radius:3px;background:var(--green);width:{{ step_data.sent|add:'0' }}px;min-width:4px;"></div>
+        <div style="height:6px;border-radius:3px;background:var(--warn);width:{{ step_data.pending|add:'0' }}px;min-width:4px;"></div>
+        <div style="height:6px;border-radius:3px;background:var(--red);width:{{ step_data.failed|add:'0' }}px;min-width:4px;"></div>
+      </div>
+      <span class="text-xs text-muted" style="min-width:50px;text-align:right;">{{ step_data.sent }}/{{ step_data.total }}</span>
+      {% else %}
+      <span class="text-xs text-dim">Sin datos</span>
+      {% endif %}
     </div>
     {% endfor %}
+  </div>
 </div>
+{% empty %}
+<div class="crm-card crm-empty">
+  <p>Sin campañas activas.</p>
+  <p class="text-sm text-muted">Ejecuta <code>setup_flywheel</code> para crear las secuencias iniciales.</p>
+</div>
+{% endfor %}
 {% endblock %}

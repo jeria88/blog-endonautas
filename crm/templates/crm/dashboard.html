@@ -1,130 +1,122 @@
-{% extends "admin/base_site.html" %}
-{% load static %}
+{% extends "crm/crm_base.html" %}
+{% block crm_title %}Dashboard{% endblock %}
 
-{% block title %}CRM — Endonautas{% endblock %}
+{% block crm_content %}
+<div class="crm-page-header">
+  <h1>Dashboard</h1>
+  <a href="{% url 'crm:run_scheduler' %}" class="btn btn-sm" onclick="return confirm('¿Ejecutar flywheel ahora?')">▶ Forzar scheduler</a>
+</div>
 
-{% block extrahead %}
-<style>
-:root { --crm-bg: #0b0b14; --crm-surface: #12121e; --crm-border: rgba(255,255,255,0.07); --crm-muted: #6b6878; --crm-text: #e8e4dc; --crm-accent: #c4813a; --crm-green: #3d7a5e; --crm-red: #a84b3c; }
-.crm { padding: 2rem; max-width: 1280px; margin: 0 auto; }
-.crm-nav { display: flex; gap: 0.25rem; margin-bottom: 2rem; border-bottom: 1px solid var(--crm-border); padding-bottom: 1rem; }
-.crm-nav a { color: var(--crm-muted); text-decoration: none; font-size: 0.875rem; padding: 0.4rem 0.9rem; border-radius: 6px; transition: all 0.15s; }
-.crm-nav a:hover { color: var(--crm-text); background: rgba(255,255,255,0.05); }
-.crm-nav a.active { color: var(--crm-text); background: rgba(255,255,255,0.08); }
-.crm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-.crm-stat { background: var(--crm-surface); border: 1px solid var(--crm-border); border-radius: 10px; padding: 1.25rem; }
-.crm-stat-n { font-size: 2rem; font-weight: 700; color: var(--crm-text); line-height: 1; }
-.crm-stat-l { font-size: 0.78rem; color: var(--crm-muted); margin-top: 0.4rem; text-transform: uppercase; letter-spacing: 0.06em; }
-.crm-stat.accent { border-color: var(--crm-accent); }
-.crm-stat.green { border-color: var(--crm-green); }
-.crm-stat.red { border-color: var(--crm-red); }
-.crm-section { margin-bottom: 2.5rem; }
-.crm-section-title { font-size: 0.85rem; font-weight: 600; color: var(--crm-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 1rem; }
-.crm-lists { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
-.crm-list-card { background: var(--crm-surface); border: 1px solid var(--crm-border); border-radius: 10px; padding: 1.25rem; }
-.crm-list-name { font-size: 1rem; font-weight: 600; color: var(--crm-text); margin-bottom: 0.25rem; }
-.crm-list-count { font-size: 1.5rem; font-weight: 700; color: var(--crm-accent); }
-.crm-list-label { font-size: 0.78rem; color: var(--crm-muted); }
-.crm-list-seqs { margin-top: 0.75rem; display: flex; flex-wrap: wrap; gap: 0.35rem; }
-.crm-badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.72rem; background: rgba(196,129,58,0.15); color: var(--crm-accent); border: 1px solid rgba(196,129,58,0.25); }
-.crm-landing-link { font-size: 0.75rem; color: var(--crm-muted); text-decoration: none; margin-top: 0.5rem; display: block; }
-.crm-landing-link:hover { color: var(--crm-accent); }
-.crm-table { width: 100%; border-collapse: collapse; background: var(--crm-surface); border-radius: 10px; overflow: hidden; border: 1px solid var(--crm-border); }
-.crm-table th { padding: 0.7rem 1rem; text-align: left; font-size: 0.75rem; color: var(--crm-muted); text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid var(--crm-border); }
-.crm-table td { padding: 0.65rem 1rem; font-size: 0.85rem; color: var(--crm-text); border-bottom: 1px solid var(--crm-border); }
-.crm-table tr:last-child td { border-bottom: none; }
-.crm-pill { display: inline-block; padding: 0.18rem 0.6rem; border-radius: 999px; font-size: 0.72rem; font-weight: 600; }
-.pill-sent { background: rgba(61,122,94,0.2); color: #5aad84; }
-.pill-pending { background: rgba(196,129,58,0.2); color: var(--crm-accent); }
-.pill-failed { background: rgba(168,75,60,0.2); color: #d96355; }
-</style>
-{% endblock %}
+<!-- Stats principales -->
+<div class="crm-stats">
+  <div class="crm-stat accent">
+    <div class="crm-stat-n">{{ total_subscribers }}</div>
+    <div class="crm-stat-l">Suscriptores activos</div>
+  </div>
+  <div class="crm-stat green">
+    <div class="crm-stat-n">{{ sent_total }}</div>
+    <div class="crm-stat-l">Emails enviados</div>
+  </div>
+  <div class="crm-stat">
+    <div class="crm-stat-n">{{ total_sequences }}</div>
+    <div class="crm-stat-l">Secuencias activas</div>
+  </div>
+  <div class="crm-stat">
+    <div class="crm-stat-n">{{ total_templates }}</div>
+    <div class="crm-stat-l">Plantillas</div>
+  </div>
+  <div class="crm-stat red">
+    <div class="crm-stat-n">{{ failed_total }}</div>
+    <div class="crm-stat-l">Fallidos</div>
+  </div>
+</div>
 
-{% block content %}
-<div class="crm">
-    <nav class="crm-nav">
-        <a href="{% url 'crm:dashboard' %}" class="active">Dashboard</a>
-        <a href="{% url 'crm:campaigns' %}">Campañas</a>
-        <a href="{% url 'crm:broadcasts' %}">Broadcasts</a>
-        <a href="{% url 'crm:pipeline' %}">Pipeline</a>
-        <a href="{% url 'crm:segments' %}">Segmentos</a>
-        <a href="{% url 'crm:tags' %}">Tags</a>
-        <a href="{% url 'crm:lists' %}">Listas</a>
-        <a href="{% url 'crm:subscribers' %}">Suscriptores</a>
-        <a href="{% url 'crm:sequences' %}">Secuencias</a>
-        <a href="{% url 'crm:templates' %}">Plantillas</a>
-    </nav>
-
-    <div class="crm-grid">
-        <div class="crm-stat accent">
-            <div class="crm-stat-n">{{ total_subscribers }}</div>
-            <div class="crm-stat-l">Suscriptores activos</div>
-        </div>
-        <div class="crm-stat">
-            <div class="crm-stat-n">{{ total_sequences }}</div>
-            <div class="crm-stat-l">Secuencias activas</div>
-        </div>
-        <div class="crm-stat">
-            <div class="crm-stat-n">{{ total_templates }}</div>
-            <div class="crm-stat-l">Plantillas</div>
-        </div>
-        <div class="crm-stat green">
-            <div class="crm-stat-n">{{ sent_total }}</div>
-            <div class="crm-stat-l">Emails enviados</div>
-        </div>
-        <div class="crm-stat red">
-            <div class="crm-stat-n">{{ failed_total }}</div>
-            <div class="crm-stat-l">Fallidos</div>
-        </div>
+<!-- Métricas de engagement (Capa 3) -->
+{% if engagement %}
+<div class="crm-card">
+  <div class="crm-card-title">📊 Engagement (últimos 30 días)</div>
+  <div class="crm-stats">
+    <div class="crm-stat">
+      <div class="crm-stat-n">{{ engagement.open_rate|default:"—" }}{% if engagement.open_rate %}%{% endif %}</div>
+      <div class="crm-stat-l">Tasa de apertura</div>
     </div>
-
-    <div class="crm-section">
-        <div class="crm-section-title">Listas del flywheel</div>
-        <div class="crm-lists">
-            {% for item in lists_data %}
-            <div class="crm-list-card">
-                <div class="crm-list-name">{{ item.list.name }}</div>
-                <div class="crm-list-count">{{ item.count }}</div>
-                <div class="crm-list-label">suscriptores</div>
-                {% if item.sequences %}
-                <div class="crm-list-seqs">
-                    {% for seq in item.sequences %}
-                    <span class="crm-badge">{{ seq.name }}</span>
-                    {% endfor %}
-                </div>
-                {% endif %}
-                <a class="crm-landing-link" href="/{{ item.list.slug }}/" target="_blank">↗ /{{ item.list.slug }}/</a>
-            </div>
-            {% endfor %}
-        </div>
+    <div class="crm-stat">
+      <div class="crm-stat-n">{{ engagement.click_rate|default:"—" }}{% if engagement.click_rate %}%{% endif %}</div>
+      <div class="crm-stat-l">Tasa de click</div>
     </div>
-
-    <div class="crm-section">
-        <div class="crm-section-title">Actividad reciente</div>
-        <table class="crm-table">
-            <thead>
-                <tr>
-                    <th>Suscriptor</th>
-                    <th>Plantilla</th>
-                    <th>Secuencia</th>
-                    <th>Estado</th>
-                    <th>Fecha</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for e in recent_emails %}
-                <tr>
-                    <td>{{ e.subscriber.email }}</td>
-                    <td>{{ e.template.name }}</td>
-                    <td>{{ e.sequence.name|default:"—" }}</td>
-                    <td><span class="crm-pill pill-{{ e.status }}">{{ e.get_status_display }}</span></td>
-                    <td style="color:var(--crm-muted)">{{ e.sent_at|date:"d/m H:i" }}</td>
-                </tr>
-                {% empty %}
-                <tr><td colspan="5" style="text-align:center;color:var(--crm-muted);padding:2rem">Sin actividad todavía</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="crm-stat">
+      <div class="crm-stat-n">{{ engagement.total_opens|default:"0" }}</div>
+      <div class="crm-stat-l">Aperturas totales</div>
     </div>
+    <div class="crm-stat">
+      <div class="crm-stat-n">{{ engagement.total_clicks|default:"0" }}</div>
+      <div class="crm-stat-l">Clicks totales</div>
+    </div>
+    <div class="crm-stat red">
+      <div class="crm-stat-n">{{ engagement.total_bounces|default:"0" }}</div>
+      <div class="crm-stat-l">Rebotes</div>
+    </div>
+    <div class="crm-stat warn">
+      <div class="crm-stat-n">{{ engagement.total_unsubscribes|default:"0" }}</div>
+      <div class="crm-stat-l">Desuscripciones</div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Listas del flywheel -->
+<div class="crm-card">
+  <div class="crm-card-title">🔄 Flywheel — Listas y secuencias</div>
+  <div class="crm-grid-2">
+    {% for item in lists_data %}
+    <div style="background: var(--surface-alt); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <strong style="color:var(--text);font-size:0.9rem;">{{ item.list.name }}</strong>
+        <span class="pill pill-accent">{{ item.count }} subs</span>
+      </div>
+      {% if item.sequences %}
+      <div style="display:flex;flex-wrap:wrap;gap:4px;">
+        {% for seq in item.sequences %}
+        <span class="pill pill-blue" style="font-size:0.65rem;">{{ seq.name }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+      <a href="/{{ item.list.slug }}/" target="_blank" class="text-xs text-muted" style="margin-top:8px;display:block;">↗ Ver landing /{{ item.list.slug }}/</a>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Actividad reciente -->
+<div class="crm-card">
+  <div class="crm-card-title">🕐 Actividad reciente</div>
+  <table class="crm-table">
+    <thead>
+      <tr>
+        <th>Suscriptor</th>
+        <th>Plantilla</th>
+        <th>Secuencia</th>
+        <th>Estado</th>
+        <th>Fecha</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for e in recent_emails %}
+      <tr>
+        <td><a href="{% url 'crm:subscriber_detail' e.subscriber.id %}" style="color:var(--accent);text-decoration:none;">{{ e.subscriber.email }}</a></td>
+        <td class="text-sm text-muted">{{ e.template.name }}</td>
+        <td class="text-sm text-muted">{{ e.sequence.name|default:"—" }}</td>
+        <td>
+          <span class="pill {% if e.status == 'sent' %}pill-green{% elif e.status == 'failed' %}pill-red{% else %}pill-warn{% endif %}">
+            {{ e.get_status_display }}
+          </span>
+        </td>
+        <td class="text-sm text-muted">{{ e.sent_at|date:"d/m H:i" }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" class="crm-empty">Sin actividad todavía</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </div>
 {% endblock %}

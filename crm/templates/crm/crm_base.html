@@ -1,0 +1,438 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}{% block crm_title %}CRM{% endblock %} — Endonautas{% endblock %}
+
+{% block extrahead %}
+<style>
+/* ══════════════════════════════════════════════
+   CRM Endonautas — Diseño profesional
+   ══════════════════════════════════════════════ */
+:root {
+  --bg:           #0c0c1a;
+  --surface:      #111128;
+  --surface-alt:  #1a1a35;
+  --border:       rgba(255,255,255,0.06);
+  --border-hover: rgba(255,255,255,0.12);
+  --text:         #e8e6f0;
+  --text-muted:   #6b6880;
+  --text-dim:     rgba(255,255,255,0.35);
+  --accent:       #c4813a;
+  --accent-dim:   rgba(196,129,58,0.15);
+  --green:        #4caf7d;
+  --green-dim:    rgba(76,175,125,0.15);
+  --red:          #e06060;
+  --red-dim:      rgba(224,96,96,0.15);
+  --warn:         #e0c040;
+  --warn-dim:     rgba(224,192,64,0.15);
+  --blue:        #5b8def;
+  --blue-dim:    rgba(91,141,239,0.15);
+  --radius:       8px;
+  --radius-lg:    12px;
+  --shadow:       0 2px 12px rgba(0,0,0,0.3);
+}
+
+/* Reset admin overrides */
+#content { background: var(--bg) !important; }
+#content-main { max-width: 100%; }
+
+/* Layout */
+.crm-layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  min-height: calc(100vh - 60px);
+}
+
+/* Sidebar */
+.crm-sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 20px 0;
+  position: sticky;
+  top: 0;
+  height: fit-content;
+}
+.crm-sidebar-brand {
+  padding: 0 20px 20px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 12px;
+}
+.crm-sidebar-brand a {
+  color: var(--text);
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-decoration: none;
+  letter-spacing: -0.02em;
+}
+.crm-sidebar-brand small {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-weight: 400;
+  margin-top: 2px;
+}
+.crm-sidebar-section {
+  padding: 8px 12px 4px;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+.crm-sidebar a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 20px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: all 0.15s;
+  border-left: 3px solid transparent;
+}
+.crm-sidebar a:hover {
+  color: var(--text);
+  background: rgba(255,255,255,0.03);
+}
+.crm-sidebar a.active {
+  color: var(--accent);
+  background: var(--accent-dim);
+  border-left-color: var(--accent);
+}
+.crm-sidebar .sidebar-icon {
+  width: 18px;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+/* Main content */
+.crm-main {
+  padding: 28px 32px;
+  background: var(--bg);
+  min-height: calc(100vh - 60px);
+}
+
+/* Page header */
+.crm-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  gap: 16px;
+}
+.crm-page-header h1 {
+  color: var(--text);
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  border-radius: var(--radius);
+  font-size: 0.82rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  background: var(--surface);
+  transition: all 0.15s;
+  font-family: inherit;
+  line-height: 1.4;
+}
+.btn:hover {
+  color: var(--text);
+  border-color: var(--border-hover);
+  background: var(--surface-alt);
+}
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #000;
+}
+.btn-primary:hover {
+  background: #d4914a;
+  border-color: #d4914a;
+  color: #000;
+}
+.btn-sm {
+  padding: 4px 10px;
+  font-size: 0.75rem;
+}
+.btn-danger {
+  color: var(--red);
+  border-color: rgba(224,96,96,0.3);
+}
+.btn-danger:hover {
+  background: var(--red-dim);
+  border-color: var(--red);
+}
+
+/* Cards */
+.crm-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.crm-card-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Stats grid */
+.crm-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.crm-stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  text-align: center;
+}
+.crm-stat-n {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.crm-stat-l {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 500;
+}
+.crm-stat.green .crm-stat-n { color: var(--green); }
+.crm-stat.red .crm-stat-n { color: var(--red); }
+.crm-stat.accent .crm-stat-n { color: var(--accent); }
+
+/* Tables */
+.crm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.crm-table th {
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.crm-table td {
+  padding: 10px 14px;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.crm-table tr:last-child td { border-bottom: none; }
+.crm-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+/* Pills / badges */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.pill-green { background: var(--green-dim); color: var(--green); }
+.pill-red { background: var(--red-dim); color: var(--red); }
+.pill-warn { background: var(--warn-dim); color: var(--warn); }
+.pill-blue { background: var(--blue-dim); color: var(--blue); }
+.pill-accent { background: var(--accent-dim); color: var(--accent); }
+
+/* Forms */
+.crm-input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  color: var(--text);
+  font-size: 0.85rem;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+.crm-input:focus {
+  border-color: var(--accent);
+}
+.crm-select {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  color: var(--text);
+  font-size: 0.85rem;
+  width: 100%;
+}
+form p { margin-bottom: 14px; }
+form label {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+form .help-text {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+/* Filters bar */
+.crm-filters {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Inline form */
+.crm-inline-form { display: inline; }
+
+/* HR */
+.crm-hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 20px 0;
+}
+
+/* Empty state */
+.crm-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+/* Tabs */
+.crm-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 0;
+  border-bottom: 1px solid var(--border);
+}
+.crm-tab {
+  padding: 10px 18px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+  text-decoration: none;
+}
+.crm-tab:hover { color: var(--text); }
+.crm-tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+.crm-tab-content { display: none; padding-top: 20px; }
+.crm-tab-content.active { display: block; }
+
+/* Grid */
+.crm-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* Text helpers */
+.text-muted { color: var(--text-muted); }
+.text-dim { color: var(--text-dim); }
+.text-accent { color: var(--accent); }
+.text-green { color: var(--green); }
+.text-red { color: var(--red); }
+.text-sm { font-size: 0.78rem; }
+.text-xs { font-size: 0.72rem; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .crm-layout { grid-template-columns: 1fr; }
+  .crm-sidebar { display: none; }
+  .crm-main { padding: 16px; }
+}
+</style>
+{% block crm_extrahead %}{% endblock %}
+{% endblock %}
+
+{% block content %}
+<div class="crm-layout">
+  <nav class="crm-sidebar">
+    <div class="crm-sidebar-brand">
+      <a href="{% url 'crm:dashboard' %}">✦ CRM</a>
+      <small>Endonautas</small>
+    </div>
+    <div class="crm-sidebar-section">Principal</div>
+    <a href="{% url 'crm:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+      <span class="sidebar-icon">◉</span> Dashboard
+    </a>
+    <a href="{% url 'crm:campaigns' %}" class="{% if request.resolver_match.url_name == 'campaigns' %}active{% endif %}">
+      <span class="sidebar-icon">▶</span> Campañas
+    </a>
+    <a href="{% url 'crm:broadcasts' %}" class="{% if request.resolver_match.url_name == 'broadcasts' %}active{% endif %}">
+      <span class="sidebar-icon">✉</span> Broadcasts
+    </a>
+    <div class="crm-sidebar-section">Contactos</div>
+    <a href="{% url 'crm:subscribers' %}" class="{% if request.resolver_match.url_name == 'subscribers' %}active{% endif %}">
+      <span class="sidebar-icon">☺</span> Suscriptores
+    </a>
+    <a href="{% url 'crm:pipeline' %}" class="{% if request.resolver_match.url_name == 'pipeline' %}active{% endif %}">
+      <span class="sidebar-icon">◆</span> Pipeline
+    </a>
+    <a href="{% url 'crm:segments' %}" class="{% if request.resolver_match.url_name == 'segments' %}active{% endif %}">
+      <span class="sidebar-icon">◫</span> Segmentos
+    </a>
+    <a href="{% url 'crm:tags' %}" class="{% if request.resolver_match.url_name == 'tags' %}active{% endif %}">
+      <span class="sidebar-icon">▸</span> Tags
+    </a>
+    <div class="crm-sidebar-section">Configuración</div>
+    <a href="{% url 'crm:lists' %}" class="{% if request.resolver_match.url_name == 'lists' %}active{% endif %}">
+      <span class="sidebar-icon">☰</span> Listas
+    </a>
+    <a href="{% url 'crm:sequences' %}" class="{% if request.resolver_match.url_name == 'sequences' %}active{% endif %}">
+      <span class="sidebar-icon">→</span> Secuencias
+    </a>
+    <a href="{% url 'crm:templates' %}" class="{% if request.resolver_match.url_name == 'templates' %}active{% endif %}">
+      <span class="sidebar-icon">◧</span> Plantillas
+    </a>
+    <a href="{% url 'crm:smtp_test' %}" class="{% if request.resolver_match.url_name == 'smtp_test' %}active{% endif %}">
+      <span class="sidebar-icon">⚡</span> SMTP Test
+    </a>
+  </nav>
+  <main class="crm-main">
+    {% block crm_content %}{% endblock %}
+  </main>
+</div>
+{% endblock %}
+
+{% block footer %}{% endblock %}
