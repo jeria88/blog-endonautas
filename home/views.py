@@ -65,14 +65,24 @@ def brevo_subscribe(request):
                         to=[subscriber.email],
                     )
                     msg.attach_alternative(html, 'text/html')
-                    msg.send()
+                    try:
+                        sent_count = msg.send(fail_silently=False)
+                        if sent_count == 0:
+                            raise Exception("SMTP rechazó sin excepción")
+                        email_status = 'sent'
+                        error_msg = ''
+                        logger.info(f"Email inmediato enviado: {subject} -> {subscriber.email}")
+                    except Exception as send_err:
+                        email_status = 'failed'
+                        error_msg = str(send_err)
+                        logger.error(f"FALLO email inmediato {subject} -> {subscriber.email}: {error_msg}")
                     SentEmail.objects.create(
                         subscriber=subscriber,
                         template=tmpl,
                         sequence=first_step.sequence,
-                        status='sent',
+                        status=email_status,
+                        error_message=error_msg,
                     )
-                    logger.info(f"Email inmediato enviado: {subject} -> {subscriber.email}")
                 except Exception as e:
                     logger.error(f"Error enviando email inmediato a {email}: {e}")
 

@@ -40,16 +40,27 @@ def _send_sequence_email(subscriber_id, step_id):
         to=[subscriber.email],
     )
     msg.attach_alternative(html, 'text/html')
-    msg.send()
+
+    try:
+        sent_count = msg.send(fail_silently=False)
+        if sent_count == 0:
+            raise Exception("El SMTP devolvió 0 (rechazado sin excepción)")
+        status = "sent"
+        error_msg = ""
+        logger.info(f"Enviado: {subject} → {subscriber.email}")
+    except Exception as e:
+        status = "failed"
+        error_msg = str(e)
+        logger.error(f"FALLO enviando {subject} → {subscriber.email}: {error_msg}")
 
     SentEmail.objects.create(
         subscriber=subscriber,
         template=step.template,
         sequence=step.sequence,
-        status="sent",
+        status=status,
+        error_message=error_msg,
     )
-    logger.info(f"Encolado: {subject} → {subscriber.email}")
-    return f"ok: {subscriber.email}"
+    return f"{'ok' if status == 'sent' else 'fail'}: {subscriber.email}"
 
 
 def _process_sequence_steps():

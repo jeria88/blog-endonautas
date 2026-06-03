@@ -122,6 +122,11 @@
                         <span class="crm-pill {% if e.status == 'sent' %}pill-active{% elif e.status == 'failed' %}pill-inactive{% endif %}">
                             {{ e.get_status_display }}
                         </span>
+                        {% if e.error_message %}
+                        <div style="font-size:0.7rem;color:var(--crm-red);margin-top:0.2rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;" title="{{ e.error_message }}">
+                            {{ e.error_message|truncatechars:40 }}
+                        </div>
+                        {% endif %}
                     </td>
                     <td style="color:var(--crm-muted);font-size:0.78rem">{{ e.sent_at|date:"d/m H:i" }}</td>
                     <td>
