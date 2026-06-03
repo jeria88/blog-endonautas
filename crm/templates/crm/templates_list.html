@@ -37,7 +37,8 @@
             <div class="tmpl-slug">{{ tmpl.slug }}</div>
             <div class="tmpl-actions">
                 <a class="tmpl-btn primary" href="{% url 'crm:template_preview' tmpl.id %}" target="_blank">Vista previa</a>
-                <a class="tmpl-btn" href="/admin/crm/emailtemplate/{{ tmpl.id }}/change/">Editar</a>
+                <a class="tmpl-btn" href="{% url 'crm:template_edit' tmpl.id %}">Editar HTML</a>
+                <a class="tmpl-btn" href="/admin/crm/emailtemplate/{{ tmpl.id }}/change/">Admin</a>
             </div>
         </div>
         {% empty %}

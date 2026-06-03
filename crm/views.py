@@ -193,3 +193,31 @@ class ListForm(forms.ModelForm):
         help_texts = {
             "slug": "Identificador único para URLs. Solo letras, números y guiones.",
         }
+
+
+class TemplateEditForm(forms.ModelForm):
+    class Meta:
+        model = EmailTemplate
+        fields = ["subject", "html_content", "plain_text_content"]
+        widgets = {
+            "subject": forms.TextInput(attrs={"class": "crm-input", "placeholder": "Asunto del email"}),
+            "html_content": forms.Textarea(attrs={"class": "crm-input crm-code", "rows": 20, "wrap": "off"}),
+            "plain_text_content": forms.Textarea(attrs={"class": "crm-input", "rows": 6}),
+        }
+        help_texts = {
+            "html_content": "Usa <code>{{ nombre }}</code> para personalizar. El resto de marcadores se inyectan automáticamente.",
+        }
+
+
+@staff_member_required
+def crm_template_edit(request, template_id):
+    tmpl = get_object_or_404(EmailTemplate, id=template_id)
+    if request.method == "POST":
+        form = TemplateEditForm(request.POST, instance=tmpl)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"Plantilla '{tmpl.name}' actualizada.")
+            return redirect("crm:templates")
+    else:
+        form = TemplateEditForm(instance=tmpl)
+    return render(request, "crm/template_edit.html", {"form": form, "tmpl": tmpl})

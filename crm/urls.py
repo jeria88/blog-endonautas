@@ -15,4 +15,5 @@ urlpatterns = [
     path("sequences/<int:sequence_id>/run/", views.crm_sequence_run, name="sequence_run"),
     path("templates/", views.crm_templates, name="templates"),
     path("templates/<int:template_id>/preview/", views.crm_template_preview, name="template_preview"),
+    path("templates/<int:template_id>/edit/", views.crm_template_edit, name="template_edit"),
 ]
