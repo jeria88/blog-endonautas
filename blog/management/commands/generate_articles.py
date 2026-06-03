@@ -13,7 +13,7 @@ import logging
 from django.core.management.base import BaseCommand, CommandError
 
 from blog.models import GeneratedArticle
-from blog.services import generate_article, generate_articles_batch, BLOG_TOPICS
+from blog.services import generate_article, BLOG_TOPICS, get_topic_title, get_topic_keywords, get_topic_cta, get_topic_capa
 
 logger = logging.getLogger(__name__)
 
@@ -88,11 +88,12 @@ class Command(BaseCommand):
         # Seleccionar temas que no tengan artículos generados
         existing_slugs = set(GeneratedArticle.objects.values_list('slug', flat=True))
         available_topics = []
-        for topic in BLOG_TOPICS:
+        for topic_tuple in BLOG_TOPICS:
+            topic_title = get_topic_title(topic_tuple)
             from django.utils.text import slugify
-            slug = slugify(topic)[:200]
+            slug = slugify(topic_title)[:200]
             if slug not in existing_slugs:
-                available_topics.append(topic)
+                available_topics.append(topic_tuple)
 
         if not available_topics:
             self.stdout.write(self.style.WARNING("Todos los temas predefinidos ya tienen artículos generados."))
@@ -103,13 +104,24 @@ class Command(BaseCommand):
         self.stdout.write(f"Generando {len(topics_to_generate)} artículo(s)...")
 
         created = 0
-        for topic in topics_to_generate:
+        for topic_tuple in topics_to_generate:
+            topic_title = get_topic_title(topic_tuple)
+            keywords = get_topic_keywords(topic_tuple)
+            cta_url = get_topic_cta(topic_tuple)
             try:
-                article = generate_article(topic, source_type=source_type)
-                self.stdout.write(self.style.SUCCESS(f"  ✓ {article.title}"))
+                article = generate_article(
+                    topic_title,
+                    source_type=source_type,
+                    source_detail=f"Capa SEO: {get_topic_capa(topic_tuple)}"
+                )
+                # Actualizar con los keywords y CTA del tema
+                article.keywords = keywords
+                article.cta_url = cta_url
+                article.save(update_fields=['keywords', 'cta_url'])
+                self.stdout.write(self.style.SUCCESS(f"  ✓ {article.title} [{get_topic_capa(topic_tuple)}]"))
                 created += 1
             except Exception as e:
-                self.stderr.write(self.style.ERROR(f"  ✗ {topic[:50]}...: {e}"))
+                self.stderr.write(self.style.ERROR(f"  ✗ {topic_title[:50]}...: {e}"))
 
         self.stdout.write(self.style.SUCCESS(f"\n{created} artículo(s) generado(s)."))
         self.stdout.write("Revisa y aprueba en: /admin/blog/generatedarticle/")
