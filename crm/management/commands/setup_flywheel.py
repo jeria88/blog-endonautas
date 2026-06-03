@@ -5,7 +5,7 @@ from crm.models import EmailList, EmailTemplate, EmailSequence, SequenceStep
 
 LOGO = (
     '<div style="border-radius:50%;width:80px;height:80px;overflow:hidden;display:inline-block;'
-    'background-color:#0a0a0a;border:2px solid rgba(240,232,220,0.08);">'
+    'background-color:#161513;border:2px solid rgba(232,228,220,0.06);">'
     '<img src="https://endonautas.cl/static/img/logo.ffc70eb7b9d7.png" '
     'alt="Endonautas" width="80" height="80" '
     'style="display:block;border:0;outline:none;border-radius:50%;width:80px;height:80px;'
@@ -22,16 +22,16 @@ _EMAIL_OPEN = f"""<!DOCTYPE html>
 {{{{ preview }}}}
 </div>
 <style>
-body{{margin:0;padding:0;background-color:#f4f4f0;}}
+body{{margin:0;padding:0;background-color:#f5f3ef;}}
 p{{margin:0 0 16px 0;}}
 p:last-of-type{{margin-bottom:0;}}
 ul{{margin:0 0 16px 0;padding-left:20px;}}
 li{{margin-bottom:8px;}}
-strong{{font-weight:600;color:#e8e4dc;}}
+strong{font-weight:700;color:#f0ece4;}
 a{{color:#7ECCCD;}}
 </style>
 </head>
-<body style="margin:0;padding:0;background-color:#f4f4f0;">
+<body style="margin:0;padding:0;background-color:#f5f3ef;">
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f4f4f0">
 <tr><td align="center" style="padding:32px 16px 40px 16px;">
@@ -42,11 +42,11 @@ a{{color:#7ECCCD;}}
 </td></tr>
 </table>
 
-<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background-color:#0a0a0a;border-radius:12px;overflow:hidden;">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background-color:#161513;border-radius:12px;overflow:hidden;">
 
 <tr><td style="padding:0;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="background-color:#7ECCCD;height:3px;font-size:0;line-height:0;">&nbsp;</td></tr></table></td></tr>
 
-<tr><td style="padding:36px 44px 24px 44px;font-family:Georgia,'Times New Roman',serif;font-size:16px;font-weight:400;line-height:1.7;color:#e8e4dc;">
+<tr><td style="padding:36px 44px 24px 44px;font-family:Georgia,'Times New Roman',serif;font-size:17px;font-weight:400;line-height:1.75;color:#f0ece4;">
 """
 
 _FIRMA = """
@@ -60,7 +60,7 @@ _FIRMA = """
 <img src="https://endonautas.cl/static/img/franco-jeria.29d377e25215.jpeg" alt="Franco" width="48" height="48" style="display:block;border-radius:24px;border:2px solid rgba(126,204,205,0.25);width:48px;height:48px;object-fit:cover;" />
 </td>
 <td>
-<p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:15px;font-weight:600;color:#e8e4dc;">Franco</p>
+<p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:15px;font-weight:600;color:#f0ece4;">Franco</p>
 <p style="margin:2px 0 0 0;font-family:Arial,sans-serif;font-size:12px;color:rgba(232,228,220,0.4);">Fundador de Endonautas</p>
 </td>
 </tr>
@@ -71,7 +71,7 @@ _FIRMA = """
 """
 
 _FOOTER = """
-<tr><td style="padding:20px 44px 24px 44px;background-color:#000000;border-top:1px solid rgba(232,228,220,0.06);">
+<tr><td style="padding:20px 44px 24px 44px;background-color:#161513;border-top:1px solid rgba(240,236,228,0.06);">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
 <tr><td style="font-family:Arial,sans-serif;font-size:11px;line-height:1.7;color:rgba(232,228,220,0.25);">
 <p style="margin:0 0 4px 0;">
@@ -103,11 +103,11 @@ def _email(body: str, preview: str = "") -> str:
 
 
 def _greeting() -> str:
-    return '<p style="margin:0 0 24px 0;font-size:14px;color:rgba(232,228,220,0.45);">Hola {{ nombre }},</p>'
+    return '<p style="margin:0 0 24px 0;font-size:14px;color:rgba(240,236,228,0.4);">Hola {{ nombre }},</p>'
 
 
 def _title(text: str) -> str:
-    return f'<p style="font-size:18px;font-weight:600;color:#e8e4dc;margin-bottom:24px;">{text}</p>'
+    return f'<p style="font-size:18px;font-weight:600;color:#f0ece4;margin-bottom:24px;">{text}</p>'
 
 
 def _quote(text: str) -> str:
