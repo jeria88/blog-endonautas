@@ -60,7 +60,7 @@
         <tbody>
             {% for s in subscribers %}
             <tr>
-                <td>{{ s.email }}</td>
+                <td><a href="{% url 'crm:subscriber_detail' s.id %}" style="color:var(--crm-accent);text-decoration:none;">{{ s.email }}</a></td>
                 <td style="color:var(--crm-muted)">{{ s.name|default:"—" }}</td>
                 <td>
                     {% for sub in s.subscriptions.all %}

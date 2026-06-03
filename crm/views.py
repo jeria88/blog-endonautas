@@ -178,6 +178,108 @@ def crm_sequence_run(request, sequence_id):
     return JsonResponse({"status": "ok", "message": f"Secuencia '{sequence.name}' iniciada"})
 
 
+
+
+# ── Campañas y Estado ────────────────────────────────────────────────────────
+
+
+@staff_member_required
+def crm_campaigns(request):
+    """Dashboard de campañas con estado de cada secuencia."""
+    from django.db.models import Count, Q
+
+    lists = EmailList.objects.annotate(
+        sub_count=Count("subscribers", filter=Q(subscribers__subscriber__is_active=True), distinct=True),
+    ).prefetch_related("sequences__steps__template").order_by("name")
+
+    campaigns = []
+    for lst in lists:
+        for seq in lst.sequences.all():
+            steps_data = []
+            for step in seq.steps.order_by("step_number"):
+                sent_count = SentEmail.objects.filter(sequence=seq, template=step.template, status="sent").count()
+                pending_count = SentEmail.objects.filter(sequence=seq, template=step.template, status="pending").count()
+                failed_count = SentEmail.objects.filter(sequence=seq, template=step.template, status="failed").count()
+                steps_data.append({
+                    "step": step,
+                    "sent": sent_count,
+                    "pending": pending_count,
+                    "failed": failed_count,
+                    "total": sent_count + pending_count + failed_count,
+                })
+            campaigns.append({
+                "list": lst,
+                "sequence": seq,
+                "steps": steps_data,
+                "total_sent": sum(s["sent"] for s in steps_data),
+                "total_pending": sum(s["pending"] for s in steps_data),
+                "total_failed": sum(s["failed"] for s in steps_data),
+            })
+
+    return render(request, "crm/campaigns.html", {
+        "campaigns": campaigns,
+        "total_subscribers": Subscriber.objects.filter(is_active=True).count(),
+        "total_sent": SentEmail.objects.filter(status="sent").count(),
+        "total_pending": SentEmail.objects.filter(status="pending").count(),
+        "total_failed": SentEmail.objects.filter(status="failed").count(),
+    })
+
+
+@staff_member_required
+def crm_run_scheduler(request):
+    """Ejecuta el flywheel manualmente."""
+    from .tasks import _process_sequence_steps
+    try:
+        result = _process_sequence_steps()
+        messages.success(request, f"Scheduler ejecutado: {result}")
+    except Exception as e:
+        messages.error(request, f"Error: {e}")
+        logger.error(f"crm_run_scheduler error: {e}", exc_info=True)
+    return redirect("crm:dashboard")
+
+
+# ── Suscriptores (gestión avanzada) ──────────────────────────────────────────
+
+
+@staff_member_required
+def crm_subscriber_detail(request, subscriber_id):
+    """Detalle de un suscriptor con historial y acciones."""
+    subscriber = get_object_or_404(Subscriber, id=subscriber_id)
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+        if action == "toggle_active":
+            subscriber.is_active = not subscriber.is_active
+            subscriber.save()
+            messages.success(request, f"Suscriptor {'activado' if subscriber.is_active else 'desactivado'}.")
+        elif action == "update_name":
+            subscriber.name = request.POST.get("name", "").strip()
+            subscriber.save()
+            messages.success(request, "Nombre actualizado.")
+        elif action == "remove_list":
+            list_id = request.POST.get("list_id")
+            Subscription.objects.filter(subscriber=subscriber, email_list_id=list_id).delete()
+            messages.success(request, "Suscripción eliminada.")
+        elif action == "resend_email":
+            email_id = request.POST.get("email_id")
+            sent = get_object_or_404(SentEmail, id=email_id)
+            from .tasks import _send_sequence_email
+            step = SequenceStep.objects.filter(sequence=sent.sequence, template=sent.template).first()
+            if step:
+                _send_sequence_email(subscriber.id, step.id)
+                messages.success(request, "Email reenviado.")
+        return redirect("crm:subscriber_detail", subscriber_id=subscriber.id)
+
+    sent_emails = SentEmail.objects.filter(subscriber=subscriber).select_related("template", "sequence").order_by("-sent_at")
+    subscriptions = Subscription.objects.filter(subscriber=subscriber).select_related("email_list").all()
+
+    return render(request, "crm/subscriber_detail.html", {
+        "subscriber": subscriber,
+        "sent_emails": sent_emails,
+        "subscriptions": subscriptions,
+        "lists": EmailList.objects.all(),
+    })
+
 # ── Formularios ──────────────────────────────────────────────────────────────
 
 

@@ -1,0 +1,145 @@
+{% extends "admin/base_site.html" %}
+{% block title %}{{ subscriber.email }} | CRM{% endblock %}
+{% block extrahead %}
+<style>
+:root { --crm-surface: #12121e; --crm-border: rgba(255,255,255,0.07); --crm-muted: #6b6878; --crm-text: #e8e4dc; --crm-accent: #c4813a; --crm-green: #3d7a5e; --crm-red: #a84b3c; }
+.crm { padding: 2rem; max-width: 960px; margin: 0 auto; }
+.crm-nav { display: flex; gap: 0.25rem; margin-bottom: 2rem; border-bottom: 1px solid var(--crm-border); padding-bottom: 1rem; }
+.crm-nav a { color: var(--crm-muted); text-decoration: none; font-size: 0.875rem; padding: 0.4rem 0.9rem; border-radius: 6px; }
+.crm-nav a:hover { color: var(--crm-text); background: rgba(255,255,255,0.05); }
+.crm-back { color: var(--crm-muted); text-decoration: none; font-size: 0.85rem; display: inline-block; margin-bottom: 1rem; }
+.crm-back:hover { color: var(--crm-text); }
+.crm-card { background: var(--crm-surface); border: 1px solid var(--crm-border); border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem; }
+.crm-card-title { font-size: 1rem; font-weight: 600; color: var(--crm-text); margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--crm-border); }
+.crm-field { margin-bottom: 0.75rem; display: flex; gap: 1rem; align-items: center; }
+.crm-field-label { font-size: 0.8rem; color: var(--crm-muted); min-width: 100px; }
+.crm-field-value { font-size: 0.9rem; color: var(--crm-text); }
+.crm-pill { display: inline-block; padding: 0.18rem 0.5rem; border-radius: 999px; font-size: 0.72rem; }
+.pill-active { background: rgba(61,122,94,0.2); color: #5aad84; border: 1px solid rgba(61,122,94,0.3); }
+.pill-inactive { background: rgba(168,75,60,0.2); color: #d96355; border: 1px solid rgba(168,75,60,0.3); }
+.crm-table { width: 100%; border-collapse: collapse; }
+.crm-table th { padding: 0.6rem 0.75rem; text-align: left; font-size: 0.72rem; color: var(--crm-muted); text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid var(--crm-border); }
+.crm-table td { padding: 0.5rem 0.75rem; font-size: 0.83rem; color: var(--crm-text); border-bottom: 1px solid var(--crm-border); }
+.crm-table tr:last-child td { border-bottom: none; }
+.crm-btn { display: inline-block; padding: 0.35rem 0.85rem; border-radius: 6px; font-size: 0.8rem; text-decoration: none; cursor: pointer; border: 1px solid var(--crm-border); color: var(--crm-muted); background: transparent; font-family: inherit; }
+.crm-btn:hover { color: var(--crm-text); border-color: rgba(255,255,255,0.2); }
+.crm-btn.small { padding: 0.2rem 0.5rem; font-size: 0.72rem; }
+.crm-btn.danger { border-color: rgba(168,75,60,0.3); color: var(--crm-red); }
+.crm-btn.danger:hover { background: rgba(168,75,60,0.15); }
+.crm-inline-form { display: inline; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="crm">
+    <nav class="crm-nav">
+        <a href="{% url 'crm:dashboard' %}">Dashboard</a>
+        <a href="{% url 'crm:campaigns' %}">Campañas</a>
+        <a href="{% url 'crm:lists' %}">Listas</a>
+        <a href="{% url 'crm:subscribers' %}">Suscriptores</a>
+        <a href="{% url 'crm:sequences' %}">Secuencias</a>
+        <a href="{% url 'crm:templates' %}">Plantillas</a>
+    </nav>
+
+    <a class="crm-back" href="{% url 'crm:subscribers' %}">← Volver a suscriptores</a>
+
+    <div class="crm-card">
+        <div class="crm-card-title">Información del suscriptor</div>
+        <div class="crm-field">
+            <span class="crm-field-label">Email</span>
+            <span class="crm-field-value">{{ subscriber.email }}</span>
+        </div>
+        <div class="crm-field">
+            <span class="crm-field-label">Nombre</span>
+            <span class="crm-field-value">
+                {{ subscriber.name|default:"—" }}
+                <form method="post" class="crm-inline-form" style="display:inline;margin-left:0.5rem;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_name">
+                    <input type="text" name="name" value="{{ subscriber.name }}" placeholder="Nombre" style="background:#0b0b14;border:1px solid var(--crm-border);border-radius:4px;color:var(--crm-text);padding:0.2rem 0.5rem;font-size:0.8rem;width:150px;">
+                    <button type="submit" class="crm-btn small">↻</button>
+                </form>
+            </span>
+        </div>
+        <div class="crm-field">
+            <span class="crm-field-label">Estado</span>
+            <span class="crm-field-value">
+                <span class="crm-pill {% if subscriber.is_active %}pill-active{% else %}pill-inactive{% endif %}">
+                    {{ subscriber.is_active|yesno:"Activo,Inactivo" }}
+                </span>
+                <form method="post" class="crm-inline-form" style="display:inline;margin-left:0.5rem;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="toggle_active">
+                    <button type="submit" class="crm-btn small {% if subscriber.is_active %}danger{% endif %}">
+                        {% if subscriber.is_active %}Desactivar{% else %}Activar{% endif %}
+                    </button>
+                </form>
+            </span>
+        </div>
+        <div class="crm-field">
+            <span class="crm-field-label">Registro</span>
+            <span class="crm-field-value">{{ subscriber.created_at|date:"d/m/Y H:i" }}</span>
+        </div>
+    </div>
+
+    <div class="crm-card">
+        <div class="crm-card-title">Listas suscritas</div>
+        {% for sub in subscriptions %}
+        <div class="crm-field">
+            <span class="crm-field-label">{{ sub.email_list.name }}</span>
+            <span class="crm-field-value" style="font-size:0.78rem;color:var(--crm-muted);">
+                desde {{ sub.subscribed_at|date:"d/m/Y" }} · origen: {{ sub.source|default:"—" }}
+                <form method="post" class="crm-inline-form" style="display:inline;margin-left:0.5rem;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="remove_list">
+                    <input type="hidden" name="list_id" value="{{ sub.email_list.id }}">
+                    <button type="submit" class="crm-btn small danger" onclick="return confirm('¿Eliminar de esta lista?')">✕</button>
+                </form>
+            </span>
+        </div>
+        {% empty %}
+        <div style="color:var(--crm-muted);font-size:0.85rem;">Sin suscripciones activas</div>
+        {% endfor %}
+    </div>
+
+    <div class="crm-card">
+        <div class="crm-card-title">Historial de envíos ({{ sent_emails|length }})</div>
+        <table class="crm-table">
+            <thead>
+                <tr>
+                    <th>Plantilla</th>
+                    <th>Secuencia</th>
+                    <th>Estado</th>
+                    <th>Fecha</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in sent_emails %}
+                <tr>
+                    <td>{{ e.template.name }}</td>
+                    <td style="color:var(--crm-muted);font-size:0.78rem">{{ e.sequence.name|default:"—" }}</td>
+                    <td>
+                        <span class="crm-pill {% if e.status == 'sent' %}pill-active{% elif e.status == 'failed' %}pill-inactive{% endif %}">
+                            {{ e.get_status_display }}
+                        </span>
+                    </td>
+                    <td style="color:var(--crm-muted);font-size:0.78rem">{{ e.sent_at|date:"d/m H:i" }}</td>
+                    <td>
+                        {% if e.status == 'failed' or e.status == 'pending' %}
+                        <form method="post" class="crm-inline-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="resend_email">
+                            <input type="hidden" name="email_id" value="{{ e.id }}">
+                            <button type="submit" class="crm-btn small">Reenviar</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" style="text-align:center;color:var(--crm-muted);padding:2rem">Sin envíos todavía</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
