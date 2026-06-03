@@ -4,7 +4,7 @@ from django.utils import timezone
 from datetime import timedelta
 import csv
 
-from .models import Subscriber, EmailList, Subscription, EmailTemplate, EmailSequence, SequenceStep, SentEmail
+from .models import Subscriber, EmailList, Subscription, EmailTemplate, EmailSequence, SequenceStep, SentEmail, PipelineStage, PipelineLog, ContactNote, Segment
 
 
 # ── Actions ──────────────────────────────────────────────────────────────────
@@ -78,7 +78,7 @@ class SubscriberAdmin(admin.ModelAdmin):
     list_filter = ["is_active", "created_at", "subscriptions__email_list"]
     search_fields = ["email", "name"]
     ordering = ["-created_at"]
-    inlines = [SubscriptionInline]
+    inlines = [SubscriptionInline, ContactNoteInline]
     actions = [export_csv, activate_selected, deactivate_selected]
     list_select_related = False
     date_hierarchy = "created_at"
@@ -176,3 +176,53 @@ class SentEmailAdmin(admin.ModelAdmin):
     def sequence_name(self, obj):
         return obj.sequence.name if obj.sequence else "—"
     sequence_name.short_description = "Secuencia"
+
+
+# ── Pipeline, Notas y Segmentos ──────────────────────────────────────────────
+
+
+@admin.register(PipelineStage)
+class PipelineStageAdmin(admin.ModelAdmin):
+    list_display = ["name", "slug", "order", "subscriber_count"]
+    prepopulated_fields = {"slug": ("name",)}
+    ordering = ["order"]
+
+    def subscriber_count(self, obj):
+        return PipelineLog.objects.filter(stage=obj).values("subscriber").distinct().count()
+    subscriber_count.short_description = "Suscriptores"
+
+
+@admin.register(PipelineLog)
+class PipelineLogAdmin(admin.ModelAdmin):
+    list_display = ["subscriber", "stage", "entered_at"]
+    list_filter = ["stage", "entered_at"]
+    search_fields = ["subscriber__email", "subscriber__name"]
+    date_hierarchy = "entered_at"
+
+
+class ContactNoteInline(admin.TabularInline):
+    model = ContactNote
+    extra = 0
+    fields = ["content", "created_by", "is_pinned"]
+    classes = ["collapse"]
+
+
+@admin.register(ContactNote)
+class ContactNoteAdmin(admin.ModelAdmin):
+    list_display = ["subscriber", "content_preview", "created_by", "is_pinned", "created_at"]
+    list_filter = ["is_pinned", "created_at"]
+    search_fields = ["subscriber__email", "content"]
+
+    def content_preview(self, obj):
+        return obj.content[:80] + ("..." if len(obj.content) > 80 else "")
+    content_preview.short_description = "Nota"
+
+
+@admin.register(Segment)
+class SegmentAdmin(admin.ModelAdmin):
+    list_display = ["name", "slug", "subscriber_count", "updated_at"]
+    prepopulated_fields = {"slug": ("name",)}
+
+    def subscriber_count(self, obj):
+        return obj.get_subscribers().count()
+    subscriber_count.short_description = "Suscriptores"

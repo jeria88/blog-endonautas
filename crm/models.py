@@ -127,3 +127,97 @@ class SentEmail(models.Model):
 
     def __str__(self):
         return f"{self.template} → {self.subscriber} ({self.status})"
+
+
+# ── Pipeline de Leads ──────────────────────────────────────────────────────────
+
+class PipelineStage(models.Model):
+    """Etapa del pipeline: visitante -> suscriptor -> trialer -> cliente."""
+    name = models.CharField(max_length=60, unique=True)
+    slug = models.SlugField(unique=True)
+    order = models.PositiveIntegerField(default=0)
+    description = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name = "Etapa del pipeline"
+        verbose_name_plural = "Etapas del pipeline"
+        ordering = ["order"]
+
+    def __str__(self):
+        return self.name
+
+
+class PipelineLog(models.Model):
+    """Registro de cuando un suscriptor cambia de etapa."""
+    subscriber = models.ForeignKey(Subscriber, on_delete=models.CASCADE, related_name="pipeline_logs")
+    stage = models.ForeignKey(PipelineStage, on_delete=models.CASCADE)
+    entered_at = models.DateTimeField(auto_now_add=True)
+    notes = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name = "Cambio de etapa"
+        verbose_name_plural = "Cambios de etapa"
+        ordering = ["-entered_at"]
+
+    def __str__(self):
+        return f"{self.subscriber} -> {self.stage} ({self.entered_at:%d/%m})"
+
+
+class ContactNote(models.Model):
+    """Nota interna sobre un suscriptor."""
+    subscriber = models.ForeignKey(Subscriber, on_delete=models.CASCADE, related_name="notes")
+    content = models.TextField()
+    created_by = models.CharField(max_length=120, blank=True, help_text="Quien creo la nota")
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_pinned = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = "Nota"
+        verbose_name_plural = "Notas"
+        ordering = ["-is_pinned", "-created_at"]
+
+    def __str__(self):
+        return f"Nota sobre {self.subscriber}: {self.content[:50]}..."
+
+
+class Segment(models.Model):
+    """Segmento para filtrar suscriptores por criterios."""
+    name = models.CharField(max_length=120, unique=True)
+    slug = models.SlugField(unique=True)
+    description = models.TextField(blank=True)
+    # Criterios almacenados como JSON: {"email_sent": true, "min_emails": 3, "list_slug": "mascara", ...}
+    criteria = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Segmento"
+        verbose_name_plural = "Segmentos"
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+    def get_subscribers(self):
+        """Aplica los criterios del segmento y devuelve un queryset."""
+        from django.db.models import Count, Q
+        qs = Subscriber.objects.filter(is_active=True)
+
+        crit = self.criteria or {}
+        if crit.get("list_slug"):
+            qs = qs.filter(subscriptions__email_list__slug=crit["list_slug"])
+        if crit.get("min_emails"):
+            qs = qs.annotate(
+                email_count=Count("sent_emails", filter=Q(sent_emails__status="sent"))
+            ).filter(email_count__gte=crit["min_emails"])
+        if crit.get("has_failed"):
+            qs = qs.filter(sent_emails__status="failed").distinct()
+        if crit.get("pipeline_stage"):
+            from django.utils import timezone
+            from datetime import timedelta
+            qs = qs.filter(
+                pipeline_logs__stage__slug=crit["pipeline_stage"],
+                pipeline_logs__entered_at__gte=timezone.now() - timedelta(days=crit.get("stage_days", 30)),
+            )
+        return qs.distinct()
+

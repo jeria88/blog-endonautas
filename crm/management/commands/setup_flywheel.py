@@ -60,8 +60,8 @@ _FIRMA = """
 <img src="https://endonautas.cl/static/img/franco-jeria.29d377e25215.jpeg" alt="Franco" width="48" height="48" style="display:block;border-radius:24px;border:2px solid rgba(126,204,205,0.25);width:48px;height:48px;object-fit:cover;" />
 </td>
 <td>
-<p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:15px;font-weight:600;color:#f0ece4;">Franco</p>
-<p style="margin:2px 0 0 0;font-family:Arial,sans-serif;font-size:12px;color:rgba(232,228,220,0.4);">Fundador de Endonautas</p>
+<p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:16px;font-weight:600;color:#f0ece4;">Franco Jeria Castro</p>
+<p style="margin:2px 0 0 0;font-family:Arial,sans-serif;font-size:12px;color:rgba(240,236,228,0.4);">Fundador de Endonautas</p>
 </td>
 </tr>
 </table>
@@ -73,7 +73,7 @@ _FIRMA = """
 _FOOTER = """
 <tr><td style="padding:20px 44px 24px 44px;background-color:#161513;border-top:1px solid rgba(240,236,228,0.06);">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-<tr><td style="font-family:Arial,sans-serif;font-size:11px;line-height:1.7;color:rgba(232,228,220,0.25);">
+<tr><td align="center" style="font-family:Arial,sans-serif;font-size:11px;line-height:1.7;color:rgba(240,236,228,0.25);">
 <p style="margin:0 0 4px 0;">
 <a href="https://endonautas.cl" style="color:rgba(232,228,220,0.25);text-decoration:none;">endonautas.cl</a>
 <span style="margin:0 6px;">&#183;</span>
@@ -103,7 +103,7 @@ def _email(body: str, preview: str = "") -> str:
 
 
 def _greeting() -> str:
-    return '<p style="margin:0 0 24px 0;font-size:14px;color:rgba(240,236,228,0.4);">Hola {{ nombre }},</p>'
+    return '<p style="margin:0 0 24px 0;font-size:16px;color:rgba(240,236,228,0.55);">Hola {{ nombre }},</p>'
 
 
 def _title(text: str) -> str:
