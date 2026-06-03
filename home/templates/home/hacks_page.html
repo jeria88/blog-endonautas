@@ -2,7 +2,7 @@
 {% load wagtailcore_tags %}
 
 {% block title %}3 Hacks de Endonáutica — Guía gratuita{% endblock %}
-{% block meta_description %}Tus patrones tienen estructura. No son azar — son arquitectura. Descarga gratis la guía de 3 Hacks de Endonáutica para tu Viaje Interior.{% endblock %}
+{% block meta_description %}Tus patrones tienen estructura. No son azar — son arquitectura. Un hack no es un truco. Es un atajo consciente hacia algo que siempre estuvo ahí. Descarga gratis.{% endblock %}
 {% block og_title %}3 Hacks de Endonáutica — Endonautas{% endblock %}
 {% block og_url %}/hacks/{% endblock %}
 {% block canonical %}/hacks/{% endblock %}
@@ -176,7 +176,7 @@
         autocomplete="email"
       >
       <button type="submit" class="hacks-submit" id="hacks-btn">
-        Descargar la guía gratuita →
+        Un hack no es un truco. Es un atajo consciente →
       </button>
       <p class="hacks-notice">Sin spam. Solo la guía y un seguimiento de 3 correos.<br><span style="font-size:0.7rem; opacity:0.7;">Si no te llega, revisa spam y marca como "no spam".</span></p>
     </form>
@@ -184,7 +184,7 @@
     <div class="hacks-thanks" id="hacks-thanks">
       <h3>¡Listo! Revisa tu correo.</h3>
       <p>Te enviamos la guía. No la leas de corrido — lee un hack, desaparece un día, vuelve al siguiente.</p>
-      <p style="font-size:0.8rem; color:var(--dim); margin-top:0.75rem;">⚠️ Si no te llega en 5 minutos, revisa tu carpeta de spam. marca el correo como "no spam" para recibir los siguientes.</p>
+      <p style="font-size:0.8rem; color:var(--dim); margin-top:0.75rem;">⚠️ Si no te llega en 5 minutos, revisa tu carpeta de spam. Marca el correo como "no spam" para recibir los siguientes.</p>
       <div class="hacks-thanks-cta">
         <a href="https://app.endonautas.cl/accounts/registro/" class="btn-ghost" style="font-size:0.85rem;">
           Crear cuenta gratuita en la app →
@@ -220,12 +220,12 @@
         thanks.style.display = 'block';
       } else {
         btn.disabled = false;
-        btn.textContent = 'Descargar la guía gratuita →';
+        btn.textContent = 'Un hack no es un truco. Es un atajo consciente →';
         alert(json.error || 'Hubo un problema. Intenta de nuevo.');
       }
     } catch {
       btn.disabled = false;
-      btn.textContent = 'Descargar la guía gratuita →';
+      btn.textContent = 'Un hack no es un truco. Es un atajo consciente →';
       alert('Error de conexión. Intenta de nuevo.');
     }
   });

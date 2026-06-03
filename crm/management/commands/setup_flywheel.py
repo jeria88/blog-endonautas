@@ -258,7 +258,7 @@ HACKS_TEMPLATES = [
             + """<p>Los hacks son un mapa de lectura. La app es el territorio.</p>
 <p>En la app puedes hacer los tests que miden los patrones que describe la guía, conversar con el Espejo de Conflictos cuando algo se repite en tu vida y no entiendes por qué, y construir tu Mapa Interior — un registro vivo de lo que vas descubriendo.</p>
 <p>Es gratuita. Sin tarjeta. Sin compromisos.</p>"""
-            + _app_cta(),
+            + _app_cta("Un hack no es un truco. Es un atajo consciente →"),
             preview="Los hacks son el mapa. La app es el territorio donde aplicarlos."
         ),
     },
@@ -304,7 +304,7 @@ VIAJE_TEMPLATES = [
             + """<p>La guía te da el mapa. La app te da el espacio para caminar.</p>
 <p>Tests que revelan los patrones que la guía describe. El Espejo de Conflictos: una IA que no te da respuestas — te hace las preguntas que nadie más te hace. Tu Mapa Interior, que se construye con cada exploración.</p>
 <p>Gratuita. Sin tarjeta. Dos minutos para empezar.</p>"""
-            + _app_cta(),
+            + _app_cta("El viaje interior no es un destino. Es una dirección →"),
             preview="La guía te da el mapa. La app te da el espacio para caminar."
         ),
     },

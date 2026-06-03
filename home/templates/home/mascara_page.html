@@ -2,7 +2,7 @@
 {% load wagtailcore_tags %}
 
 {% block title %}Descubre tu MÁSCARA — Guía gratuita{% endblock %}
-{% block meta_description %}¿Qué patrón usas para sobrevivir que ya no te sirve? Descarga gratis el capítulo sobre la MÁSCARA de Endonautica.{% endblock %}
+{% block meta_description %}¿Qué patrón usas para sobrevivir que ya no te sirve? Ponle nombre a lo que ya sabes que se repite. Descarga gratis el capítulo sobre la MÁSCARA de Endonautica.{% endblock %}
 {% block og_title %}Descubre tu MÁSCARA — Endonautas{% endblock %}
 {% block og_url %}/mascara/{% endblock %}
 {% block canonical %}/mascara/{% endblock %}
@@ -145,15 +145,15 @@
         autocomplete="email"
       >
       <button type="submit" class="mascara-submit" id="mascara-btn">
-        Descargar la guía gratuita →
+        Ponle nombre a lo que ya sabes que se repite →
       </button>
-      <p class="mascara-notice">Sin spam. Solo la guía y un seguimiento de 3 correos.<br><span style="font-size:0.7rem; opacity:0.7;">Si no te llega, revisa spam y marca como "no spam".</span></p>
+      <p class="mascara-notice">Sin spam. Solo la guía y un seguimiento de 4 correos.<br><span style="font-size:0.7rem; opacity:0.7;">Si no te llega, revisa spam y marca como "no spam".</span></p>
     </form>
 
     <div class="mascara-thanks" id="mascara-thanks">
       <h3>¡Listo! Revisa tu correo.</h3>
-      <p>{% if page.thank_you_text %}{{ page.thank_you_text }}{% else %}Te enviamos el PDF a tu correo.{% endif %}</p>
-      <p style="font-size:0.8rem; color:var(--dim); margin-top:0.75rem;">⚠️ Si no te llega en 5 minutos, revisa tu carpeta de spam. marca el correo como "no spam" para recibir los siguientes.</p>
+      <p>{% if page.thank_you_text %}{{ page.thank_you_text }}{% else %}Te enviamos la guía a tu correo.{% endif %}</p>
+      <p style="font-size:0.8rem; color:var(--dim); margin-top:0.75rem;">⚠️ Si no te llega en 5 minutos, revisa tu carpeta de spam. Marca el correo como "no spam" para recibir los siguientes.</p>
       {% if page.hotmart_url %}
       <div class="mascara-thanks-cta">
         <a href="{{ page.hotmart_url }}" class="btn-ghost" target="_blank" rel="noopener" style="font-size:0.85rem;">
@@ -202,12 +202,12 @@
         thanks.style.display = 'block';
       } else {
         btn.disabled = false;
-        btn.textContent = 'Quiero mi guía gratuita →';
+        btn.textContent = 'Ponle nombre a lo que ya sabes que se repite →';
         alert(json.error || 'Hubo un problema. Intenta de nuevo.');
       }
     } catch {
       btn.disabled = false;
-      btn.textContent = 'Quiero mi guía gratuita →';
+      btn.textContent = 'Ponle nombre a lo que ya sabes que se repite →';
       alert('Error de conexión. Intenta de nuevo.');
     }
   });
