@@ -1,16 +1,16 @@
 """
-Servicio de generación de contenido RRSS a partir de artículos del blog.
+Servicio de generación de contenido para Endonautas.
 
-A partir de un artículo (GeneratedArticle o BlogPost), genera:
-1. Copy para carrusel (slides)
-2. Copy para descripción del carrusel
-3. Copy para reel (texto en pantalla)
-4. Copy para descripción del reel
+Incluye:
+1. Generación de artículos de blog con DeepSeek
+2. Generación de copy RRSS (carrusel + reel) a partir de artículos
 
 Uso:
-    from blog.services import generate_social_posts
+    from blog.services import generate_article, generate_social_posts
+    article = generate_article("Tema del artículo")
     posts = generate_social_posts(article, plataformas=['instagram'], formatos=['carrusel', 'reel'])
 """
+import json
 import logging
 import re
 
@@ -18,7 +18,7 @@ import requests
 from django.conf import settings
 from django.utils.text import slugify
 
-from blog.models import SocialPost
+from blog.models import GeneratedArticle, SocialPost
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +26,134 @@ DEEPSEEK_API_KEY = getattr(settings, 'DEEPSEEK_API_KEY', '')
 DEEPSEEK_BASE_URL = getattr(settings, 'DEEPSEEK_BASE_URL', 'https://api.deepseek.com')
 DEEPSEEK_MODEL = getattr(settings, 'DEEPSEEK_MODEL', 'deepseek-chat')
 
+
+# ════════════════════════════════════════════════════════════════════════════
+# Generación de artículos de blog
+# ════════════════════════════════════════════════════════════════════════════
+
+SYSTEM_PROMPT_ARTICLE = """Eres el escritor del blog de Endonautas, una plataforma de exploración del mundo interior.
+
+Tu voz es:
+- Profunda pero accesible, sin jerga académica
+- Cálida y cercana, como un guía que acompaña
+- Basada en la metodología endonáutica (patrones, arquetipos, sombra, máscara, heridas de infancia)
+- Sin promesas de transformación instantánea
+- Con metáforas del viaje interior, la navegación, el mapa
+
+Estructura de un artículo:
+1. Hook inicial (pregunta o afirmación que genera curiosidad)
+2. Desarrollo del concepto (3-4 secciones con subtítulos)
+3. Conexión con la experiencia del lector
+4. CTA sutil hacia la app de Endonautas
+
+Reglas:
+- Usa vocabulario endonáutico: patrón, origen, integrar, mapa, navegar, sombra, máscara
+- Evita: transformar, despertar, vibración, manifestar, empoderar
+- Extensión: 800-1200 palabras
+- Formato HTML (h2, h3, p, ul, li, blockquote)
+- Incluye meta description (máx 160 chars)
+- Incluye 3-5 keywords SEO separadas por coma"""
+
+
+def _call_deepseek_article(messages, max_tokens=4000):
+    """Llama a la API de DeepSeek para artículos."""
+    if not DEEPSEEK_API_KEY:
+        raise ValueError("DEEPSEEK_API_KEY no configurada")
+
+    headers = {
+        "Authorization": f"Bearer {DEEPSEEK_API_KEY}",
+        "Content-Type": "application/json",
+    }
+    payload = {
+        "model": DEEPSEEK_MODEL,
+        "messages": messages,
+        "max_tokens": max_tokens,
+        "temperature": 0.7,
+    }
+    resp = requests.post(
+        f"{DEEPSEEK_BASE_URL}/v1/chat/completions",
+        headers=headers,
+        json=payload,
+        timeout=60,
+    )
+    if resp.status_code != 200:
+        raise RuntimeError(f"DeepSeek API error {resp.status_code}: {resp.text[:200]}")
+    return resp.json()["choices"][0]["message"]["content"]
+
+
+def generate_article(topic, source_type='tema', source_detail='', save=True):
+    """
+    Genera un artículo de blog usando DeepSeek.
+
+    Args:
+        topic: Tema del artículo
+        source_type: 'test' | 'espejo' | 'tema' | 'keyword'
+        source_detail: Detalle de la fuente (opcional)
+        save: Si True, guarda en la BD como GeneratedArticle
+
+    Returns:
+        GeneratedArticle instance o dict con los datos
+    """
+    source_context = ""
+    if source_type == 'test':
+        source_context = f"\n\nEste artículo está inspirado en el siguiente test/resultado: {source_detail}"
+    elif source_type == 'espejo':
+        source_context = f"\n\nEste artículo está inspirado en una sesión del Espejo: {source_detail}"
+    elif source_type == 'keyword':
+        source_context = f"\n\nEste artículo debe optimizarse para la keyword SEO: {topic}"
+
+    prompt = f"""Genera un artículo de blog sobre: "{topic}"{source_context}
+
+Devuelve un JSON válido con esta estructura:
+{{
+    "title": "Título SEO del artículo (máx 70 chars)",
+    "slug": "slug-seo-del-articulo",
+    "meta_description": "Meta description SEO (máx 160 chars)",
+    "keywords": "keyword1, keyword2, keyword3",
+    "intro": "Introducción breve (máx 280 chars)",
+    "body": "Contenido completo en HTML (h2, h3, p, ul, li, blockquote)",
+    "cta_text": "Texto del CTA (máx 80 chars)",
+    "cta_url": "URL del CTA (ej: /mascara/, /hacks/, /viaje/)",
+    "tags": "tag1, tag2, tag3"
+}}"""
+
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT_ARTICLE},
+        {"role": "user", "content": prompt},
+    ]
+
+    logger.info(f"Generando artículo: {topic[:60]}...")
+    raw = _call_deepseek_article(messages)
+    data = json.loads(raw)
+
+    slug = data.get('slug', slugify(data['title']))[:200]
+
+    if save:
+        article, created = GeneratedArticle.objects.update_or_create(
+            slug=slug,
+            defaults={
+                'title': data['title'][:200],
+                'meta_description': data.get('meta_description', '')[:160],
+                'keywords': data.get('keywords', '')[:300],
+                'intro': data.get('intro', '')[:280],
+                'body': data.get('body', ''),
+                'cta_text': data.get('cta_text', '')[:80],
+                'cta_url': data.get('cta_url', ''),
+                'tags': data.get('tags', '')[:300],
+                'source_type': source_type,
+                'source_detail': source_detail[:200],
+                'status': GeneratedArticle.STATUS_DRAFT,
+            }
+        )
+        logger.info(f"Artículo {'creado' if created else 'actualizado'}: {article.title}")
+        return article
+
+    return data
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# Generación de copy RRSS
+# ════════════════════════════════════════════════════════════════════════════
 
 SYSTEM_PROMPT_RRSS = """Eres el community manager de Endonautas, una plataforma de exploración del mundo interior.
 
