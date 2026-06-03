@@ -1,0 +1,59 @@
+{% extends "admin/base_site.html" %}
+{% block title %}Pipeline | CRM{% endblock %}
+{% block extrahead %}
+<style>
+:root { --crm-surface: #12121e; --crm-border: rgba(255,255,255,0.07); --crm-muted: #6b6878; --crm-text: #e8e4dc; --crm-accent: #c4813a; --crm-green: #3d7a5e; }
+.crm { padding: 2rem; max-width: 1280px; margin: 0 auto; }
+.crm-nav { display: flex; gap: 0.25rem; margin-bottom: 2rem; border-bottom: 1px solid var(--crm-border); padding-bottom: 1rem; flex-wrap: wrap; }
+.crm-nav a { color: var(--crm-muted); text-decoration: none; font-size: 0.875rem; padding: 0.4rem 0.9rem; border-radius: 6px; }
+.crm-nav a:hover { color: var(--crm-text); background: rgba(255,255,255,0.05); }
+.crm-nav a.active { color: var(--crm-text); background: rgba(255,255,255,0.08); }
+.pipeline { display: flex; gap: 1rem; overflow-x: auto; padding-bottom: 1rem; }
+.pipe-col { min-width: 260px; max-width: 300px; flex: 1; background: var(--crm-surface); border: 1px solid var(--crm-border); border-radius: 10px; }
+.pipe-header { padding: 0.8rem 1rem; font-weight: 600; color: var(--crm-text); border-bottom: 1px solid var(--crm-border); display: flex; justify-content: space-between; }
+.pipe-count { font-size: 0.8rem; color: var(--crm-muted); font-weight: 400; }
+.pipe-body { padding: 0.5rem; min-height: 100px; }
+.pipe-card { background: #1a1a2a; border: 1px solid var(--crm-border); border-radius: 6px; padding: 0.6rem 0.8rem; margin-bottom: 0.4rem; font-size: 0.82rem; }
+.pipe-card a { color: var(--crm-text); text-decoration: none; }
+.pipe-card a:hover { color: var(--crm-accent); }
+.pipe-card small { color: var(--crm-muted); display: block; font-size: 0.7rem; margin-top: 0.2rem; }
+.pipe-empty { color: var(--crm-muted); font-size: 0.8rem; text-align: center; padding: 1rem; font-style: italic; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="crm">
+    <nav class="crm-nav">
+        <a href="{% url 'crm:dashboard' %}">Dashboard</a>
+        <a href="{% url 'crm:campaigns' %}">Campañas</a>
+        <a href="{% url 'crm:lists' %}">Listas</a>
+        <a href="{% url 'crm:subscribers' %}">Suscriptores</a>
+        <a href="{% url 'crm:pipeline' %}" class="active">Pipeline</a>
+        <a href="{% url 'crm:segments' %}">Segmentos</a>
+        <a href="{% url 'crm:sequences' %}">Secuencias</a>
+        <a href="{% url 'crm:templates' %}">Plantillas</a>
+    </nav>
+
+    <div class="pipeline">
+        {% for item in stages %}
+        <div class="pipe-col">
+            <div class="pipe-header">
+                {{ item.stage.name }}
+                <span class="pipe-count">{{ item.count }}</span>
+            </div>
+            <div class="pipe-body">
+                {% for s in item.subscribers %}
+                <div class="pipe-card">
+                    <a href="{% url 'crm:subscriber_detail' s.id %}">{{ s.email }}</a>
+                    <small>{{ s.name|default:"" }} · registrado {{ s.created_at|date:"d/m" }}</small>
+                </div>
+                {% empty %}
+                <div class="pipe-empty">Sin contactos</div>
+                {% endfor %}
+            </div>
+        </div>
+        {% empty %}
+        <div style="color:var(--crm-muted);padding:2rem;text-align:center;">Crea etapas del pipeline en /admin/crm/pipelinestage/</div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

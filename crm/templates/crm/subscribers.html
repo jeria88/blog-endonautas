@@ -27,7 +27,9 @@
     <nav class="crm-nav">
         <a href="{% url 'crm:dashboard' %}">Dashboard</a>
         <a href="{% url 'crm:lists' %}" {% if not list_obj %}class="active"{% endif %}>Listas</a>
-        <a href="{% url 'crm:subscribers' %}" class="active">Suscriptores</a>
+        ' %}" class="active">Suscriptores</a>
+        <a href="{% url 'crm:pipeline' %}">Pipeline</a>
+        <a href="{% url 'crm:segments' %}">Segmentos</a>
         <a href="{% url 'crm:sequences' %}">Secuencias</a>
         <a href="{% url 'crm:templates' %}">Plantillas</a>
     </nav>

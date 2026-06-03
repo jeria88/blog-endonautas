@@ -1,0 +1,47 @@
+{% extends "admin/base_site.html" %}
+{% block title %}Segmentos | CRM{% endblock %}
+{% block extrahead %}
+<style>
+:root { --crm-surface: #12121e; --crm-border: rgba(255,255,255,0.07); --crm-muted: #6b6878; --crm-text: #e8e4dc; --crm-accent: #c4813a; }
+.crm { padding: 2rem; max-width: 1280px; margin: 0 auto; }
+.crm-nav { display: flex; gap: 0.25rem; margin-bottom: 2rem; border-bottom: 1px solid var(--crm-border); padding-bottom: 1rem; flex-wrap: wrap; }
+.crm-nav a { color: var(--crm-muted); text-decoration: none; font-size: 0.875rem; padding: 0.4rem 0.9rem; border-radius: 6px; }
+.crm-nav a:hover { color: var(--crm-text); background: rgba(255,255,255,0.05); }
+.crm-nav a.active { color: var(--crm-text); background: rgba(255,255,255,0.08); }
+.crm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+.crm-card { background: var(--crm-surface); border: 1px solid var(--crm-border); border-radius: 10px; padding: 1.25rem; }
+.crm-card h3 { font-size: 1rem; font-weight: 600; color: var(--crm-text); margin: 0 0 0.25rem 0; }
+.crm-card p { font-size: 0.82rem; color: var(--crm-muted); margin: 0 0 0.75rem 0; line-height: 1.5; }
+.crm-stat-n { font-size: 1.5rem; font-weight: 700; color: var(--crm-accent); }
+.crm-stat-l { font-size: 0.72rem; color: var(--crm-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="crm">
+    <nav class="crm-nav">
+        <a href="{% url 'crm:dashboard' %}">Dashboard</a>
+        <a href="{% url 'crm:campaigns' %}">Campañas</a>
+        <a href="{% url 'crm:lists' %}">Listas</a>
+        <a href="{% url 'crm:subscribers' %}">Suscriptores</a>
+        <a href="{% url 'crm:pipeline' %}">Pipeline</a>
+        <a href="{% url 'crm:segments' %}" class="active">Segmentos</a>
+        <a href="{% url 'crm:sequences' %}">Secuencias</a>
+        <a href="{% url 'crm:templates' %}">Plantillas</a>
+    </nav>
+
+    <div class="crm-grid">
+        {% for seg in segments %}
+        <div class="crm-card">
+            <h3>{{ seg.name }}</h3>
+            <p>{{ seg.description|truncatechars:120 }}</p>
+            <div class="crm-stat-n">{{ seg.real_count }}</div>
+            <div class="crm-stat-l">suscriptores</div>
+        </div>
+        {% empty %}
+        <div style="color:var(--crm-muted);padding:2rem;grid-column:1/-1;text-align:center;">
+            Crea segmentos en /admin/crm/segment/
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

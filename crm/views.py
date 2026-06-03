@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db import models
 from django import forms
-from .models import Subscriber, EmailList, EmailSequence, SentEmail, Subscription, EmailTemplate
+from .models import Subscriber, EmailList, EmailSequence, SentEmail, Subscription, EmailTemplate, PipelineStage, PipelineLog, ContactNote, Segment
 
 
 @staff_member_required
@@ -332,6 +332,71 @@ def crm_test_smtp(request):
             results.append(("Envio de prueba", f"FALLO: {e}"))
 
     return render(request, "crm/smtp_diag.html", {"results": results})
+
+
+
+# ── Pipeline ─────────────────────────────────────────────────────────────────
+
+
+@staff_member_required
+def crm_pipeline(request):
+    """Vista del pipeline con suscriptores por etapa."""
+    stages = PipelineStage.objects.all().order_by("order")
+    stages_data = []
+    for stage in stages:
+        subscriber_ids = PipelineLog.objects.filter(stage=stage).values_list("subscriber", flat=True).distinct()
+        subscribers = Subscriber.objects.filter(id__in=subscriber_ids, is_active=True).order_by("-created_at")
+        stages_data.append({
+            "stage": stage,
+            "subscribers": subscribers,
+            "count": subscribers.count(),
+        })
+    return render(request, "crm/pipeline.html", {"stages": stages_data})
+
+
+@staff_member_required
+def crm_pipeline_move(request, subscriber_id, stage_slug):
+    """Mueve un suscriptor a una etapa del pipeline."""
+    subscriber = get_object_or_404(Subscriber, id=subscriber_id)
+    stage = get_object_or_404(PipelineStage, slug=stage_slug)
+    PipelineLog.objects.create(subscriber=subscriber, stage=stage)
+    messages.success(request, f"{subscriber.email} movido a {stage.name}")
+    return redirect(request.META.get("HTTP_REFERER", "crm:pipeline"))
+
+
+# ── Notas ────────────────────────────────────────────────────────────────────
+
+
+@staff_member_required
+def crm_add_note(request, subscriber_id):
+    """Agrega una nota a un suscriptor."""
+    subscriber = get_object_or_404(Subscriber, id=subscriber_id)
+    if request.method == "POST":
+        content = request.POST.get("content", "").strip()
+        if content:
+            ContactNote.objects.create(
+                subscriber=subscriber,
+                content=content,
+                created_by=request.user.get_full_name() or request.user.username,
+            )
+            messages.success(request, "Nota agregada.")
+    return redirect("crm:subscriber_detail", subscriber_id=subscriber.id)
+
+
+# ── Segmentos ────────────────────────────────────────────────────────────────
+
+
+@staff_member_required
+def crm_segments(request):
+    """Listado de segmentos con conteo."""
+    segments = Segment.objects.annotate(
+        sub_count=Count("id")  # placeholder, lo reemplazamos con get_subscribers
+    ).order_by("name")
+    # Agregamos conteo real
+    for seg in segments:
+        seg.real_count = seg.get_subscribers().count()
+    return render(request, "crm/segments.html", {"segments": segments})
+
 
 # ── Formularios ──────────────────────────────────────────────────────────────
 

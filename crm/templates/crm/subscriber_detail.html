@@ -35,7 +35,7 @@
         <a href="{% url 'crm:dashboard' %}">Dashboard</a>
         <a href="{% url 'crm:campaigns' %}">Campañas</a>
         <a href="{% url 'crm:lists' %}">Listas</a>
-        <a href="{% url 'crm:subscribers' %}">Suscriptores</a>
+        ' %}">Suscriptores</a>
         <a href="{% url 'crm:sequences' %}">Secuencias</a>
         <a href="{% url 'crm:templates' %}">Plantillas</a>
     </nav>
@@ -102,7 +102,27 @@
     </div>
 
     <div class="crm-card">
-        <div class="crm-card-title">Historial de envíos ({{ sent_emails|length }})</div>
+        <div class="crm-card-title">Notas internas</div>
+        <form method="post" action="{% url 'crm:add_note' subscriber.id %}" style="margin-bottom:0.75rem;">
+            {% csrf_token %}
+            <div style="display:flex;gap:0.5rem;">
+                <input type="text" name="content" placeholder="Agregar nota..." required
+                    style="flex:1;background:#0b0b14;border:1px solid var(--crm-border);border-radius:6px;color:var(--crm-text);padding:0.45rem 0.7rem;font-size:0.8rem;">
+                <button type="submit" class="crm-btn small">+</button>
+            </div>
+        </form>
+        {% for note in subscriber.notes.all|slice:":5" %}
+        <div style="padding:0.4rem 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.82rem;color:var(--crm-muted);">
+            <span style="color:var(--crm-text)">{{ note.content }}</span>
+            <small style="display:block;font-size:0.7rem;">{{ note.created_by }} · {{ note.created_at|date:"d/m H:i" }}</small>
+        </div>
+        {% empty %}
+        <div style="color:var(--crm-muted);font-size:0.78rem;font-style:italic;">Sin notas</div>
+        {% endfor %}
+    </div>
+
+    <div class="crm-card">
+        <div class="crm-card-title">Historial de envios ({{ sent_emails|length }})</div>
         <table class="crm-table">
             <thead>
                 <tr>

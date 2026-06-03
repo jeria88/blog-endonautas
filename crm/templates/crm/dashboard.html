@@ -43,8 +43,10 @@
 {% block content %}
 <div class="crm">
     <nav class="crm-nav">
-        <a href="{% url 'crm:dashboard' %}" class="active">Dashboard</a>
+        ' %}" class="active">Dashboard</a>
         <a href="{% url 'crm:campaigns' %}">Campañas</a>
+        <a href="{% url 'crm:pipeline' %}">Pipeline</a>
+        <a href="{% url 'crm:segments' %}">Segmentos</a>
         <a href="{% url 'crm:lists' %}">Listas</a>
         <a href="{% url 'crm:subscribers' %}">Suscriptores</a>
         <a href="{% url 'crm:sequences' %}">Secuencias</a>
