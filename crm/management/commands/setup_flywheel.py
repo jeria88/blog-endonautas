@@ -143,6 +143,22 @@ def _app_cta(text: str = "Comenzar exploración gratuita →") -> str:
     )
 
 
+def _download_btn(url: str, text: str = "Descargar guía gratuita →") -> str:
+    return (
+        '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:28px 0;">'
+        '<tr><td align="center">'
+        f'<a href="{url}" '
+        'style="display:inline-block;background-color:#F0E8DC;color:#000000;padding:14px 36px;'
+        'border-radius:999px;font-family:\'Space Grotesk\',Arial,sans-serif;font-size:14px;'
+        'font-weight:600;letter-spacing:0.3px;text-decoration:none;">'
+        f'{text}</a>'
+        '<p style="margin:10px 0 0 0;font-size:12px;color:rgba(240,232,220,0.25);'
+        '">PDF · Sin registro · Descarga inmediata</p>'
+        '</td></tr>'
+        '</table>'
+    )
+
+
 # ── Templates de cada secuencia ─────────────────────────────────────────────
 
 MASCARA_TEMPLATES = [
@@ -156,6 +172,7 @@ MASCARA_TEMPLATES = [
             + """<p>Te enviamos la guía de <strong>"Descubre tu Máscara según tu Herida de Infancia"</strong>.</p>
 <p>Algo que noté: la mayoría de las personas que llegan a esta guía llevan años sabiendo que algo se repite en sus vidas. No saben exactamente qué, pero lo sienten.</p>
 <p>Esta guía no va a resolver tu vida. Pero va a hacer algo más útil: va a ponerle nombre a lo que ya sabes.</p>"""
+            + _download_btn("https://endonautas.cl/static/pdfs/descubre-tu-mascara.pdf", "Descargar guía de la Máscara →")
             + _quote("La máscara no se lleva para ocultar quienes somos. Se lleva para sobrevivir hasta que estemos listos para mirar.")
             + _spam_note()
             + '<p style="margin-top:24px;">En el próximo email te cuento algo sobre por qué la máscara se construye — y por qué no es tu enemiga.</p>',
@@ -227,6 +244,7 @@ HACKS_TEMPLATES = [
             + _title("Tu guía de 3 Hacks está aquí")
             + """<p>Te enviamos la guía <strong>"3 Hacks de Endonáutica para tu Viaje Interior"</strong>.</p>
 <p>Una sugerencia: no la leas de corrido. Lee un hack, cierra el documento, vuelve al día siguiente con el siguiente. Los tres juntos en una hora no te van a cambiar nada. Uno bien digerido, sí puede.</p>"""
+            + _download_btn("https://endonautas.cl/static/pdfs/3-hacks-endonautica.pdf", "Descargar guía de los 3 Hacks →")
             + _quote("Un hack no es un truco. Es un atajo consciente hacia algo que siempre estuvo ahí pero no veías.")
             + _spam_note()
             + '<p style="margin-top:24px;">En el próximo email te cuento el error que comete casi todo el mundo cuando intenta conocerse a sí mismo.</p>',
@@ -274,6 +292,7 @@ VIAJE_TEMPLATES = [
             + _title("Tu guía del viaje interior está aquí")
             + """<p>Te enviamos la guía <strong>"Paso a Paso para Iniciar el Viaje Interior"</strong>.</p>
 <p>La guía tiene 8 páginas. Está pensada para leerse con calma — no para terminarla, sino para empezarla. El viaje no tiene deadline, pero hay algo que pasa cuando decides que hoy es el día.</p>"""
+            + _download_btn("https://endonautas.cl/static/pdfs/guia-viaje-interior.pdf", "Descargar guía del Viaje Interior →")
             + _quote("El viaje interior no es un destino. Es una dirección. Y la dirección importa más que la velocidad.")
             + _spam_note()
             + '<p style="margin-top:24px;">En el siguiente email te cuento por qué la mayoría de las personas que quieren conocerse terminan dando vueltas en círculo.</p>',
