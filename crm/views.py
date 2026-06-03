@@ -4,8 +4,13 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db import models
+from django.db.models import Count
 from django import forms
-from .models import Subscriber, EmailList, EmailSequence, SentEmail, Subscription, EmailTemplate, PipelineStage, PipelineLog, ContactNote, Segment
+from .models import Subscriber, EmailList, EmailSequence, SentEmail, Subscription, EmailTemplate, PipelineStage, PipelineLog, ContactNote, Segment, Tag, ContactTag, Broadcast
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @staff_member_required
@@ -41,23 +46,29 @@ def crm_dashboard(request):
 @staff_member_required
 def crm_subscribers(request):
     list_slug = request.GET.get("list")
+    tag_id = request.GET.get("tag")
     search = request.GET.get("q", "").strip()
 
-    qs = Subscriber.objects.prefetch_related("subscriptions__email_list").order_by("-created_at")
+    qs = Subscriber.objects.prefetch_related("subscriptions__email_list", "contact_tags__tag").order_by("-created_at")
     if list_slug:
         qs = qs.filter(subscriptions__email_list__slug=list_slug)
+    if tag_id:
+        qs = qs.filter(contact_tags__tag_id=tag_id)
     if search:
         qs = qs.filter(email__icontains=search)
 
     paginator = Paginator(qs, 50)
     page = paginator.get_page(request.GET.get("page"))
     lists = EmailList.objects.all()
+    all_tags = Tag.objects.order_by("name")
 
     return render(request, "crm/subscribers.html", {
         "subscribers": page,
         "total": paginator.count,
         "lists": lists,
+        "all_tags": all_tags,
         "current_list": list_slug,
+        "current_tag": tag_id,
         "search": search,
     })
 
@@ -180,113 +191,7 @@ def crm_sequence_run(request, sequence_id):
 
 
 
-# ── Campañas y Estado ────────────────────────────────────────────────────────
-
-
-@staff_member_required
-def crm_campaigns(request):
-    """Dashboard de campañas con estado de cada secuencia."""
-    from django.db.models import Count, Q
-
-    lists = EmailList.objects.annotate(
-        sub_count=Count("subscribers", filter=Q(subscribers__subscriber__is_active=True), distinct=True),
-    ).prefetch_related("sequences__steps__template").order_by("name")
-
-    campaigns = []
-    for lst in lists:
-        for seq in lst.sequences.all():
-            steps_data = []
-            for step in seq.steps.order_by("step_number"):
-                sent_count = SentEmail.objects.filter(sequence=seq, template=step.template, status="sent").count()
-                pending_count = SentEmail.objects.filter(sequence=seq, template=step.template, status="pending").count()
-                failed_count = SentEmail.objects.filter(sequence=seq, template=step.template, status="failed").count()
-                steps_data.append({
-                    "step": step,
-                    "sent": sent_count,
-                    "pending": pending_count,
-                    "failed": failed_count,
-                    "total": sent_count + pending_count + failed_count,
-                })
-            campaigns.append({
-                "list": lst,
-                "sequence": seq,
-                "steps": steps_data,
-                "total_sent": sum(s["sent"] for s in steps_data),
-                "total_pending": sum(s["pending"] for s in steps_data),
-                "total_failed": sum(s["failed"] for s in steps_data),
-            })
-
-    return render(request, "crm/campaigns.html", {
-        "campaigns": campaigns,
-        "total_subscribers": Subscriber.objects.filter(is_active=True).count(),
-        "total_sent": SentEmail.objects.filter(status="sent").count(),
-        "total_pending": SentEmail.objects.filter(status="pending").count(),
-        "total_failed": SentEmail.objects.filter(status="failed").count(),
-    })
-
-
-@staff_member_required
-def crm_run_scheduler(request):
-    """Ejecuta el flywheel manualmente."""
-    from .tasks import _process_sequence_steps
-    try:
-        result = _process_sequence_steps()
-        messages.success(request, f"Scheduler ejecutado: {result}")
-    except Exception as e:
-        messages.error(request, f"Error: {e}")
-        logger.error(f"crm_run_scheduler error: {e}", exc_info=True)
-    return redirect("crm:dashboard")
-
-
-# ── Suscriptores (gestión avanzada) ──────────────────────────────────────────
-
-
-@staff_member_required
-def crm_subscriber_detail(request, subscriber_id):
-    """Detalle de un suscriptor con historial y acciones."""
-    subscriber = get_object_or_404(Subscriber, id=subscriber_id)
-
-    if request.method == "POST":
-        action = request.POST.get("action")
-        if action == "toggle_active":
-            subscriber.is_active = not subscriber.is_active
-            subscriber.save()
-            messages.success(request, f"Suscriptor {'activado' if subscriber.is_active else 'desactivado'}.")
-        elif action == "update_name":
-            subscriber.name = request.POST.get("name", "").strip()
-            subscriber.save()
-            messages.success(request, "Nombre actualizado.")
-        elif action == "remove_list":
-            list_id = request.POST.get("list_id")
-            Subscription.objects.filter(subscriber=subscriber, email_list_id=list_id).delete()
-            messages.success(request, "Suscripción eliminada.")
-        elif action == "resend_email":
-            email_id = request.POST.get("email_id")
-            sent = get_object_or_404(SentEmail, id=email_id)
-            from .tasks import _send_sequence_email
-            step = SequenceStep.objects.filter(sequence=sent.sequence, template=sent.template).first()
-            if step:
-                result = _send_sequence_email(subscriber.id, step.id)
-                if result.startswith("ok"):
-                    messages.success(request, "Email reenviado.")
-                else:
-                    messages.error(request, f"Fallo al reenviar: revisa el detalle.")
-        return redirect("crm:subscriber_detail", subscriber_id=subscriber.id)
-
-    sent_emails = SentEmail.objects.filter(subscriber=subscriber).select_related("template", "sequence").order_by("-sent_at")
-    subscriptions = Subscription.objects.filter(subscriber=subscriber).select_related("email_list").all()
-
-    return render(request, "crm/subscriber_detail.html", {
-        "subscriber": subscriber,
-        "sent_emails": sent_emails,
-        "subscriptions": subscriptions,
-        "lists": EmailList.objects.all(),
-    })
-
-
-@staff_member_required
-def crm_test_smtp(request):
-    """Diagnostico: prueba la API de Brevo (sin restriccion de IP)."""
+# ── Diagnóstico SMTP ─────────────────────────────────────────────────────────
     from django.conf import settings
     import requests
 
@@ -441,3 +346,188 @@ def crm_template_edit(request, template_id):
     else:
         form = TemplateEditForm(instance=tmpl)
     return render(request, "crm/template_edit.html", {"form": form, "tmpl": tmpl})
+
+
+# ── Tags ──────────────────────────────────────────────────────────────────────
+
+
+class TagForm(forms.ModelForm):
+    class Meta:
+        model = Tag
+        fields = ["name", "slug", "color"]
+        widgets = {
+            "name": forms.TextInput(attrs={"class": "crm-input", "placeholder": "Ej: Interesado"}),
+            "slug": forms.TextInput(attrs={"class": "crm-input", "placeholder": "Ej: interesado"}),
+            "color": forms.TextInput(attrs={"class": "crm-input", "type": "color", "style": "width:80px;height:36px;padding:2px;"}),
+        }
+
+
+@staff_member_required
+def crm_tags(request):
+    tags = Tag.objects.annotate(sub_count=Count("contact_tags")).order_by("name")
+    return render(request, "crm/tags.html", {"tags": tags})
+
+
+@staff_member_required
+def crm_tag_create(request):
+    if request.method == "POST":
+        form = TagForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"Tag '{form.cleaned_data['name']}' creado.")
+            return redirect("crm:tags")
+    else:
+        form = TagForm()
+    return render(request, "crm/tag_form.html", {"form": form, "action": "Crear"})
+
+
+@staff_member_required
+def crm_tag_edit(request, tag_id):
+    tag = get_object_or_404(Tag, id=tag_id)
+    if request.method == "POST":
+        form = TagForm(request.POST, instance=tag)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"Tag '{tag.name}' actualizado.")
+            return redirect("crm:tags")
+    else:
+        form = TagForm(instance=tag)
+    return render(request, "crm/tag_form.html", {"form": form, "action": "Editar", "tag": tag})
+
+
+@staff_member_required
+def crm_tag_delete(request, tag_id):
+    tag = get_object_or_404(Tag, id=tag_id)
+    if request.method == "POST":
+        tag.delete()
+        messages.success(request, f"Tag '{tag.name}' eliminado.")
+        return redirect("crm:tags")
+    return render(request, "crm/tag_confirm_delete.html", {"tag": tag})
+
+
+# ── Broadcasts ────────────────────────────────────────────────────────────────
+
+
+class BroadcastForm(forms.ModelForm):
+    class Meta:
+        model = Broadcast
+        fields = ["name", "subject", "html_content", "plain_text_content", "target_list", "target_segment"]
+        widgets = {
+            "name": forms.TextInput(attrs={"class": "crm-input", "placeholder": "Ej: Newsletter semanal #5"}),
+            "subject": forms.TextInput(attrs={"class": "crm-input", "placeholder": "Asunto del email"}),
+            "html_content": forms.Textarea(attrs={"class": "crm-input crm-code", "rows": 16, "wrap": "off"}),
+            "plain_text_content": forms.Textarea(attrs={"class": "crm-input", "rows": 4}),
+            "target_list": forms.Select(attrs={"class": "crm-select"}),
+            "target_segment": forms.Select(attrs={"class": "crm-select"}),
+        }
+        help_texts = {
+            "target_list": "Elige una lista O un segmento. Si eliges ambos, se usa la lista.",
+            "target_segment": "Segmento de suscriptores al que enviar.",
+        }
+
+
+@staff_member_required
+def crm_broadcasts(request):
+    broadcasts = Broadcast.objects.select_related("target_list", "target_segment").order_by("-created_at")
+    return render(request, "crm/broadcasts.html", {"broadcasts": broadcasts})
+
+
+@staff_member_required
+def crm_broadcast_create(request):
+    if request.method == "POST":
+        form = BroadcastForm(request.POST)
+        if form.is_valid():
+            broadcast = form.save(commit=False)
+            broadcast.status = "draft"
+            broadcast.save()
+            messages.success(request, f"Borrador '{broadcast.name}' guardado.")
+            return redirect("crm:broadcast_detail", broadcast_id=broadcast.id)
+    else:
+        form = BroadcastForm()
+    return render(request, "crm/broadcast_form.html", {"form": form, "action": "Crear"})
+
+
+@staff_member_required
+def crm_broadcast_detail(request, broadcast_id):
+    broadcast = get_object_or_404(
+        Broadcast.objects.select_related("target_list", "target_segment"),
+        id=broadcast_id,
+    )
+    sent_emails = SentEmail.objects.filter(
+        template__isnull=True,  # broadcast emails don't have a template FK in current model
+    ).order_by("-sent_at")[:50]
+
+    # Get recipient count
+    recipient_count = 0
+    if broadcast.target_list:
+        recipient_count = broadcast.target_list.subscribers.filter(subscriber__is_active=True).count()
+    elif broadcast.target_segment:
+        recipient_count = broadcast.target_segment.get_subscribers().count()
+
+    return render(request, "crm/broadcast_detail.html", {
+        "broadcast": broadcast,
+        "recipient_count": recipient_count,
+    })
+
+
+@staff_member_required
+def crm_broadcast_send(request, broadcast_id):
+    """Envía el broadcast a todos los destinatarios."""
+    broadcast = get_object_or_404(Broadcast, id=broadcast_id)
+
+    if broadcast.status not in ("draft", "failed"):
+        messages.error(request, "Este broadcast ya fue enviado o está en proceso.")
+        return redirect("crm:broadcast_detail", broadcast_id=broadcast.id)
+
+    # Obtener destinatarios
+    if broadcast.target_list:
+        recipients = Subscriber.objects.filter(
+            subscriptions__email_list=broadcast.target_list,
+            is_active=True,
+        ).distinct()
+    elif broadcast.target_segment:
+        recipients = broadcast.target_segment.get_subscribers()
+    else:
+        messages.error(request, "No hay destinatarios configurados.")
+        return redirect("crm:broadcast_detail", broadcast_id=broadcast.id)
+
+    broadcast.status = "sending"
+    broadcast.total_recipients = recipients.count()
+    broadcast.total_sent = 0
+    broadcast.total_failed = 0
+    broadcast.save(update_fields=["status", "total_recipients", "total_sent", "total_failed"])
+
+    from django.template import Template, Context
+    from .brevo_api import send_via_brevo
+    from django.utils import timezone
+
+    sent_count = 0
+    failed_count = 0
+
+    for subscriber in recipients:
+        context = Context({
+            "nombre": subscriber.name or "amigo",
+            "email": subscriber.email,
+        })
+        subject = Template(broadcast.subject).render(context)
+        html = Template(broadcast.html_content).render(context)
+        plain = Template(broadcast.plain_text_content).render(context) if broadcast.plain_text_content else ""
+
+        ok, error_msg = send_via_brevo(subject, html, subscriber.email, subscriber.name or "", plain)
+        if ok:
+            sent_count += 1
+        else:
+            failed_count += 1
+            logger.error(f"Broadcast {broadcast.id} fallo -> {subscriber.email}: {error_msg}")
+
+    broadcast.total_sent = sent_count
+    broadcast.total_failed = failed_count
+    broadcast.status = "sent" if failed_count == 0 else "sent"
+    broadcast.sent_at = timezone.now()
+    broadcast.save(update_fields=["total_sent", "total_failed", "status", "sent_at"])
+
+    messages.success(
+        request,
+        f"Broadcast enviado: {sent_count} exitosos, {failed_count} fallidos de {recipients.count()} destinatarios."
+    )
+    return redirect("crm:broadcast_detail", broadcast_id=broadcast.id)

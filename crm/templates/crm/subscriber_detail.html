@@ -4,7 +4,7 @@
 <style>
 :root { --crm-surface: #12121e; --crm-border: rgba(255,255,255,0.07); --crm-muted: #6b6878; --crm-text: #e8e4dc; --crm-accent: #c4813a; --crm-green: #3d7a5e; --crm-red: #a84b3c; }
 .crm { padding: 2rem; max-width: 960px; margin: 0 auto; }
-.crm-nav { display: flex; gap: 0.25rem; margin-bottom: 2rem; border-bottom: 1px solid var(--crm-border); padding-bottom: 1rem; }
+.crm-nav { display: flex; gap: 0.25rem; margin-bottom: 2rem; border-bottom: 1px solid var(--crm-border); padding-bottom: 1rem; flex-wrap: wrap; }
 .crm-nav a { color: var(--crm-muted); text-decoration: none; font-size: 0.875rem; padding: 0.4rem 0.9rem; border-radius: 6px; }
 .crm-nav a:hover { color: var(--crm-text); background: rgba(255,255,255,0.05); }
 .crm-back { color: var(--crm-muted); text-decoration: none; font-size: 0.85rem; display: inline-block; margin-bottom: 1rem; }
@@ -27,6 +27,18 @@
 .crm-btn.danger { border-color: rgba(168,75,60,0.3); color: var(--crm-red); }
 .crm-btn.danger:hover { background: rgba(168,75,60,0.15); }
 .crm-inline-form { display: inline; }
+/* Tabs */
+.crm-tabs { display: flex; gap: 0; margin-bottom: 0; border-bottom: 1px solid var(--crm-border); }
+.crm-tab { padding: 0.6rem 1.2rem; font-size: 0.85rem; color: var(--crm-muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; }
+.crm-tab:hover { color: var(--crm-text); }
+.crm-tab.active { color: var(--crm-accent); border-bottom-color: var(--crm-accent); }
+.crm-tab-content { display: none; }
+.crm-tab-content.active { display: block; }
+/* Tags */
+.tag-badge { display: inline-block; padding: 0.15rem 0.55rem; border-radius: 999px; font-size: 0.7rem; font-weight: 600; margin: 0.15rem; }
+.tag-remove { margin-left: 4px; cursor: pointer; opacity: 0.5; }
+.tag-remove:hover { opacity: 1; }
+.tag-select { background: #0b0b14; border: 1px solid var(--crm-border); border-radius: 6px; padding: 0.3rem 0.5rem; color: var(--crm-text); font-size: 0.8rem; }
 </style>
 {% endblock %}
 {% block content %}
@@ -34,137 +46,199 @@
     <nav class="crm-nav">
         <a href="{% url 'crm:dashboard' %}">Dashboard</a>
         <a href="{% url 'crm:campaigns' %}">Campañas</a>
+        <a href="{% url 'crm:broadcasts' %}">Broadcasts</a>
         <a href="{% url 'crm:lists' %}">Listas</a>
-        ' %}">Suscriptores</a>
+        <a href="{% url 'crm:subscribers' %}">Suscriptores</a>
         <a href="{% url 'crm:sequences' %}">Secuencias</a>
         <a href="{% url 'crm:templates' %}">Plantillas</a>
     </nav>
 
     <a class="crm-back" href="{% url 'crm:subscribers' %}">← Volver a suscriptores</a>
 
-    <div class="crm-card">
-        <div class="crm-card-title">Información del suscriptor</div>
-        <div class="crm-field">
-            <span class="crm-field-label">Email</span>
-            <span class="crm-field-value">{{ subscriber.email }}</span>
-        </div>
-        <div class="crm-field">
-            <span class="crm-field-label">Nombre</span>
-            <span class="crm-field-value">
-                {{ subscriber.name|default:"—" }}
-                <form method="post" class="crm-inline-form" style="display:inline;margin-left:0.5rem;">
-                    {% csrf_token %}
-                    <input type="hidden" name="action" value="update_name">
-                    <input type="text" name="name" value="{{ subscriber.name }}" placeholder="Nombre" style="background:#0b0b14;border:1px solid var(--crm-border);border-radius:4px;color:var(--crm-text);padding:0.2rem 0.5rem;font-size:0.8rem;width:150px;">
-                    <button type="submit" class="crm-btn small">↻</button>
-                </form>
-            </span>
-        </div>
-        <div class="crm-field">
-            <span class="crm-field-label">Estado</span>
-            <span class="crm-field-value">
-                <span class="crm-pill {% if subscriber.is_active %}pill-active{% else %}pill-inactive{% endif %}">
-                    {{ subscriber.is_active|yesno:"Activo,Inactivo" }}
+    <!-- Header del contacto -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem;">
+        <div>
+            <h2 style="color:var(--crm-text);font-size:1.25rem;margin:0;">{{ subscriber.email }}</h2>
+            <div style="margin-top:0.5rem;">
+                {% for ct in subscriber.contact_tags.all %}
+                <span class="tag-badge" style="background:{{ ct.tag.color }}22;color:{{ ct.tag.color }};border:1px solid {{ ct.tag.color }}44;">
+                    {{ ct.tag.name }}
+                    <form method="post" class="crm-inline-form" style="display:inline;"><input type="hidden" name="action" value="remove_tag"><input type="hidden" name="tag_id" value="{{ ct.tag.id }}"><span class="tag-remove" onclick="this.closest('form').submit()" style="color:{{ ct.tag.color }}">×</span></form>
                 </span>
-                <form method="post" class="crm-inline-form" style="display:inline;margin-left:0.5rem;">
-                    {% csrf_token %}
-                    <input type="hidden" name="action" value="toggle_active">
-                    <button type="submit" class="crm-btn small {% if subscriber.is_active %}danger{% endif %}">
-                        {% if subscriber.is_active %}Desactivar{% else %}Activar{% endif %}
-                    </button>
-                </form>
-            </span>
-        </div>
-        <div class="crm-field">
-            <span class="crm-field-label">Registro</span>
-            <span class="crm-field-value">{{ subscriber.created_at|date:"d/m/Y H:i" }}</span>
-        </div>
-    </div>
-
-    <div class="crm-card">
-        <div class="crm-card-title">Listas suscritas</div>
-        {% for sub in subscriptions %}
-        <div class="crm-field">
-            <span class="crm-field-label">{{ sub.email_list.name }}</span>
-            <span class="crm-field-value" style="font-size:0.78rem;color:var(--crm-muted);">
-                desde {{ sub.subscribed_at|date:"d/m/Y" }} · origen: {{ sub.source|default:"—" }}
-                <form method="post" class="crm-inline-form" style="display:inline;margin-left:0.5rem;">
-                    {% csrf_token %}
-                    <input type="hidden" name="action" value="remove_list">
-                    <input type="hidden" name="list_id" value="{{ sub.email_list.id }}">
-                    <button type="submit" class="crm-btn small danger" onclick="return confirm('¿Eliminar de esta lista?')">✕</button>
-                </form>
-            </span>
-        </div>
-        {% empty %}
-        <div style="color:var(--crm-muted);font-size:0.85rem;">Sin suscripciones activas</div>
-        {% endfor %}
-    </div>
-
-    <div class="crm-card">
-        <div class="crm-card-title">Notas internas</div>
-        <form method="post" action="{% url 'crm:add_note' subscriber.id %}" style="margin-bottom:0.75rem;">
-            {% csrf_token %}
-            <div style="display:flex;gap:0.5rem;">
-                <input type="text" name="content" placeholder="Agregar nota..." required
-                    style="flex:1;background:#0b0b14;border:1px solid var(--crm-border);border-radius:6px;color:var(--crm-text);padding:0.45rem 0.7rem;font-size:0.8rem;">
-                <button type="submit" class="crm-btn small">+</button>
-            </div>
-        </form>
-        {% for note in subscriber.notes.all|slice:":5" %}
-        <div style="padding:0.4rem 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.82rem;color:var(--crm-muted);">
-            <span style="color:var(--crm-text)">{{ note.content }}</span>
-            <small style="display:block;font-size:0.7rem;">{{ note.created_by }} · {{ note.created_at|date:"d/m H:i" }}</small>
-        </div>
-        {% empty %}
-        <div style="color:var(--crm-muted);font-size:0.78rem;font-style:italic;">Sin notas</div>
-        {% endfor %}
-    </div>
-
-    <div class="crm-card">
-        <div class="crm-card-title">Historial de envios ({{ sent_emails|length }})</div>
-        <table class="crm-table">
-            <thead>
-                <tr>
-                    <th>Plantilla</th>
-                    <th>Secuencia</th>
-                    <th>Estado</th>
-                    <th>Fecha</th>
-                    <th>Acción</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for e in sent_emails %}
-                <tr>
-                    <td>{{ e.template.name }}</td>
-                    <td style="color:var(--crm-muted);font-size:0.78rem">{{ e.sequence.name|default:"—" }}</td>
-                    <td>
-                        <span class="crm-pill {% if e.status == 'sent' %}pill-active{% elif e.status == 'failed' %}pill-inactive{% endif %}">
-                            {{ e.get_status_display }}
-                        </span>
-                        {% if e.error_message %}
-                        <div style="font-size:0.7rem;color:var(--crm-red);margin-top:0.2rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;" title="{{ e.error_message }}">
-                            {{ e.error_message|truncatechars:40 }}
-                        </div>
-                        {% endif %}
-                    </td>
-                    <td style="color:var(--crm-muted);font-size:0.78rem">{{ e.sent_at|date:"d/m H:i" }}</td>
-                    <td>
-                        {% if e.status == 'failed' or e.status == 'pending' %}
-                        <form method="post" class="crm-inline-form">
-                            {% csrf_token %}
-                            <input type="hidden" name="action" value="resend_email">
-                            <input type="hidden" name="email_id" value="{{ e.id }}">
-                            <button type="submit" class="crm-btn small">Reenviar</button>
-                        </form>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% empty %}
-                <tr><td colspan="5" style="text-align:center;color:var(--crm-muted);padding:2rem">Sin envíos todavía</td></tr>
                 {% endfor %}
-            </tbody>
-        </table>
+                <form method="post" class="crm-inline-form" style="display:inline;margin-left:0.5rem;">
+                    <input type="hidden" name="action" value="add_tag">
+                    <select name="tag_id" class="tag-select" onchange="this.form.submit()">
+                        <option value="">+ tag</option>
+                        {% for t in all_tags %}
+                        {% if t.id not in subscriber_tag_ids %}
+                        <option value="{{ t.id }}">{{ t.name }}</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                </form>
+            </div>
+        </div>
+        <div style="display:flex;gap:0.5rem;">
+            <span class="crm-pill {% if subscriber.is_active %}pill-active{% else %}pill-inactive{% endif %}">
+                {{ subscriber.is_active|yesno:"Activo,Inactivo" }}
+            </span>
+            <form method="post" class="crm-inline-form">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="toggle_active">
+                <button type="submit" class="crm-btn small {% if subscriber.is_active %}danger{% endif %}">
+                    {% if subscriber.is_active %}Desactivar{% else %}Activar{% endif %}
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="crm-tabs">
+        <div class="crm-tab active" onclick="switchTab(event, 'resumen')">Resumen</div>
+        <div class="crm-tab" onclick="switchTab(event, 'emails')">Emails</div>
+        <div class="crm-tab" onclick="switchTab(event, 'notas')">Notas</div>
+        <div class="crm-tab" onclick="switchTab(event, 'pipeline')">Pipeline</div>
+    </div>
+
+    <!-- Tab: Resumen -->
+    <div id="tab-resumen" class="crm-tab-content active" style="padding-top:1.5rem;">
+        <div class="crm-card">
+            <div class="crm-card-title">Información</div>
+            <div class="crm-field">
+                <span class="crm-field-label">Email</span>
+                <span class="crm-field-value">{{ subscriber.email }}</span>
+            </div>
+            <div class="crm-field">
+                <span class="crm-field-label">Nombre</span>
+                <span class="crm-field-value">
+                    {{ subscriber.name|default:"—" }}
+                    <form method="post" class="crm-inline-form" style="display:inline;margin-left:0.5rem;">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="update_name">
+                        <input type="text" name="name" value="{{ subscriber.name }}" placeholder="Nombre" style="background:#0b0b14;border:1px solid var(--crm-border);border-radius:4px;color:var(--crm-text);padding:0.2rem 0.5rem;font-size:0.8rem;width:150px;">
+                        <button type="submit" class="crm-btn small">↻</button>
+                    </form>
+                </span>
+            </div>
+            <div class="crm-field">
+                <span class="crm-field-label">Registro</span>
+                <span class="crm-field-value">{{ subscriber.created_at|date:"d/m/Y H:i" }}</span>
+            </div>
+        </div>
+
+        <div class="crm-card">
+            <div class="crm-card-title">Listas suscritas</div>
+            {% for sub in subscriptions %}
+            <div class="crm-field">
+                <span class="crm-field-label">{{ sub.email_list.name }}</span>
+                <span class="crm-field-value" style="font-size:0.78rem;color:var(--crm-muted);">
+                    desde {{ sub.subscribed_at|date:"d/m/Y" }} · origen: {{ sub.source|default:"—" }}
+                    <form method="post" class="crm-inline-form" style="display:inline;margin-left:0.5rem;">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="remove_list">
+                        <input type="hidden" name="list_id" value="{{ sub.email_list.id }}">
+                        <button type="submit" class="crm-btn small danger" onclick="return confirm('¿Eliminar de esta lista?')">✕</button>
+                    </form>
+                </span>
+            </div>
+            {% empty %}
+            <div style="color:var(--crm-muted);font-size:0.85rem;">Sin suscripciones activas</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Tab: Emails -->
+    <div id="tab-emails" class="crm-tab-content" style="padding-top:1.5rem;">
+        <div class="crm-card">
+            <div class="crm-card-title">Historial de envíos ({{ sent_emails|length }})</div>
+            <table class="crm-table">
+                <thead>
+                    <tr>
+                        <th>Plantilla</th>
+                        <th>Secuencia</th>
+                        <th>Estado</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for e in sent_emails %}
+                    <tr>
+                        <td>{{ e.template.name }}</td>
+                        <td style="color:var(--crm-muted);font-size:0.78rem">{{ e.sequence.name|default:"—" }}</td>
+                        <td>
+                            <span class="crm-pill {% if e.status == 'sent' %}pill-active{% elif e.status == 'failed' %}pill-inactive{% endif %}">
+                                {{ e.get_status_display }}
+                            </span>
+                            {% if e.error_message %}
+                            <div style="font-size:0.7rem;color:var(--crm-red);margin-top:0.2rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;" title="{{ e.error_message }}">
+                                {{ e.error_message|truncatechars:40 }}
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td style="color:var(--crm-muted);font-size:0.78rem">{{ e.sent_at|date:"d/m H:i" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" style="text-align:center;color:var(--crm-muted);padding:2rem">Sin envíos todavía</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Tab: Notas -->
+    <div id="tab-notas" class="crm-tab-content" style="padding-top:1.5rem;">
+        <div class="crm-card">
+            <div class="crm-card-title">Notas internas</div>
+            <form method="post" action="{% url 'crm:add_note' subscriber.id %}" style="margin-bottom:0.75rem;">
+                {% csrf_token %}
+                <div style="display:flex;gap:0.5rem;">
+                    <input type="text" name="content" placeholder="Agregar nota..." required
+                        style="flex:1;background:#0b0b14;border:1px solid var(--crm-border);border-radius:6px;color:var(--crm-text);padding:0.45rem 0.7rem;font-size:0.8rem;">
+                    <button type="submit" class="crm-btn small">+</button>
+                </div>
+            </form>
+            {% for note in subscriber.notes.all %}
+            <div style="padding:0.5rem 0;border-bottom:1px solid rgba(255,255,255,0.04);">
+                <div style="font-size:0.83rem;color:var(--crm-text);">{{ note.content }}</div>
+                <small style="font-size:0.7rem;color:var(--crm-muted);">{{ note.created_by }} · {{ note.created_at|date:"d/m H:i" }}</small>
+            </div>
+            {% empty %}
+            <div style="color:var(--crm-muted);font-size:0.78rem;font-style:italic;">Sin notas</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Tab: Pipeline -->
+    <div id="tab-pipeline" class="crm-tab-content" style="padding-top:1.5rem;">
+        <div class="crm-card">
+            <div class="crm-card-title">Historial de pipeline</div>
+            {% if pipeline_logs %}
+            <table class="crm-table">
+                <thead><tr><th>Etapa</th><th>Fecha</th><th>Notas</th></tr></thead>
+                <tbody>
+                    {% for log in pipeline_logs %}
+                    <tr>
+                        <td><span class="crm-pill pill-active">{{ log.stage.name }}</span></td>
+                        <td style="color:var(--crm-muted);font-size:0.78rem">{{ log.entered_at|date:"d/m/Y H:i" }}</td>
+                        <td style="color:var(--crm-muted);font-size:0.78rem">{{ log.notes|default:"—" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div style="color:var(--crm-muted);font-size:0.78rem;font-style:italic;">Sin movimientos de pipeline</div>
+            {% endif %}
+        </div>
     </div>
 </div>
+
+<script>
+function switchTab(e, name) {
+    document.querySelectorAll('.crm-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.crm-tab-content').forEach(c => c.classList.remove('active'));
+    e.target.classList.add('active');
+    document.getElementById('tab-' + name).classList.add('active');
+}
+</script>
 {% endblock %}

@@ -21,12 +21,17 @@
 {% endblock %}
 {% block content %}
 <div class="crm">
-    <nav class="crm-nav">
+<nav class="crm-nav">
         <a href="{% url 'crm:dashboard' %}">Dashboard</a>
-        <a href="{% url 'crm:lists' %}" {% if not list_obj %}class=\"active\"{% endif %}>Listas</a>
+        <a href="{% url 'crm:campaigns' %}">Campañas</a>
+        <a href="{% url 'crm:broadcasts' %}">Broadcasts</a>
+        <a href="{% url 'crm:pipeline' %}">Pipeline</a>
+        <a href="{% url 'crm:segments' %}">Segmentos</a>
+        <a href="{% url 'crm:tags' %}">Tags</a>
+        <a href="{% url 'crm:lists' %}">Listas</a>
         <a href="{% url 'crm:subscribers' %}">Suscriptores</a>
         <a href="{% url 'crm:sequences' %}">Secuencias</a>
-        ' %}" class="active">Plantillas</a>
+        <a href="{% url 'crm:templates' %}">Plantillas</a>
     </nav>
 
     <div class="tmpl-grid">

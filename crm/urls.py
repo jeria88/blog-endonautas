@@ -24,4 +24,14 @@ urlpatterns = [
     path("templates/", views.crm_templates, name="templates"),
     path("templates/<int:template_id>/preview/", views.crm_template_preview, name="template_preview"),
     path("templates/<int:template_id>/edit/", views.crm_template_edit, name="template_edit"),
+    # Tags
+    path("tags/", views.crm_tags, name="tags"),
+    path("tags/create/", views.crm_tag_create, name="tag_create"),
+    path("tags/<int:tag_id>/edit/", views.crm_tag_edit, name="tag_edit"),
+    path("tags/<int:tag_id>/delete/", views.crm_tag_delete, name="tag_delete"),
+    # Broadcasts
+    path("broadcasts/", views.crm_broadcasts, name="broadcasts"),
+    path("broadcasts/create/", views.crm_broadcast_create, name="broadcast_create"),
+    path("broadcasts/<int:broadcast_id>/", views.crm_broadcast_detail, name="broadcast_detail"),
+    path("broadcasts/<int:broadcast_id>/send/", views.crm_broadcast_send, name="broadcast_send"),
 ]

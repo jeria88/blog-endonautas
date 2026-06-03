@@ -1,0 +1,46 @@
+{% extends "admin/base_site.html" %}
+{% block title %}{{ action }} Tag | CRM{% endblock %}
+{% block extrahead %}
+<style>
+:root { --crm-surface: #12121e; --crm-border: rgba(255,255,255,0.07); --crm-muted: #6b6878; --crm-text: #e8e4dc; --crm-accent: #c4813a; }
+.crm { padding: 2rem; max-width: 640px; margin: 0 auto; }
+.crm-nav { display: flex; gap: 0.25rem; margin-bottom: 2rem; border-bottom: 1px solid var(--crm-border); padding-bottom: 1rem; flex-wrap: wrap; }
+.crm-nav a { color: var(--crm-muted); text-decoration: none; font-size: 0.875rem; padding: 0.4rem 0.9rem; border-radius: 6px; }
+.crm-nav a:hover { color: var(--crm-text); background: rgba(255,255,255,0.05); }
+.crm-card { background: var(--crm-surface); border: 1px solid var(--crm-border); border-radius: 10px; padding: 1.5rem; }
+.crm-card-title { font-size: 1rem; font-weight: 600; color: var(--crm-text); margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--crm-border); }
+.crm-input { width: 100%; background: #0b0b14; border: 1px solid var(--crm-border); border-radius: 6px; padding: 0.5rem 0.75rem; color: var(--crm-text); font-size: 0.875rem; outline: none; box-sizing: border-box; }
+.crm-input:focus { border-color: var(--crm-accent); }
+.crm-btn { display: inline-block; padding: 0.45rem 1rem; border-radius: 6px; font-size: 0.85rem; text-decoration: none; cursor: pointer; border: 1px solid var(--crm-border); color: var(--crm-muted); background: transparent; font-family: inherit; }
+.crm-btn:hover { color: var(--crm-text); border-color: rgba(255,255,255,0.2); }
+.crm-btn.primary { background: rgba(196,129,58,0.15); border-color: rgba(196,129,58,0.3); color: var(--crm-accent); }
+form p { margin-bottom: 1rem; }
+form label { display: block; font-size: 0.8rem; color: var(--crm-muted); margin-bottom: 0.3rem; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="crm">
+    <nav class="crm-nav">
+        <a href="{% url 'crm:dashboard' %}">Dashboard</a>
+        <a href="{% url 'crm:tags' %}">Tags</a>
+    </nav>
+
+    <div class="crm-card">
+        <div class="crm-card-title">{{ action }} etiqueta</div>
+        <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+            <p>
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}<span style="color:#d96355;font-size:0.75rem;">{{ field.errors.0 }}</span>{% endif %}
+            </p>
+            {% endfor %}
+            <div style="display:flex;gap:0.5rem;margin-top:1rem;">
+                <button type="submit" class="crm-btn primary">Guardar</button>
+                <a href="{% url 'crm:tags' %}" class="crm-btn">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends "admin/base_site.html" %}
+{% block title %}Broadcasts | CRM{% endblock %}
+{% block extrahead %}
+<style>
+:root { --crm-surface: #12121e; --crm-border: rgba(255,255,255,0.07); --crm-muted: #6b6878; --crm-text: #e8e4dc; --crm-accent: #c4813a; --crm-green: #3d7a5e; --crm-red: #a84b3c; --crm-warn: #d4a84b; }
+.crm { padding: 2rem; max-width: 1100px; margin: 0 auto; }
+.crm-nav { display: flex; gap: 0.25rem; margin-bottom: 2rem; border-bottom: 1px solid var(--crm-border); padding-bottom: 1rem; flex-wrap: wrap; }
+.crm-nav a { color: var(--crm-muted); text-decoration: none; font-size: 0.875rem; padding: 0.4rem 0.9rem; border-radius: 6px; }
+.crm-nav a:hover { color: var(--crm-text); background: rgba(255,255,255,0.05); }
+.crm-nav a.active { color: var(--crm-text); background: rgba(255,255,255,0.08); }
+.crm-table { width: 100%; border-collapse: collapse; background: var(--crm-surface); border-radius: 10px; overflow: hidden; border: 1px solid var(--crm-border); }
+.crm-table th { padding: 0.7rem 1rem; text-align: left; font-size: 0.75rem; color: var(--crm-muted); text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid var(--crm-border); }
+.crm-table td { padding: 0.65rem 1rem; font-size: 0.85rem; color: var(--crm-text); border-bottom: 1px solid var(--crm-border); }
+.crm-table tr:last-child td { border-bottom: none; }
+.crm-btn { display: inline-block; padding: 0.45rem 1rem; border-radius: 6px; font-size: 0.85rem; text-decoration: none; cursor: pointer; border: 1px solid var(--crm-border); color: var(--crm-muted); background: transparent; font-family: inherit; }
+.crm-btn:hover { color: var(--crm-text); border-color: rgba(255,255,255,0.2); }
+.crm-btn.primary { background: rgba(196,129,58,0.15); border-color: rgba(196,129,58,0.3); color: var(--crm-accent); }
+.crm-btn.small { padding: 0.2rem 0.5rem; font-size: 0.72rem; }
+.crm-pill { display: inline-block; padding: 0.18rem 0.6rem; border-radius: 999px; font-size: 0.72rem; font-weight: 600; }
+.pill-draft { background: rgba(107,104,120,0.2); color: #9a96a8; }
+.pill-sending { background: rgba(212,168,75,0.2); color: var(--crm-warn); }
+.pill-sent { background: rgba(61,122,94,0.2); color: #5aad84; }
+.pill-failed { background: rgba(168,75,60,0.2); color: #d96355; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="crm">
+    <nav class="crm-nav">
+        <a href="{% url 'crm:dashboard' %}">Dashboard</a>
+        <a href="{% url 'crm:campaigns' %}">Campañas</a>
+        <a href="{% url 'crm:broadcasts' %}" class="active">Broadcasts</a>
+        <a href="{% url 'crm:pipeline' %}">Pipeline</a>
+        <a href="{% url 'crm:segments' %}">Segmentos</a>
+        <a href="{% url 'crm:tags' %}">Tags</a>
+        <a href="{% url 'crm:lists' %}">Listas</a>
+        <a href="{% url 'crm:subscribers' %}">Suscriptores</a>
+        <a href="{% url 'crm:sequences' %}">Secuencias</a>
+        <a href="{% url 'crm:templates' %}">Plantillas</a>
+    </nav>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+        <h2 style="color:var(--crm-text);font-size:1.25rem;margin:0;">Broadcasts</h2>
+        <a href="{% url 'crm:broadcast_create' %}" class="crm-btn primary">+ Nuevo broadcast</a>
+    </div>
+
+    <table class="crm-table">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Destino</th>
+                <th>Estado</th>
+                <th>Enviados</th>
+                <th>Fallidos</th>
+                <th>Creado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for b in broadcasts %}
+            <tr>
+                <td><a href="{% url 'crm:broadcast_detail' b.id %}" style="color:var(--crm-accent);text-decoration:none;">{{ b.name }}</a></td>
+                <td style="color:var(--crm-muted);font-size:0.78rem;">
+                    {% if b.target_list %}Lista: {{ b.target_list.name }}{% elif b.target_segment %}Segmento: {{ b.target_segment.name }}{% else %}—{% endif %}
+                </td>
+                <td><span class="crm-pill pill-{{ b.status }}">{{ b.get_status_display }}</span></td>
+                <td style="color:#5aad84;">{{ b.total_sent }}</td>
+                <td style="color:#d96355;">{{ b.total_failed }}</td>
+                <td style="color:var(--crm-muted);font-size:0.78rem;">{{ b.created_at|date:"d/m/Y H:i" }}</td>
+                <td>
+                    <a href="{% url 'crm:broadcast_detail' b.id %}" class="crm-btn small">Ver</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7" style="text-align:center;color:var(--crm-muted);padding:2rem;">Sin broadcasts.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -26,10 +26,13 @@
 <div class="crm">
     <nav class="crm-nav">
         <a href="{% url 'crm:dashboard' %}">Dashboard</a>
-        <a href="{% url 'crm:lists' %}" {% if not list_obj %}class="active"{% endif %}>Listas</a>
-        ' %}" class="active">Suscriptores</a>
+        <a href="{% url 'crm:campaigns' %}">Campañas</a>
+        <a href="{% url 'crm:broadcasts' %}">Broadcasts</a>
+        <a href="{% url 'crm:lists' %}">Listas</a>
+        <a href="{% url 'crm:subscribers' %}" class="active">Suscriptores</a>
         <a href="{% url 'crm:pipeline' %}">Pipeline</a>
         <a href="{% url 'crm:segments' %}">Segmentos</a>
+        <a href="{% url 'crm:tags' %}">Tags</a>
         <a href="{% url 'crm:sequences' %}">Secuencias</a>
         <a href="{% url 'crm:templates' %}">Plantillas</a>
     </nav>
@@ -40,6 +43,12 @@
             <option value="">Todas las listas</option>
             {% for lst in lists %}
             <option value="{{ lst.slug }}" {% if current_list == lst.slug %}selected{% endif %}>{{ lst.name }}</option>
+            {% endfor %}
+        </select>
+        <select class="crm-select" name="tag" onchange="this.form.submit()">
+            <option value="">Todos los tags</option>
+            {% for t in all_tags %}
+            <option value="{{ t.id }}" {% if current_tag == t.id|stringformat:"s" %}selected{% endif %}>{{ t.name }}</option>
             {% endfor %}
         </select>
         <button class="crm-btn" type="submit">Filtrar</button>
@@ -55,6 +64,7 @@
                 <th>Email</th>
                 <th>Nombre</th>
                 <th>Listas</th>
+                <th>Tags</th>
                 <th>Origen</th>
                 <th>Registro</th>
             </tr>
@@ -68,6 +78,11 @@
                     {% for sub in s.subscriptions.all %}
                     <span class="crm-badge">{{ sub.email_list.name|truncatechars:20 }}</span>
                     {% empty %}<span style="color:var(--crm-muted)">—</span>
+                    {% endfor %}
+                </td>
+                <td>
+                    {% for ct in s.contact_tags.all %}
+                    <span class="crm-badge" style="background:{{ ct.tag.color }}22;color:{{ ct.tag.color }};border-color:{{ ct.tag.color }}44;">{{ ct.tag.name }}</span>
                     {% endfor %}
                 </td>
                 <td style="color:var(--crm-muted);font-size:0.78rem">

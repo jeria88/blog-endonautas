@@ -221,3 +221,67 @@ class Segment(models.Model):
             )
         return qs.distinct()
 
+
+# ── Tags ──────────────────────────────────────────────────────────────────────
+
+class Tag(models.Model):
+    """Etiqueta para clasificar contactos (ej: interesado, cliente, frio, caliente)."""
+    name = models.CharField(max_length=60, unique=True)
+    slug = models.SlugField(unique=True)
+    color = models.CharField(max_length=7, default="#c4813a", help_text="Color HEX para el badge")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Etiqueta"
+        verbose_name_plural = "Etiquetas"
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+
+class ContactTag(models.Model):
+    """Asignación de un tag a un suscriptor."""
+    subscriber = models.ForeignKey(Subscriber, on_delete=models.CASCADE, related_name="contact_tags")
+    tag = models.ForeignKey(Tag, on_delete=models.CASCADE, related_name="contact_tags")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ["subscriber", "tag"]
+        verbose_name = "Etiqueta de contacto"
+        verbose_name_plural = "Etiquetas de contacto"
+
+    def __str__(self):
+        return f"{self.subscriber.email} → {self.tag.name}"
+
+
+# ── Broadcasts (campañas manuales) ───────────────────────────────────────────
+
+class Broadcast(models.Model):
+    """Email puntual enviado manualmente a un segmento/lista."""
+    name = models.CharField(max_length=200, help_text="Nombre interno de la campaña")
+    subject = models.CharField(max_length=255)
+    html_content = models.TextField()
+    plain_text_content = models.TextField(blank=True)
+    target_list = models.ForeignKey(EmailList, on_delete=models.SET_NULL, null=True, blank=True, related_name="broadcasts")
+    target_segment = models.ForeignKey(Segment, on_delete=models.SET_NULL, null=True, blank=True, related_name="broadcasts")
+    status = models.CharField(max_length=20, choices=[
+        ("draft", "Borrador"),
+        ("sending", "Enviando"),
+        ("sent", "Enviado"),
+        ("failed", "Fallido"),
+    ], default="draft")
+    total_recipients = models.PositiveIntegerField(default=0)
+    total_sent = models.PositiveIntegerField(default=0)
+    total_failed = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    sent_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Campaña manual"
+        verbose_name_plural = "Campañas manuales"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.name} ({self.status})"
+

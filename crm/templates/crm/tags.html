@@ -1,0 +1,71 @@
+{% extends "admin/base_site.html" %}
+{% block title %}Tags | CRM{% endblock %}
+{% block extrahead %}
+<style>
+:root { --crm-surface: #12121e; --crm-border: rgba(255,255,255,0.07); --crm-muted: #6b6878; --crm-text: #e8e4dc; --crm-accent: #c4813a; }
+.crm { padding: 2rem; max-width: 960px; margin: 0 auto; }
+.crm-nav { display: flex; gap: 0.25rem; margin-bottom: 2rem; border-bottom: 1px solid var(--crm-border); padding-bottom: 1rem; flex-wrap: wrap; }
+.crm-nav a { color: var(--crm-muted); text-decoration: none; font-size: 0.875rem; padding: 0.4rem 0.9rem; border-radius: 6px; }
+.crm-nav a:hover { color: var(--crm-text); background: rgba(255,255,255,0.05); }
+.crm-nav a.active { color: var(--crm-text); background: rgba(255,255,255,0.08); }
+.crm-table { width: 100%; border-collapse: collapse; background: var(--crm-surface); border-radius: 10px; overflow: hidden; border: 1px solid var(--crm-border); }
+.crm-table th { padding: 0.7rem 1rem; text-align: left; font-size: 0.75rem; color: var(--crm-muted); text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid var(--crm-border); }
+.crm-table td { padding: 0.65rem 1rem; font-size: 0.85rem; color: var(--crm-text); border-bottom: 1px solid var(--crm-border); }
+.crm-table tr:last-child td { border-bottom: none; }
+.crm-btn { display: inline-block; padding: 0.45rem 1rem; border-radius: 6px; font-size: 0.85rem; text-decoration: none; cursor: pointer; border: 1px solid var(--crm-border); color: var(--crm-muted); background: transparent; font-family: inherit; }
+.crm-btn:hover { color: var(--crm-text); border-color: rgba(255,255,255,0.2); }
+.crm-btn.primary { background: rgba(196,129,58,0.15); border-color: rgba(196,129,58,0.3); color: var(--crm-accent); }
+.crm-btn.danger { background: rgba(168,75,60,0.15); border-color: rgba(168,75,60,0.3); color: #d96355; }
+.crm-btn.small { padding: 0.2rem 0.5rem; font-size: 0.72rem; }
+.tag-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; vertical-align: middle; border: 1px solid rgba(255,255,255,0.15); }
+</style>
+{% endblock %}
+{% block content %}
+<div class="crm">
+    <nav class="crm-nav">
+        <a href="{% url 'crm:dashboard' %}">Dashboard</a>
+        <a href="{% url 'crm:campaigns' %}">Campañas</a>
+        <a href="{% url 'crm:broadcasts' %}">Broadcasts</a>
+        <a href="{% url 'crm:pipeline' %}">Pipeline</a>
+        <a href="{% url 'crm:segments' %}">Segmentos</a>
+        <a href="{% url 'crm:tags' %}" class="active">Tags</a>
+        <a href="{% url 'crm:lists' %}">Listas</a>
+        <a href="{% url 'crm:subscribers' %}">Suscriptores</a>
+        <a href="{% url 'crm:sequences' %}">Secuencias</a>
+        <a href="{% url 'crm:templates' %}">Plantillas</a>
+    </nav>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+        <h2 style="color:var(--crm-text);font-size:1.25rem;margin:0;">Etiquetas</h2>
+        <a href="{% url 'crm:tag_create' %}" class="crm-btn primary">+ Nuevo tag</a>
+    </div>
+
+    <table class="crm-table">
+        <thead>
+            <tr>
+                <th>Tag</th>
+                <th>Color</th>
+                <th>Contactos</th>
+                <th>Creado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tag in tags %}
+            <tr>
+                <td><span class="tag-dot" style="background:{{ tag.color }}"></span> {{ tag.name }}</td>
+                <td style="color:var(--crm-muted);font-family:monospace;font-size:0.8rem;">{{ tag.color }}</td>
+                <td>{{ tag.sub_count }}</td>
+                <td style="color:var(--crm-muted);font-size:0.78rem;">{{ tag.created_at|date:"d/m/Y" }}</td>
+                <td>
+                    <a href="{% url 'crm:tag_edit' tag.id %}" class="crm-btn small">Editar</a>
+                    <a href="{% url 'crm:tag_delete' tag.id %}" class="crm-btn small danger">Eliminar</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" style="text-align:center;color:var(--crm-muted);padding:2rem;">Sin tags creados.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

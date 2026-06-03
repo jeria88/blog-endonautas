@@ -1,0 +1,99 @@
+{% extends "admin/base_site.html" %}
+{% block title %}{{ broadcast.name }} | Broadcast{% endblock %}
+{% block extrahead %}
+<style>
+:root { --crm-surface: #12121e; --crm-border: rgba(255,255,255,0.07); --crm-muted: #6b6878; --crm-text: #e8e4dc; --crm-accent: #c4813a; --crm-green: #3d7a5e; --crm-red: #a84b3c; --crm-warn: #d4a84b; }
+.crm { padding: 2rem; max-width: 960px; margin: 0 auto; }
+.crm-nav { display: flex; gap: 0.25rem; margin-bottom: 2rem; border-bottom: 1px solid var(--crm-border); padding-bottom: 1rem; flex-wrap: wrap; }
+.crm-nav a { color: var(--crm-muted); text-decoration: none; font-size: 0.875rem; padding: 0.4rem 0.9rem; border-radius: 6px; }
+.crm-nav a:hover { color: var(--crm-text); background: rgba(255,255,255,0.05); }
+.crm-back { color: var(--crm-muted); text-decoration: none; font-size: 0.85rem; display: inline-block; margin-bottom: 1rem; }
+.crm-back:hover { color: var(--crm-text); }
+.crm-card { background: var(--crm-surface); border: 1px solid var(--crm-border); border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem; }
+.crm-card-title { font-size: 1rem; font-weight: 600; color: var(--crm-text); margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--crm-border); }
+.crm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; }
+.crm-stat { text-align: center; }
+.crm-stat-n { font-size: 1.75rem; font-weight: 700; color: var(--crm-text); line-height: 1; }
+.crm-stat-l { font-size: 0.72rem; color: var(--crm-muted); margin-top: 0.3rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.crm-stat.green .crm-stat-n { color: #5aad84; }
+.crm-stat.red .crm-stat-n { color: #d96355; }
+.crm-pill { display: inline-block; padding: 0.18rem 0.6rem; border-radius: 999px; font-size: 0.72rem; font-weight: 600; }
+.pill-draft { background: rgba(107,104,120,0.2); color: #9a96a8; }
+.pill-sending { background: rgba(212,168,75,0.2); color: var(--crm-warn); }
+.pill-sent { background: rgba(61,122,94,0.2); color: #5aad84; }
+.pill-failed { background: rgba(168,75,60,0.2); color: #d96355; }
+.crm-btn { display: inline-block; padding: 0.45rem 1rem; border-radius: 6px; font-size: 0.85rem; text-decoration: none; cursor: pointer; border: 1px solid var(--crm-border); color: var(--crm-muted); background: transparent; font-family: inherit; }
+.crm-btn:hover { color: var(--crm-text); border-color: rgba(255,255,255,0.2); }
+.crm-btn.primary { background: rgba(196,129,58,0.15); border-color: rgba(196,129,58,0.3); color: var(--crm-accent); }
+.crm-field { margin-bottom: 0.75rem; }
+.crm-field-label { font-size: 0.78rem; color: var(--crm-muted); }
+.crm-field-value { font-size: 0.9rem; color: var(--crm-text); }
+</style>
+{% endblock %}
+{% block content %}
+<div class="crm">
+    <nav class="crm-nav">
+        <a href="{% url 'crm:dashboard' %}">Dashboard</a>
+        <a href="{% url 'crm:broadcasts' %}">Broadcasts</a>
+    </nav>
+
+    <a class="crm-back" href="{% url 'crm:broadcasts' %}">← Volver a broadcasts</a>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+        <div>
+            <h2 style="color:var(--crm-text);font-size:1.25rem;margin:0;">{{ broadcast.name }}</h2>
+            <span class="crm-pill pill-{{ broadcast.status }}">{{ broadcast.get_status_display }}</span>
+        </div>
+        {% if broadcast.status == 'draft' or broadcast.status == 'failed' %}
+        <a href="{% url 'crm:broadcast_send' broadcast.id %}" class="crm-btn primary" onclick="return confirm('¿Enviar este broadcast a {{ recipient_count }} destinatarios?')">▶ Enviar ahora</a>
+        {% endif %}
+    </div>
+
+    <div class="crm-card">
+        <div class="crm-card-title">Estadísticas</div>
+        <div class="crm-grid">
+            <div class="crm-stat">
+                <div class="crm-stat-n">{{ recipient_count }}</div>
+                <div class="crm-stat-l">Destinatarios</div>
+            </div>
+            <div class="crm-stat green">
+                <div class="crm-stat-n">{{ broadcast.total_sent }}</div>
+                <div class="crm-stat-l">Enviados</div>
+            </div>
+            <div class="crm-stat red">
+                <div class="crm-stat-n">{{ broadcast.total_failed }}</div>
+                <div class="crm-stat-l">Fallidos</div>
+            </div>
+            <div class="crm-stat">
+                <div class="crm-stat-n">{{ broadcast.sent_at|date:"d/m/Y H:i"|default:"—" }}</div>
+                <div class="crm-stat-l">Enviado el</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="crm-card">
+        <div class="crm-card-title">Detalles</div>
+        <div class="crm-field">
+            <div class="crm-field-label">Asunto</div>
+            <div class="crm-field-value">{{ broadcast.subject }}</div>
+        </div>
+        <div class="crm-field">
+            <div class="crm-field-label">Destino</div>
+            <div class="crm-field-value">
+                {% if broadcast.target_list %}Lista: {{ broadcast.target_list.name }}{% elif broadcast.target_segment %}Segmento: {{ broadcast.target_segment.name }}{% else %}—{% endif %}
+            </div>
+        </div>
+        <div class="crm-field">
+            <div class="crm-field-label">Creado</div>
+            <div class="crm-field-value">{{ broadcast.created_at|date:"d/m/Y H:i" }}</div>
+        </div>
+    </div>
+
+    <div class="crm-card">
+        <div class="crm-card-title">Vista previa</div>
+        <div style="background:#f5f3ef;border-radius:8px;padding:1.5rem;color:#161513;max-height:400px;overflow:auto;">
+            {{ broadcast.html_content|safe }}
+        </div>
+    </div>
+</div>
+{% endblock %}

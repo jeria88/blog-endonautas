@@ -4,7 +4,7 @@ from django.utils import timezone
 from datetime import timedelta
 import csv
 
-from .models import Subscriber, EmailList, Subscription, EmailTemplate, EmailSequence, SequenceStep, SentEmail, PipelineStage, PipelineLog, ContactNote, Segment
+from .models import Subscriber, EmailList, Subscription, EmailTemplate, EmailSequence, SequenceStep, SentEmail, PipelineStage, PipelineLog, ContactNote, Segment, Tag, ContactTag, Broadcast
 
 
 # ── Actions ──────────────────────────────────────────────────────────────────
@@ -76,15 +76,22 @@ class ContactNoteInline(admin.TabularInline):
     classes = ["collapse"]
 
 
+class ContactTagInline(admin.TabularInline):
+    model = ContactTag
+    extra = 0
+    autocomplete_fields = ["tag"]
+    classes = ["collapse"]
+
+
 # ── ModelAdmins ──────────────────────────────────────────────────────────────
 
 @admin.register(Subscriber)
 class SubscriberAdmin(admin.ModelAdmin):
-    list_display = ["email", "name", "lists_summary", "is_active", "created_at", "sent_count"]
-    list_filter = ["is_active", "created_at", "subscriptions__email_list"]
+    list_display = ["email", "name", "lists_summary", "tags_summary", "is_active", "created_at", "sent_count"]
+    list_filter = ["is_active", "created_at", "subscriptions__email_list", "contact_tags__tag"]
     search_fields = ["email", "name"]
     ordering = ["-created_at"]
-    inlines = [SubscriptionInline, ContactNoteInline]
+    inlines = [ContactTagInline, SubscriptionInline, ContactNoteInline]
     actions = [export_csv, activate_selected, deactivate_selected]
     list_select_related = False
     date_hierarchy = "created_at"
@@ -94,12 +101,17 @@ class SubscriberAdmin(admin.ModelAdmin):
         return ", ".join(s.email_list.name for s in lists[:3]) + ("..." if len(lists) > 3 else "")
     lists_summary.short_description = "Listas"
 
+    def tags_summary(self, obj):
+        tags = obj.contact_tags.select_related("tag").all()
+        return ", ".join(ct.tag.name for ct in tags[:3])
+    tags_summary.short_description = "Tags"
+
     def sent_count(self, obj):
         return SentEmail.objects.filter(subscriber=obj, status="sent").count()
     sent_count.short_description = "Enviados"
 
     def get_queryset(self, request):
-        return super().get_queryset(request).prefetch_related("subscriptions__email_list")
+        return super().get_queryset(request).prefetch_related("subscriptions__email_list", "contact_tags__tag")
 
 
 @admin.register(EmailList)
@@ -225,3 +237,39 @@ class SegmentAdmin(admin.ModelAdmin):
     def subscriber_count(self, obj):
         return obj.get_subscribers().count()
     subscriber_count.short_description = "Suscriptores"
+
+
+# ── Tags y Broadcasts ────────────────────────────────────────────────────────
+
+
+@admin.register(Tag)
+class TagAdmin(admin.ModelAdmin):
+    list_display = ["name", "slug", "color_preview", "subscriber_count", "created_at"]
+    prepopulated_fields = {"slug": ("name",)}
+    search_fields = ["name"]
+
+    def color_preview(self, obj):
+        return f'<span style="background:{obj.color};padding:2px 10px;border-radius:4px;">&nbsp;</span> {obj.color}'
+    color_preview.short_description = "Color"
+    color_preview.allow_tags = True
+
+    def subscriber_count(self, obj):
+        return obj.contact_tags.count()
+    subscriber_count.short_description = "Contactos"
+
+
+@admin.register(Broadcast)
+class BroadcastAdmin(admin.ModelAdmin):
+    list_display = ["name", "target_info", "status", "total_recipients", "total_sent", "total_failed", "created_at", "sent_at"]
+    list_filter = ["status", "created_at"]
+    search_fields = ["name", "subject"]
+    readonly_fields = ["status", "total_recipients", "total_sent", "total_failed", "created_at", "sent_at"]
+    date_hierarchy = "created_at"
+
+    def target_info(self, obj):
+        if obj.target_list:
+            return f"Lista: {obj.target_list.name}"
+        if obj.target_segment:
+            return f"Segmento: {obj.target_segment.name}"
+        return "—"
+    target_info.short_description = "Destino"
