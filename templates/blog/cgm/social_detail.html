@@ -1,0 +1,128 @@
+{% extends "admin/base_site.html" %}
+
+{% block title %}{{ title }} — CGM{% endblock %}
+
+{% block extrahead %}
+<style>
+:root {
+  --cgm-bg: #0c0c1a;
+  --cgm-surface: #111128;
+  --cgm-border: rgba(255,255,255,0.06);
+  --cgm-text: #e8e6f0;
+  --cgm-muted: #6b6880;
+  --cgm-accent: #c4813a;
+  --cgm-green: #4caf7d;
+  --cgm-radius: 8px;
+  --cgm-radius-lg: 12px;
+}
+.cgm-wrap { padding: 2rem; max-width: 1000px; margin: 0 auto; }
+.cgm-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+.cgm-header h1 { font-size: 1.4rem; font-weight: 700; color: var(--cgm-text); margin: 0; }
+.cgm-card { background: var(--cgm-surface); border: 1px solid var(--cgm-border); border-radius: var(--cgm-radius-lg); padding: 1.5rem; margin-bottom: 1.5rem; }
+.cgm-card-title { font-size: 0.95rem; font-weight: 600; color: var(--cgm-text); margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--cgm-border); }
+.cgm-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; border-radius: var(--cgm-radius); font-size: 0.85rem; font-weight: 500; text-decoration: none; cursor: pointer; border: 1px solid var(--cgm-border); color: var(--cgm-muted); background: transparent; transition: all 0.15s; font-family: inherit; }
+.cgm-btn:hover { color: var(--cgm-text); border-color: rgba(255,255,255,0.2); }
+.cgm-btn-primary { background: var(--cgm-accent); border-color: var(--cgm-accent); color: #000; }
+.cgm-btn-green { background: var(--cgm-green); border-color: var(--cgm-green); color: #000; }
+.cgm-btn-sm { padding: 5px 12px; font-size: 0.78rem; }
+.pill { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 0.72rem; font-weight: 600; }
+.pill-draft { background: rgba(107,104,128,0.2); color: #9a96a8; }
+.pill-ready { background: rgba(76,175,125,0.2); color: #4caf7d; }
+.pill-published { background: rgba(91,141,239,0.2); color: #5b8def; }
+.cgm-content { font-size: 0.9rem; color: var(--cgm-text); line-height: 1.7; white-space: pre-wrap; }
+.cgm-meta { font-size: 0.78rem; color: var(--cgm-muted); }
+.cgm-slides { display: flex; gap: 12px; overflow-x: auto; padding: 1rem 0; }
+.cgm-slide { flex: 0 0 200px; height: 250px; background: var(--cgm-surface); border: 1px solid var(--cgm-border); border-radius: var(--cgm-radius); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 15px; text-align: center; }
+.cgm-slide-num { font-size: 0.7rem; color: var(--cgm-muted); margin-bottom: 8px; }
+.cgm-slide-text { font-size: 0.75rem; color: var(--cgm-text); line-height: 1.4; }
+.cgm-downloads { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 1rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="cgm-wrap">
+
+  <div class="cgm-header">
+    <h1>📱 Post RRSS #{{ post.pk }}</h1>
+    <a href="{% url 'cgm:dashboard' %}" class="cgm-btn cgm-btn-sm">← Dashboard</a>
+  </div>
+
+  <!-- Info -->
+  <div class="cgm-card">
+    <div class="cgm-card-title">Información</div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+      <div>
+        <div class="cgm-meta">Fuente</div>
+        <div style="color: var(--cgm-text);">{{ post.fuente_titulo|default:"—" }}</div>
+      </div>
+      <div>
+        <div class="cgm-meta">Plataforma</div>
+        <div style="color: var(--cgm-text);">{{ post.get_plataforma_display }}</div>
+      </div>
+      <div>
+        <div class="cgm-meta">Estado</div>
+        <span class="pill pill-{{ post.status }}">{{ post.get_status_display }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Copy del carrusel -->
+  {% if post.formato == 'carrusel' %}
+  <div class="cgm-card">
+    <div class="cgm-card-title">📝 Copy Carrusel</div>
+    <div class="cgm-content">{{ post.copy_carrusel }}</div>
+
+    {% if post.copy_descripcion %}
+    <div style="margin-top: 1rem;">
+      <div class="cgm-meta">Descripción</div>
+      <div class="cgm-content">{{ post.copy_descripcion }}</div>
+    </div>
+    {% endif %}
+
+    <!-- Preview de slides -->
+    {% if slides %}
+    <div style="margin-top: 1rem;">
+      <div class="cgm-meta">Slides ({{ slides|length }})</div>
+      <div class="cgm-slides">
+        {% for slide in slides %}
+        <div class="cgm-slide">
+          <div class="cgm-slide-num">Slide {{ forloop.counter }}</div>
+          <div class="cgm-slide-text">{{ slide|truncatechars:120 }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Descargas -->
+    {% if post.carrusel_png_count > 0 %}
+    <div class="cgm-downloads">
+      <a href="{% url 'cgm:download' 'carrusel' post.pk %}" class="cgm-btn cgm-btn-green cgm-btn-sm">📥 Descargar Carrusel (ZIP · {{ post.carrusel_png_count }} slides)</a>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- Copy del reel -->
+  {% if post.formato == 'reel' %}
+  <div class="cgm-card">
+    <div class="cgm-card-title">🎬 Copy Reel</div>
+    <div style="margin-bottom: 1rem;">
+      <div class="cgm-meta">Texto en pantalla</div>
+      <div style="font-size: 1.5rem; font-weight: 700; color: var(--cgm-text);">{{ post.copy_reel_texto }}</div>
+    </div>
+    <div>
+      <div class="cgm-meta">Descripción (loop)</div>
+      <div class="cgm-content">{{ post.copy_reel_descripcion }}</div>
+    </div>
+
+    {% if post.reel_video_path %}
+    <div class="cgm-downloads">
+      <a href="{% url 'cgm:download' 'reel' post.pk %}" class="cgm-btn cgm-btn-green cgm-btn-sm">📥 Descargar Reel (MP4)</a>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

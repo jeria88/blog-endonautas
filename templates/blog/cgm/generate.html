@@ -1,0 +1,397 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Generar Contenido — CGM{% endblock %}
+
+{% block extrahead %}
+<style>
+:root {
+  --cgm-bg: #0c0c1a;
+  --cgm-surface: #111128;
+  --cgm-surface-alt: #1a1a35;
+  --cgm-border: rgba(255,255,255,0.06);
+  --cgm-text: #e8e6f0;
+  --cgm-muted: #6b6880;
+  --cgm-accent: #c4813a;
+  --cgm-green: #4caf7d;
+  --cgm-red: #e06060;
+  --cgm-blue: #5b8def;
+  --cgm-radius: 8px;
+  --cgm-radius-lg: 12px;
+}
+
+.cgm-wrap { padding: 2rem; max-width: 1200px; margin: 0 auto; }
+.cgm-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+.cgm-header h1 { font-size: 1.5rem; font-weight: 700; color: var(--cgm-text); margin: 0; }
+
+.cgm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+
+.cgm-card { background: var(--cgm-surface); border: 1px solid var(--cgm-border); border-radius: var(--cgm-radius-lg); padding: 1.5rem; }
+.cgm-card-title { font-size: 0.95rem; font-weight: 600; color: var(--cgm-text); margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--cgm-border); }
+
+/* Form elements */
+.cgm-form-group { margin-bottom: 1rem; }
+.cgm-form-group label { display: block; font-size: 0.78rem; color: var(--cgm-muted); margin-bottom: 4px; font-weight: 500; }
+.cgm-input { width: 100%; background: var(--cgm-bg); border: 1px solid var(--cgm-border); border-radius: var(--cgm-radius); padding: 10px 14px; color: var(--cgm-text); font-size: 0.85rem; outline: none; box-sizing: border-box; }
+.cgm-input:focus { border-color: var(--cgm-accent); }
+.cgm-select { width: 100%; background: var(--cgm-bg); border: 1px solid var(--cgm-border); border-radius: var(--cgm-radius); padding: 10px 14px; color: var(--cgm-text); font-size: 0.85rem; }
+.cgm-textarea { width: 100%; min-height: 100px; background: var(--cgm-bg); border: 1px solid var(--cgm-border); border-radius: var(--cgm-radius); padding: 10px 14px; color: var(--cgm-text); font-size: 0.85rem; resize: vertical; }
+
+/* Buttons */
+.cgm-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; border-radius: var(--cgm-radius); font-size: 0.85rem; font-weight: 500; text-decoration: none; cursor: pointer; border: 1px solid var(--cgm-border); color: var(--cgm-muted); background: transparent; transition: all 0.15s; font-family: inherit; }
+.cgm-btn:hover { color: var(--cgm-text); border-color: rgba(255,255,255,0.2); }
+.cgm-btn-primary { background: var(--cgm-accent); border-color: var(--cgm-accent); color: #000; }
+.cgm-btn-primary:hover { background: #d4914a; color: #000; }
+.cgm-btn-lg { padding: 12px 28px; font-size: 0.95rem; }
+.cgm-btn-block { width: 100%; justify-content: center; }
+
+/* Topic selector */
+.cgm-topic-list { max-height: 300px; overflow-y: auto; border: 1px solid var(--cgm-border); border-radius: var(--cgm-radius); }
+.cgm-topic-item { padding: 10px 14px; border-bottom: 1px solid var(--cgm-border); cursor: pointer; transition: background 0.15s; }
+.cgm-topic-item:last-child { border-bottom: none; }
+.cgm-topic-item:hover { background: rgba(255,255,255,0.03); }
+.cgm-topic-item.selected { background: rgba(196,129,58,0.1); border-left: 2px solid var(--cgm-accent); }
+.cgm-topic-title { font-size: 0.85rem; color: var(--cgm-text); font-weight: 500; }
+.cgm-topic-meta { font-size: 0.72rem; color: var(--cgm-muted); margin-top: 2px; }
+
+/* Style selector */
+.cgm-style-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.cgm-style-btn { padding: 12px; border: 1px solid var(--cgm-border); border-radius: var(--cgm-radius); background: transparent; color: var(--cgm-muted); cursor: pointer; text-align: center; transition: all 0.15s; }
+.cgm-style-btn:hover { border-color: rgba(255,255,255,0.2); color: var(--cgm-text); }
+.cgm-style-btn.selected { border-color: var(--cgm-accent); background: rgba(196,129,58,0.1); color: var(--cgm-accent); }
+.cgm-style-name { font-size: 1.2rem; font-weight: 700; }
+.cgm-style-desc { font-size: 0.7rem; margin-top: 4px; }
+
+/* Preview area */
+.cgm-preview { background: var(--cgm-surface-alt); border: 1px solid var(--cgm-border); border-radius: var(--cgm-radius-lg); padding: 1.5rem; min-height: 200px; }
+.cgm-preview-title { font-size: 0.85rem; font-weight: 600; color: var(--cgm-text); margin-bottom: 1rem; }
+.cgm-preview-content { font-size: 0.85rem; color: var(--cgm-muted); line-height: 1.6; white-space: pre-wrap; }
+.cgm-preview-empty { text-align: center; padding: 3rem; color: var(--cgm-muted); }
+
+/* Loading */
+.cgm-loading { display: none; text-align: center; padding: 2rem; }
+.cgm-loading.active { display: block; }
+.cgm-spinner { display: inline-block; width: 24px; height: 24px; border: 2px solid var(--cgm-border); border-top-color: var(--cgm-accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin {{'0%': {'transform': 'rotate(0deg)'}, '100%': {'transform': 'rotate(360deg)'}}}
+
+/* Slides preview */
+.cgm-slides { display: flex; gap: 10px; overflow-x: auto; padding: 1rem 0; }
+.cgm-slide-thumb { flex: 0 0 120px; height: 150px; background: var(--cgm-surface-alt); border: 1px solid var(--cgm-border); border-radius: var(--cgm-radius); display: flex; align-items: center; justify-content: center; padding: 10px; font-size: 0.65rem; color: var(--cgm-muted); text-align: center; overflow: hidden; }
+
+/* Download buttons */
+.cgm-downloads { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 1rem; }
+
+@media (max-width: 768px) { .cgm-grid { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="cgm-wrap">
+
+  <div class="cgm-header">
+    <h1>✦ Generar Contenido</h1>
+    <a href="{% url 'cgm:dashboard' %}" class="cgm-btn cgm-btn-sm">← Volver al dashboard</a>
+  </div>
+
+  <div class="cgm-grid">
+
+    <!-- Columna izquierda: Configuración -->
+    <div>
+
+      <!-- Paso 1: Artículo -->
+      <div class="cgm-card" style="margin-bottom: 1.5rem;">
+        <div class="cgm-card-title">📝 Paso 1 — Artículo</div>
+
+        <div class="cgm-form-group">
+          <label>Tema del artículo</label>
+          <input type="text" id="topic-input" class="cgm-input" placeholder="Escribe un tema o seleccioná abajo...">
+        </div>
+
+        <div class="cgm-form-group">
+          <label>Temas SEO sugeridos</label>
+          <div class="cgm-topic-list" id="topic-list">
+            {% for topic in topics %}
+            <div class="cgm-topic-item" data-topic="{{ topic.title }}" data-keywords="{{ topic.keywords }}">
+              <div class="cgm-topic-title">{{ topic.title }}</div>
+              <div class="cgm-topic-meta">Capa {{ topic.capa }} · {{ topic.keywords }}</div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <button class="cgm-btn cgm-btn-primary cgm-btn-block" onclick="generateArticle()">
+          ⚡ Generar Artículo con IA
+        </button>
+
+        <!-- Artículo generado -->
+        <div id="article-result" style="margin-top: 1rem; display: none;">
+          <div style="background: rgba(76,175,125,0.1); border: 1px solid rgba(76,175,125,0.3); border-radius: var(--cgm-radius); padding: 1rem;">
+            <div style="font-size: 0.85rem; font-weight: 600; color: var(--cgm-green);" id="article-title"></div>
+            <div style="font-size: 0.75rem; color: var(--cgm-muted); margin-top: 4px;" id="article-status"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paso 2: RRSS -->
+      <div class="cgm-card" style="margin-bottom: 1.5rem;">
+        <div class="cgm-card-title">📱 Paso 2 — Copy RRSS</div>
+
+        <div class="cgm-form-group">
+          <label>Plataforma</label>
+          <select id="platform-select" class="cgm-select">
+            <option value="instagram">Instagram</option>
+            <option value="tiktok">TikTok</option>
+            <option value="linkedin">LinkedIn</option>
+          </select>
+        </div>
+
+        <div class="cgm-form-group">
+          <label>Formatos</label>
+          <div style="display: flex; gap: 10px;">
+            <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--cgm-text);">
+              <input type="checkbox" id="format-carrusel" checked> Carrusel
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--cgm-text);">
+              <input type="checkbox" id="format-reel" checked> Reel
+            </label>
+          </div>
+        </div>
+
+        <button class="cgm-btn cgm-btn-primary cgm-btn-block" onclick="generateRRSS()" id="btn-rrss" disabled>
+          📝 Generar Copy RRSS
+        </button>
+      </div>
+
+      <!-- Paso 3: Estilo del carrusel -->
+      <div class="cgm-card">
+        <div class="cgm-card-title">🎨 Paso 3 — Estilo del Carrusel</div>
+
+        <div class="cgm-style-grid">
+          <div class="cgm-style-btn selected" data-style="A" onclick="selectStyle('A')">
+            <div class="cgm-style-name">A</div>
+            <div class="cgm-style-desc">Editorial Dark</div>
+          </div>
+          <div class="cgm-style-btn" data-style="B" onclick="selectStyle('B')">
+            <div class="cgm-style-name">B</div>
+            <div class="cgm-style-desc">Canva Premium</div>
+          </div>
+          <div class="cgm-style-btn" data-style="C" onclick="selectStyle('C')">
+            <div class="cgm-style-name">C</div>
+            <div class="cgm-style-desc">Bold Statement</div>
+          </div>
+        </div>
+
+        <button class="cgm-btn cgm-btn-primary cgm-btn-block" style="margin-top: 1rem;" onclick="generateCarrusel()" id="btn-carrusel" disabled>
+          🖼️ Generar Carrusel PNG
+        </button>
+
+        <button class="cgm-btn cgm-btn-primary cgm-btn-block" style="margin-top: 0.5rem;" onclick="generateReel()" id="btn-reel" disabled>
+          🎬 Generar Reel Video
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Columna derecha: Preview -->
+    <div>
+
+      <div class="cgm-card" style="margin-bottom: 1.5rem;">
+        <div class="cgm-card-title">👁️ Vista Previa — Copy RRSS</div>
+
+        <div id="preview-area">
+          <div class="cgm-preview-empty">
+            Generá un artículo y copy RRSS para ver la preview acá
+          </div>
+        </div>
+      </div>
+
+      <!-- Assets generados -->
+      <div class="cgm-card">
+        <div class="cgm-card-title">📦 Assets Generados</div>
+
+        <div id="assets-area">
+          <div class="cgm-empty">
+            Los archivos generados (PNG, MP4) aparecerán acá con links de descarga
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Loading overlay -->
+  <div class="cgm-loading" id="loading">
+    <div class="cgm-spinner"></div>
+    <div style="margin-top: 1rem; color: var(--cgm-muted); font-size: 0.85rem;" id="loading-text">Generando...</div>
+  </div>
+
+</div>
+
+<script>
+let currentArticleId = null;
+let currentSocialIds = {{}};
+
+// Topic selection
+document.querySelectorAll('.cgm-topic-item').forEach(item => {
+    item.addEventListener('click', function() {
+        document.querySelectorAll('.cgm-topic-item').forEach(i => i.classList.remove('selected'));
+        this.classList.add('selected');
+        document.getElementById('topic-input').value = this.dataset.topic;
+    });
+});
+
+function selectStyle(style) {
+    document.querySelectorAll('.cgm-style-btn').forEach(b => b.classList.remove('selected'));
+    document.querySelector(`[data-style="${style}"]`).classList.add('selected');
+}
+
+function showLoading(text) {
+    document.getElementById('loading').classList.add('active');
+    document.getElementById('loading-text').textContent = text;
+}
+function hideLoading() {
+    document.getElementById('loading').classList.remove('active');
+}
+
+function getCsrf() {
+    return document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+}
+
+// Step 1: Generate article
+async function generateArticle() {
+    const topic = document.getElementById('topic-input').value.trim();
+    if (!topic) return alert('Elegí o escribí un tema');
+
+    showLoading('Generando artículo con DeepSeek...');
+    try {
+        const resp = await fetch('/cgm/api/generate-article/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': getCsrf()},
+            body: JSON.stringify({topic})
+        });
+        const data = await resp.json();
+        if (data.ok) {
+            currentArticleId = data.article_id;
+            document.getElementById('article-result').style.display = 'block';
+            document.getElementById('article-title').textContent = data.title;
+            document.getElementById('article-status').textContent = `ID: ${data.article_id} · Borrador`;
+            document.getElementById('btn-rrss').disabled = false;
+        } else {
+            alert('Error: ' + (data.error || 'Desconocido'));
+        }
+    } catch(e) {
+        alert('Error de red: ' + e);
+    }
+    hideLoading();
+}
+
+// Step 2: Generate RRSS copy
+async function generateRRSS() {
+    if (!currentArticleId) return alert('Generá un artículo primero');
+
+    showLoading('Generando copy RRSS...');
+    try {
+        const resp = await fetch('/cgm/api/generate-rrss/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': getCsrf()},
+            body: JSON.stringify({
+                article_id: currentArticleId,
+                plataforma: document.getElementById('platform-select').value,
+                formatos: [
+                    document.getElementById('format-carrusel').checked ? 'carrusel' : null,
+                    document.getElementById('format-reel').checked ? 'reel' : null
+                ].filter(Boolean)
+            })
+        });
+        const data = await resp.json();
+        if (data.ok) {
+            data.created.forEach(p => {
+                currentSocialIds[p.type] = p.id;
+            });
+            document.getElementById('btn-carrusel').disabled = !currentSocialIds.carrusel;
+            document.getElementById('btn-reel').disabled = !currentSocialIds.reel;
+            loadPreview();
+        } else {
+            alert('Error: ' + (data.error || 'Desconocido'));
+        }
+    } catch(e) {
+        alert('Error de red: ' + e);
+    }
+    hideLoading();
+}
+
+// Step 3: Generate carrusel PNG
+async function generateCarrusel() {
+    if (!currentSocialIds.carrusel) return alert('Generá el copy del carrusel primero');
+    const style = document.querySelector('.cgm-style-btn.selected')?.dataset.style || 'A';
+
+    showLoading('Generando carrusel PNG...');
+    try {
+        const resp = await fetch('/cgm/api/generate-carrusel/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': getCsrf()},
+            body: JSON.stringify({social_id: currentSocialIds.carrusel, style})
+        });
+        const data = await resp.json();
+        if (data.ok) {
+            loadAssets();
+        } else {
+            alert('Error: ' + (data.error || 'Desconocido'));
+        }
+    } catch(e) {
+        alert('Error de red: ' + e);
+    }
+    hideLoading();
+}
+
+// Step 4: Generate reel video
+async function generateReel() {
+    if (!currentSocialIds.reel) return alert('Generá el copy del reel primero');
+
+    showLoading('Generando video del reel...');
+    try {
+        const resp = await fetch('/cgm/api/generate-reel/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': getCsrf()},
+            body: JSON.stringify({social_id: currentSocialIds.reel})
+        });
+        const data = await resp.json();
+        if (data.ok) {
+            loadAssets();
+        } else {
+            alert('Error: ' + (data.error || 'Desconocido'));
+        }
+    } catch(e) {
+        alert('Error de red: ' + e);
+    }
+    hideLoading();
+}
+
+function loadPreview() {
+    // Show carrusel and reel copy in preview area
+    let html = '';
+    if (currentSocialIds.carrusel) {
+        html += '<div class="cgm-preview-title">📱 Carrusel</div>';
+        html += '<div class="cgm-slides" id="slides-preview"></div>';
+    }
+    if (currentSocialIds.reel) {
+        html += '<div class="cgm-preview-title" style="margin-top:1rem;">🎬 Reel</div>';
+        html += '<div class="cgm-preview-content" id="reel-preview"></div>';
+    }
+    document.getElementById('preview-area').innerHTML = html || '<div class="cgm-preview-empty">Generá copy RRSS para ver la preview</div>';
+}
+
+function loadAssets() {
+    let html = '';
+    if (currentSocialIds.carrusel) {
+        html += `<a href="/cgm/download/carrusel/${currentSocialIds.carrusel}/" class="cgm-btn cgm-btn-green cgm-btn-sm">📥 Descargar Carrusel (ZIP)</a>`;
+    }
+    if (currentSocialIds.reel) {
+        html += `<a href="/cgm/download/reel/${currentSocialIds.reel}/" class="cgm-btn cgm-btn-green cgm-btn-sm">📥 Descargar Reel (MP4)</a>`;
+    }
+    if (html) {
+        document.getElementById('assets-area').innerHTML = `<div class="cgm-downloads">${html}</div>`;
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,99 @@
+{% extends "admin/base_site.html" %}
+
+{% block title %}{{ title }} — CGM{% endblock %}
+
+{% block extrahead %}
+<style>
+:root {
+  --cgm-bg: #0c0c1a;
+  --cgm-surface: #111128;
+  --cgm-border: rgba(255,255,255,0.06);
+  --cgm-text: #e8e6f0;
+  --cgm-muted: #6b6880;
+  --cgm-accent: #c4813a;
+  --cgm-green: #4caf7d;
+  --cgm-radius: 8px;
+  --cgm-radius-lg: 12px;
+}
+.cgm-wrap { padding: 2rem; max-width: 1000px; margin: 0 auto; }
+.cgm-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+.cgm-header h1 { font-size: 1.4rem; font-weight: 700; color: var(--cgm-text); margin: 0; }
+.cgm-card { background: var(--cgm-surface); border: 1px solid var(--cgm-border); border-radius: var(--cgm-radius-lg); padding: 1.5rem; margin-bottom: 1.5rem; }
+.cgm-card-title { font-size: 0.95rem; font-weight: 600; color: var(--cgm-text); margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--cgm-border); }
+.cgm-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; border-radius: var(--cgm-radius); font-size: 0.85rem; font-weight: 500; text-decoration: none; cursor: pointer; border: 1px solid var(--cgm-border); color: var(--cgm-muted); background: transparent; transition: all 0.15s; font-family: inherit; }
+.cgm-btn:hover { color: var(--cgm-text); border-color: rgba(255,255,255,0.2); }
+.cgm-btn-primary { background: var(--cgm-accent); border-color: var(--cgm-accent); color: #000; }
+.cgm-btn-green { background: var(--cgm-green); border-color: var(--cgm-green); color: #000; }
+.cgm-btn-sm { padding: 5px 12px; font-size: 0.78rem; }
+.pill { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 0.72rem; font-weight: 600; }
+.pill-draft { background: rgba(107,104,128,0.2); color: #9a96a8; }
+.pill-review { background: rgba(224,192,64,0.2); color: #e0c040; }
+.pill-approved { background: rgba(76,175,125,0.2); color: #4caf7d; }
+.pill-published { background: rgba(91,141,239,0.2); color: #5b8def; }
+.cgm-content { font-size: 0.9rem; color: var(--cgm-text); line-height: 1.7; white-space: pre-wrap; }
+.cgm-meta { font-size: 0.78rem; color: var(--cgm-muted); }
+.cgm-link { color: var(--cgm-accent); text-decoration: none; }
+.cgm-link:hover { text-decoration: underline; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="cgm-wrap">
+
+  <div class="cgm-header">
+    <h1>📝 {{ article.title }}</h1>
+    <div>
+      <a href="{% url 'cgm:dashboard' %}" class="cgm-btn cgm-btn-sm">← Dashboard</a>
+      <a href="{% url 'cgm:generate' %}" class="cgm-btn cgm-btn-primary cgm-btn-sm">+ Nuevo</a>
+    </div>
+  </div>
+
+  <!-- Info del artículo -->
+  <div class="cgm-card">
+    <div class="cgm-card-title">Información</div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+      <div>
+        <div class="cgm-meta">Estado</div>
+        <span class="pill pill-{{ article.status }}">{{ article.get_status_display }}</span>
+      </div>
+      <div>
+        <div class="cgm-meta">Fecha</div>
+        <div style="color: var(--cgm-text);">{{ article.created_at|date:"d/m/Y H:i" }}</div>
+      </div>
+      <div>
+        <div class="cgm-meta">Keywords</div>
+        <div style="color: var(--cgm-text); font-size: 0.85rem;">{{ article.keywords|default:"—" }}</div>
+      </div>
+      <div>
+        <div class="cgm-meta">CTA</div>
+        <div style="color: var(--cgm-text); font-size: 0.85rem;">{{ article.cta_url|default:"—" }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenido -->
+  <div class="cgm-card">
+    <div class="cgm-card-title">Contenido</div>
+    <div class="cgm-content">{{ article.body|truncatewords:100 }}</div>
+  </div>
+
+  <!-- Posts RRSS asociados -->
+  <div class="cgm-card">
+    <div class="cgm-card-title">Posts RRSS generados</div>
+    {% if social_posts %}
+      {% for post in social_posts %}
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--cgm-border);">
+        <div>
+          <span style="color: var(--cgm-text);">{{ post.get_formato_display }}</span>
+          <span class="pill pill-{{ post.status }}" style="margin-left: 8px;">{{ post.get_status_display }}</span>
+        </div>
+        <a href="{% url 'cgm:social_detail' post.pk %}" class="cgm-link">Ver detalle →</a>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div style="color: var(--cgm-muted); font-size: 0.85rem;">Sin posts RRSS. <a href="{% url 'cgm:generate' %}" class="cgm-link">Generar</a></div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

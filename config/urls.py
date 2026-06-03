@@ -38,6 +38,9 @@ urlpatterns = [
     # CRM
     path('crm/', include('crm.urls', namespace='crm')),
 
+    # CGM — Content Generation Management
+    path('cgm/', include('blog.urls_cgm', namespace='cgm')),
+
     # Wagtail catch-all — MUST be last
     path('', include(wagtail_urls)),
 ]
