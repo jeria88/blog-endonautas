@@ -27,7 +27,7 @@ p{{margin:0 0 16px 0;}}
 p:last-of-type{{margin-bottom:0;}}
 ul{{margin:0 0 16px 0;padding-left:20px;}}
 li{{margin-bottom:8px;}}
-strong{font-weight:700;color:#f0ece4;}
+strong{{font-weight:700;color:#f0ece4;}}
 a{{color:#7ECCCD;}}
 </style>
 </head>
