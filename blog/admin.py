@@ -4,7 +4,7 @@ from django.contrib import admin, messages
 from django.utils.html import format_html
 from wagtail.rich_text import RichText
 
-from .models import BlogPost, BlogIndexPage, BlogSubmission, GeneratedArticle
+from .models import BlogPost, BlogIndexPage, BlogSubmission, GeneratedArticle, SocialPost
 
 
 def _create_post_from_submission(sub):
@@ -134,3 +134,38 @@ class GeneratedArticleAdmin(admin.ModelAdmin):
             return format_html('<a href="{}" target="_blank">Ver en CMS →</a>', url)
         return '—'
     blog_post_link.short_description = 'Blog'
+
+
+# ── Admin para Posts de RRSS ────────────────────────────────────────────────────
+
+@admin.register(SocialPost)
+class SocialPostAdmin(admin.ModelAdmin):
+    list_display   = ('fuente_titulo', 'plataforma', 'formato', 'status', 'created_at')
+    list_filter    = ('plataforma', 'formato', 'status')
+    search_fields  = ('copy_carrusel', 'copy_descripcion', 'copy_reel_texto')
+    readonly_fields = ('created_at', 'updated_at', 'published_at')
+    ordering       = ('-created_at',)
+
+    fieldsets = (
+        ('Fuente', {
+            'fields': ('generated_article', 'blog_post'),
+        }),
+        ('Plataforma', {
+            'fields': ('plataforma', 'formato'),
+        }),
+        ('Carrusel', {
+            'fields': ('copy_carrusel', 'copy_descripcion'),
+            'classes': ('collapse',),
+        }),
+        ('Reel', {
+            'fields': ('copy_reel_texto', 'copy_reel_descripcion'),
+            'classes': ('collapse',),
+        }),
+        ('Assets generados', {
+            'fields': ('carrusel_html_path', 'carrusel_png_count', 'reel_video_path'),
+            'classes': ('collapse',),
+        }),
+        ('Estado', {
+            'fields': ('status', 'published_at', 'created_at', 'updated_at'),
+        }),
+    )

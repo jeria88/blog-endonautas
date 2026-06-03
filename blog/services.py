@@ -1,15 +1,16 @@
 """
-Servicio de generación de artículos de blog con DeepSeek.
+Servicio de generación de contenido RRSS a partir de artículos del blog.
+
+A partir de un artículo (GeneratedArticle o BlogPost), genera:
+1. Copy para carrusel (slides)
+2. Copy para descripción del carrusel
+3. Copy para reel (texto en pantalla)
+4. Copy para descripción del reel
 
 Uso:
-    from blog.services import generate_article
-    article = generate_article(
-        topic="Herida de abandono en relaciones de pareja",
-        source_type="test",
-        source_detail="Basado en test de Heridas de Infancia"
-    )
+    from blog.services import generate_social_posts
+    posts = generate_social_posts(article, plataformas=['instagram'], formatos=['carrusel', 'reel'])
 """
-import json
 import logging
 import re
 
@@ -17,7 +18,7 @@ import requests
 from django.conf import settings
 from django.utils.text import slugify
 
-from blog.models import GeneratedArticle
+from blog.models import SocialPost
 
 logger = logging.getLogger(__name__)
 
@@ -26,64 +27,22 @@ DEEPSEEK_BASE_URL = getattr(settings, 'DEEPSEEK_BASE_URL', 'https://api.deepseek
 DEEPSEEK_MODEL = getattr(settings, 'DEEPSEEK_MODEL', 'deepseek-chat')
 
 
-# ── Prompts ────────────────────────────────────────────────────────────────────
+SYSTEM_PROMPT_RRSS = """Eres el community manager de Endonautas, una plataforma de exploración del mundo interior.
 
-SYSTEM_PROMPT = """Eres el escritor del blog de Endonautas, una plataforma de exploración del mundo interior.
+Tu trabajo es crear contenido para redes sociales a partir de artículos del blog.
 
-Tu voz es:
-- Profunda pero accesible, sin jerga académica
-- Cálida y cercana, como un guía que acompaña
-- Basada en la metodología endonáutica (patrones, arquetipos, sombra, máscara, heridas de infancia)
-- Sin promesas de transformación instantánea
-- Con metáforas del viaje interior, la navegación, el mapa
+Tono:
+- Profundo pero accesible
+- Cálido, como un guía que acompaña
+- Sin jerga académica ni promesas de transformación instantánea
+- Con vocabulario endonáutico: patrón, origen, mapa, sombra, máscara, viaje interior
+- Evita: transformar, despertar, vibración, manifestar, empoderar, abundancia
 
-Estructura de un artículo:
-1. Hook inicial (pregunta o afirmación que genera curiosidad)
-2. Desarrollo del concepto (3-4 secciones con subtítulos)
-3. Conexión con la experiencia del lector
-4. CTA sutil hacia la app de Endonautas
+Formato de salida: JSON válido."""
 
-Reglas:
-- Usa {{ nombre }} para personalización
-- Incluye preguntas retóricas para generar reflexión
-- No uses "transformar", "despertar", "vibración", "manifestar"
-- Sí usa: patrón, origen, integrar, mapa, navegar, sombra, máscara, proceso, cartografía
-- Extensión: 800-1200 palabras
-- Formato HTML (h2, h3, p, ul, li, blockquote)
-- Incluye meta description (máx 160 chars)
-- Incluye 3-5 keywords SEO separadas por coma
-- Incluye un CTA (texto + URL sugerida)"""
-
-
-def _build_user_prompt(topic, source_type, source_detail=""):
-    source_context = ""
-    if source_type == 'test':
-        source_context = f"\n\nEste artículo está inspirado en el siguiente test/resultado: {source_detail}"
-    elif source_type == 'espejo':
-        source_context = f"\n\nEste artículo está inspirado en una sesión del Espejo: {source_detail}"
-    elif source_type == 'keyword':
-        source_context = f"\n\nEste artículo debe optimizarse para la keyword SEO: {topic}"
-
-    return f"""Genera un artículo de blog sobre: "{topic}"{source_context}
-
-Devuelve un JSON válido con esta estructura:
-{{
-    "title": "Título SEO del artículo (máx 70 chars)",
-    "slug": "slug-seo-del-articulo",
-    "meta_description": "Meta description SEO (máx 160 chars)",
-    "keywords": "keyword1, keyword2, keyword3",
-    "intro": "Introducción breve (máx 280 chars)",
-    "body": "Contenido completo en HTML (h2, h3, p, ul, li, blockquote)",
-    "cta_text": "Texto del CTA (máx 80 chars)",
-    "cta_url": "URL del CTA (ej: /mascara/, /hacks/, /viaje/)",
-    "tags": "tag1, tag2, tag3"
-}}"""
-
-
-# ── API call ────────────────────────────────────────────────────────────────────
 
 def _call_deepseek(messages, max_tokens=4000):
-    """Llama a la API de DeepSeek y devuelve el contenido."""
+    """Llama a la API de DeepSeek."""
     if not DEEPSEEK_API_KEY:
         raise ValueError("DEEPSEEK_API_KEY no configurada")
 
@@ -91,175 +50,198 @@ def _call_deepseek(messages, max_tokens=4000):
         "Authorization": f"Bearer {DEEPSEEK_API_KEY}",
         "Content-Type": "application/json",
     }
-
     payload = {
         "model": DEEPSEEK_MODEL,
         "messages": messages,
         "max_tokens": max_tokens,
         "temperature": 0.7,
     }
-
     resp = requests.post(
         f"{DEEPSEEK_BASE_URL}/v1/chat/completions",
         headers=headers,
         json=payload,
         timeout=60,
     )
-
     if resp.status_code != 200:
         raise RuntimeError(f"DeepSeek API error {resp.status_code}: {resp.text[:200]}")
-
-    data = resp.json()
-    return data["choices"][0]["message"]["content"]
+    return resp.json()["choices"][0]["message"]["content"]
 
 
-def _parse_response(raw):
-    """Parsea la respuesta JSON de DeepSeek."""
-    # Intentar extraer JSON si viene con markdown
+def _parse_json(raw):
+    """Parsea JSON de la respuesta de DeepSeek."""
     json_match = re.search(r'\{[\s\S]*\}', raw)
     if json_match:
         raw = json_match.group()
+    import json
     return json.loads(raw)
 
 
-# ── Generación ──────────────────────────────────────────────────────────────────
+def _get_article_content(article):
+    """Extrae el contenido de un artículo (GeneratedArticle o BlogPost)."""
+    if hasattr(article, 'body') and isinstance(article.body, str):
+        # GeneratedArticle
+        return {
+            'title': article.title,
+            'intro': article.intro or '',
+            'body': article.body,
+            'keywords': article.keywords or '',
+            'tags': article.tags or '',
+        }
+    elif hasattr(article, 'body') and hasattr(article.body, '__iter__'):
+        # BlogPost (Wagtail StreamField)
+        body_text = []
+        for block in article.body:
+            if block.block_type == 'richtext':
+                body_text.append(str(block.value))
+        return {
+            'title': article.title,
+            'intro': article.intro or '',
+            'body': '\n\n'.join(body_text),
+            'keywords': '',
+            'tags': ', '.join(t.name for t in article.tags.all()) if hasattr(article, 'tags') else '',
+        }
+    return {'title': str(article), 'intro': '', 'body': '', 'keywords': '', 'tags': ''}
 
-def generate_article(topic, source_type='tema', source_detail="", save=True):
+
+def generate_carrusel_copy(article):
     """
-    Genera un artículo de blog usando DeepSeek.
-
-    Args:
-        topic: Tema del artículo
-        source_type: 'test' | 'espejo' | 'tema' | 'keyword'
-        source_detail: Detalle de la fuente (opcional)
-        save: Si True, guarda en la BD como GeneratedArticle
+    Genera copy para carrusel de Instagram a partir de un artículo.
 
     Returns:
-        GeneratedArticle instance o dict con los datos
+        dict con: slides (lista de textos), descripcion, hashtags
     """
+    content = _get_article_content(article)
+
+    prompt = f"""Genera el copy para un carrusel de Instagram basado en este artículo:
+
+TÍTULO: {content['title']}
+INTRO: {content['intro']}
+CONTENIDO: {content['body'][:2000]}
+KEYWORDS: {content['keywords']}
+
+El carrusel debe tener:
+1. Portada (hook que detenga el scroll)
+2. 3-5 slides de contenido (una idea por slide, desarrollada)
+3. Slide de cierre con CTA hacia endonautas.cl
+
+Devuelve JSON:
+{{
+    "slides": [
+        "Texto portada (hook potente, máx 150 chars)",
+        "Texto slide 2 (desarrollo idea 1, máx 200 chars)",
+        "Texto slide 3 (desarrollo idea 2, máx 200 chars)",
+        "Texto slide 4 (desarrollo idea 3, máx 200 chars)",
+        "Texto cierre con CTA (máx 150 chars)"
+    ],
+    "descripcion": "Descripción del carrusel para Instagram (máx 2200 chars, incluye CTA y pregunta final)",
+    "hashtags": "#hashtag1 #hashtag2 #hashtag3 (máx 15 hashtags relevantes)"
+}}"""
+
     messages = [
-        {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user", "content": _build_user_prompt(topic, source_type, source_detail)},
+        {"role": "system", "content": SYSTEM_PROMPT_RRSS},
+        {"role": "user", "content": prompt},
     ]
 
-    logger.info(f"Generando artículo: {topic[:60]}...")
     raw = _call_deepseek(messages)
-    data = _parse_response(raw)
-
-    # Asegurar slug único
-    slug = data.get('slug', slugify(data['title']))[:200]
-
-    if save:
-        article, created = GeneratedArticle.objects.update_or_create(
-            slug=slug,
-            defaults={
-                'title': data['title'][:200],
-                'meta_description': data.get('meta_description', '')[:160],
-                'keywords': data.get('keywords', '')[:300],
-                'intro': data.get('intro', '')[:280],
-                'body': data.get('body', ''),
-                'cta_text': data.get('cta_text', '')[:80],
-                'cta_url': data.get('cta_url', ''),
-                'tags': data.get('tags', '')[:300],
-                'source_type': source_type,
-                'source_detail': source_detail[:200],
-                'status': GeneratedArticle.STATUS_DRAFT,
-            }
-        )
-        logger.info(f"Artículo {'creado' if created else 'actualizado'}: {article.title}")
-        return article
-
-    return data
+    return _parse_json(raw)
 
 
-def generate_articles_batch(topics, source_type='tema'):
+def generate_reel_copy(article):
     """
-    Genera múltiples artículos en batch.
-
-    Args:
-        topics: Lista de strings (temas)
-        source_type: Tipo de fuente
+    Genera copy para reel de Instagram a partir de un artículo.
 
     Returns:
-        Lista de GeneratedArticle creados
+        dict con: texto_pantalla, descripcion, hashtags
     """
-    articles = []
-    for topic in topics:
-        try:
-            article = generate_article(topic, source_type=source_type)
-            articles.append(article)
-        except Exception as e:
-            logger.error(f"Error generando artículo '{topic}': {e}")
-    return articles
+    content = _get_article_content(article)
+
+    prompt = f"""Genera el copy para un Reel de Instagram (15-30 segundos) basado en este artículo:
+
+TÍTULO: {content['title']}
+INTRO: {content['intro']}
+CONTENIDO: {content['body'][:1500]}
+
+El reel debe:
+- Tener un hook potente en los primeros 2 segundos
+- Desarrollar UNA idea clave del artículo
+- Terminar con CTA hacia endonautas.cl
+- La descripción debe mantener el loop (el usuario la lee mientras el video se repite)
+
+Devuelve JSON:
+{{
+    "texto_pantalla": "Texto que aparece sobre el video (máx 100 chars, frase impactante)",
+    "descripcion": "Descripción del reel (máx 1500 chars). Debe funcionar como texto que se lee mientras el video se reproduce en loop. Incluye pregunta final y CTA.",
+    "hashtags": "#hashtag1 #hashtag2 (máx 10 hashtags)"
+}}"""
+
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT_RRSS},
+        {"role": "user", "content": prompt},
+    ]
+
+    raw = _call_deepseek(messages)
+    return _parse_json(raw)
 
 
-# ── Temas predefinidos con mapeo SEO/GEO de 3 capas ─────────────────────────────
+def generate_social_posts(article, plataformas=None, formatos=None):
+    """
+    Genera posts de RRSS a partir de un artículo.
 
-# Cada tema tiene: (título, capa SEO, keywords sugeridos, CTA sugerido)
-BLOG_TOPICS = [
-    # ── Capa 1: Autoconocimiento (volumen, búsqueda activa) ──
-    ("Cómo conocerse a sí mismo: guía práctica para empezar",
-     "capa1", "autoconocimiento, conocerse a uno mismo, psicología personal", "/mascara/"),
-    ("Qué es el autoconocimiento y por qué importa",
-     "capa1", "autoconocimiento, desarrollo personal, crecimiento interior", "/mascara/"),
-    ("Señales de que necesitas conocerte mejor",
-     "capa1", "autoconocimiento, señales, desarrollo personal", "/hacks/"),
-    ("Los 5 tipos de personalidad según la psicología",
-     "capa1", "tipos de personalidad, psicología, autoconocimiento", "/mascara/"),
-    ("Cómo identificar tus patrones repetitivos",
-     "capa1", "patrones repetitivos, autoconocimiento, psicología", "/hacks/"),
+    Args:
+        article: GeneratedArticle o BlogPost
+        plataformas: Lista de plataformas (default: ['instagram'])
+        formatos: Lista de formatos (default: ['carrusel', 'reel'])
 
-    # ── Capa 2: Viaje interior (intención, personas en proceso) ──
-    ("Qué es el viaje interior y en qué se diferencia de la autoayuda",
-     "capa2", "viaje interior, trabajo interior, mundo interior", "/viaje/"),
-    ("Heridas de infancia: cómo se manifiestan en la vida adulta",
-     "capa2", "heridas de infancia, infancia, relaciones, psicología", "/mascara/"),
-    ("La máscara que usas para sobrevivir (y cómo reconocerla)",
-     "capa2", "máscara, personalidad, autoconocimiento, sombra", "/mascara/"),
-    ("Patrones repetitivos en el amor: por qué eliges siempre lo mismo",
-     "capa2", "patrones en el amor, relaciones, apego, psicología", "/viaje/"),
-    ("El autosabotaje: cómo tu propia sombra boicotea tus logros",
-     "capa2", "autosabotaje, sombra, jung, psicología", "/hacks/"),
-    ("Herida de abandono: cómo se manifiesta en las relaciones",
-     "capa2", "herida de abandono, relaciones, apego, psicología", "/mascara/"),
-    ("Herida de rechazo: el miedo a no ser suficiente",
-     "capa2", "herida de rechazo, autoestima, psicología", "/mascara/"),
-    ("La máscara del salvador: ayudar para no ser vulnerable",
-     "capa2", "máscara del salvador, relaciones, límites", "/mascara/"),
-    ("Del dolor al patrón: cómo usar tu historia como brújula",
-     "capa2", "dolor, patrón, historia personal, crecimiento", "/viaje/"),
+    Returns:
+        Lista de SocialPost creados
+    """
+    if plataformas is None:
+        plataformas = ['instagram']
+    if formatos is None:
+        formatos = ['carrusel', 'reel']
 
-    # ── Capa 3: Nivel de conciencia (brand, retención, conversión) ──
-    ("Qué es la endonáutica: el mapa del mundo interior",
-     "capa3", "endonáutica, cartografía interior, mapa interior", "/viaje/"),
-    ("Cómo aumentar tu nivel de conciencia en 30 días",
-     "capa3", "nivel de conciencia, expansión de conciencia, crecimiento", "/viaje/"),
-    ("La sombra según Jung: integrar lo que rechazas de ti",
-     "capa3", "sombra, jung, integración, psicología analítica", "/hacks/"),
-    ("Eneagrama tipo 2: el ayudante que olvida sus propias necesidades",
-     "capa3", "eneagrama tipo 2, eneagrama, personalidad", "/mascara/"),
-    ("Eneagrama tipo 4: la búsqueda de autenticidad en la melancolía",
-     "capa3", "eneagrama tipo 4, eneagrama, autenticidad", "/mascara/"),
-    ("Apego ansioso en adultos: cuando la incertidumbre se siente como abandono",
-     "capa3", "apego ansioso, apego, relaciones, psicología", "/viaje/"),
-    ("Big Five: qué dice tu apertura a la experiencia sobre ti",
-     "capa3", "big five, personalidad, psicología, test de personalidad", "/mascara/"),
-    ("Heridas de infancia en la pareja: el origen de los conflictos",
-     "capa3", "heridas de infancia, pareja, conflictos, relaciones", "/mascara/"),
-]
+    posts = []
 
-# Helper para separar título de metadatos
-def get_topic_title(topic_tuple):
-    return topic_tuple[0]
+    for plataforma in plataformas:
+        for formato in formatos:
+            try:
+                if formato == 'carrusel':
+                    copy_data = generate_carrusel_copy(article)
+                    slides = copy_data.get('slides', [])
+                    descripcion = copy_data.get('descripcion', '')
+                    hashtags = copy_data.get('hashtags', '')
 
-def get_topic_capa(topic_tuple):
-    return topic_tuple[1]
+                    post = SocialPost.objects.create(
+                        generated_article=article if isinstance(article, type(article)) and hasattr(article, 'generated_article') else None,
+                        blog_post=article if hasattr(article, 'body') and hasattr(article.body, '__iter__') else None,
+                        plataforma=plataforma,
+                        formato=formato,
+                        copy_carrusel='\n---\n'.join(slides),
+                        copy_descripcion=f"{descripcion}\n\n{hashtags}",
+                        status=SocialPost.STATUS_DRAFT,
+                    )
+                    posts.append(post)
+                    logger.info(f"Carrusel generado: {post}")
 
-def get_topic_keywords(topic_tuple):
-    return topic_tuple[2]
+                elif formato == 'reel':
+                    copy_data = generate_reel_copy(article)
+                    texto_pantalla = copy_data.get('texto_pantalla', '')
+                    descripcion = copy_data.get('descripcion', '')
+                    hashtags = copy_data.get('hashtags', '')
 
-def get_topic_cta(topic_tuple):
-    return topic_tuple[3]
+                    post = SocialPost.objects.create(
+                        generated_article=article if isinstance(article, type(article)) and hasattr(article, 'generated_article') else None,
+                        blog_post=article if hasattr(article, 'body') and hasattr(article.body, '__iter__') else None,
+                        plataforma=plataforma,
+                        formato=formato,
+                        copy_reel_texto=texto_pantalla,
+                        copy_reel_descripcion=f"{descripcion}\n\n{hashtags}",
+                        status=SocialPost.STATUS_DRAFT,
+                    )
+                    posts.append(post)
+                    logger.info(f"Reel generado: {post}")
 
-# Lista simple de títulos (para compatibilidad)
-BLOG_TOPIC_TITLES = [t[0] for t in BLOG_TOPICS]
+            except Exception as e:
+                logger.error(f"Error generando {formato} para {plataforma}: {e}")
+
+    return posts

@@ -116,15 +116,12 @@ class BlogSubmission(models.Model):
         (STATUS_REJECTED,  'Rechazado'),
     ]
 
-    # Autor (viene de mirrorwork via API)
     author_email       = models.EmailField('Email del autor')
     author_name        = models.CharField('Nombre del autor', max_length=120, blank=True)
-
     title              = models.CharField('Título', max_length=200)
     body               = models.TextField('Texto')
     source_type        = models.CharField(max_length=10, choices=SOURCE_CHOICES, default=SOURCE_FREE)
     source_description = models.TextField('Descripción del origen', blank=True)
-
     status             = models.CharField(max_length=12, choices=STATUS_CHOICES, default=STATUS_SUBMITTED)
     reviewer_notes     = models.TextField('Notas del revisor', blank=True)
     blog_post          = models.OneToOneField('blog.BlogPost', null=True, blank=True, on_delete=models.SET_NULL, related_name='submission')
@@ -172,7 +169,6 @@ class GeneratedArticle(models.Model):
     cta_url       = models.URLField('URL del CTA', blank=True)
     tags          = models.CharField('Tags', max_length=300, blank=True, help_text="Separados por coma")
 
-    # Fuente de inspiración
     source_type   = models.CharField(max_length=20, choices=[
         ('test',    'Basado en test'),
         ('espejo',  'Basado en Espejo'),
@@ -181,12 +177,10 @@ class GeneratedArticle(models.Model):
     ], default='tema')
     source_detail = models.CharField('Detalle de la fuente', max_length=200, blank=True)
 
-    # Estado y publicación
     status        = models.CharField(max_length=12, choices=STATUS_CHOICES, default=STATUS_DRAFT)
     blog_post     = models.OneToOneField('blog.BlogPost', null=True, blank=True, on_delete=models.SET_NULL, related_name='generated_article')
     reviewer_notes = models.TextField('Notas del revisor', blank=True)
 
-    # Metadata
     created_at    = models.DateTimeField(auto_now_add=True)
     updated_at    = models.DateTimeField(auto_now=True)
     published_at  = models.DateTimeField(null=True, blank=True)
@@ -210,7 +204,6 @@ class GeneratedArticle(models.Model):
         if self.blog_post:
             return False, 'Ya fue publicado'
 
-        # Buscar el índice del blog
         try:
             blog_index = BlogIndexPage.objects.live().first()
         except BlogIndexPage.DoesNotExist:
@@ -219,7 +212,6 @@ class GeneratedArticle(models.Model):
         if not blog_index:
             return False, 'No se encontró el índice del blog'
 
-        # Crear el BlogPost
         post = BlogPost(
             title=self.title,
             slug=self.slug,
@@ -228,17 +220,107 @@ class GeneratedArticle(models.Model):
             cta_url=self.cta_url or '',
             author_name='Endonautas',
         )
-        # Agregar el body como StreamField
         post.body = [('richtext', self.body)]
 
-        # Agregar como hijo del índice
         blog_index.add_child(instance=post)
         post.save_revision().publish()
 
-        # Actualizar estado
         self.blog_post = post
         self.status = self.STATUS_PUBLISHED
         self.published_at = datetime.datetime.now()
         self.save(update_fields=['blog_post', 'status', 'published_at'])
 
         return True, f'Publicado: {post.full_url}'
+
+
+# ── Contenido de RRSS ──────────────────────────────────────────────────────────
+
+class SocialPost(models.Model):
+    """Contenido de RRSS generado a partir de un artículo del blog."""
+
+    generated_article = models.ForeignKey(
+        GeneratedArticle, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='social_posts',
+        help_text="Artículo generado por IA (opcional)"
+    )
+    blog_post = models.ForeignKey(
+        BlogPost, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='social_posts',
+        help_text="Artículo de Wagtail (opcional)"
+    )
+
+    # Copys generados
+    copy_carrusel = models.TextField('Copy carrusel', blank=True,
+        help_text="Texto para las slides del carrusel (un párrafo por slide, separados por ---)")
+    copy_descripcion = models.TextField('Copy descripción', blank=True,
+        help_text="Texto de la descripción del carrusel en Instagram")
+    copy_reel_texto = models.TextField('Copy reel (texto en pantalla)', blank=True,
+        help_text="Texto que aparece sobre el video del reel")
+    copy_reel_descripcion = models.TextField('Copy reel (descripción)', blank=True,
+        help_text="Descripción del reel que se lee mientras el video se reproduce en loop")
+
+    # Plataforma y formato
+    PLATAFORMA_INSTAGRAM = 'instagram'
+    PLATAFORMA_TIKTOK = 'tiktok'
+    PLATAFORMA_LINKEDIN = 'linkedin'
+    PLATAFORMA_CHOICES = [
+        (PLATAFORMA_INSTAGRAM, 'Instagram'),
+        (PLATAFORMA_TIKTOK, 'TikTok'),
+        (PLATAFORMA_LINKEDIN, 'LinkedIn'),
+    ]
+    plataforma = models.CharField(max_length=15, choices=PLATAFORMA_CHOICES, default=PLATAFORMA_INSTAGRAM)
+
+    FORMATO_CARRUSEL = 'carrusel'
+    FORMATO_REEL = 'reel'
+    FORMATO_POST = 'post'
+    FORMATO_CHOICES = [
+        (FORMATO_CARRUSEL, 'Carrusel'),
+        (FORMATO_REEL, 'Reel'),
+        (FORMATO_POST, 'Post simple'),
+    ]
+    formato = models.CharField(max_length=10, choices=FORMATO_CHOICES, default=FORMATO_CARRUSEL)
+
+    # Estado
+    STATUS_DRAFT = 'draft'
+    STATUS_READY = 'ready'
+    STATUS_PUBLISHED = 'published'
+    STATUS_CHOICES = [
+        (STATUS_DRAFT, 'Borrador'),
+        (STATUS_READY, 'Listo para publicar'),
+        (STATUS_PUBLISHED, 'Publicado'),
+    ]
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_DRAFT)
+
+    # Assets generados
+    carrusel_html_path = models.CharField(max_length=500, blank=True)
+    carrusel_png_count = models.PositiveIntegerField(default=0)
+    reel_video_path = models.CharField(max_length=500, blank=True)
+
+    # Metadata
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    published_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Post de RRSS'
+        verbose_name_plural = 'Posts de RRSS'
+
+    def __str__(self):
+        fuente = self.blog_post or self.generated_article
+        fuente_titulo = fuente.title if fuente else 'Sin fuente'
+        return f'[{self.plataforma}] {fuente_titulo} ({self.status})'
+
+    @property
+    def fuente_titulo(self):
+        if self.blog_post:
+            return self.blog_post.title
+        if self.generated_article:
+            return self.generated_article.title
+        return 'Sin fuente'
+
+    def get_slides_text(self):
+        """Lista de textos para cada slide del carrusel."""
+        if not self.copy_carrusel:
+            return []
+        return [s.strip() for s in self.copy_carrusel.split('---') if s.strip()]

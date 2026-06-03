@@ -70,3 +70,8 @@ LOGGING = {
         },
     },
 }
+
+# DeepSeek AI — generación de artículos de blog
+DEEPSEEK_API_KEY = os.environ.get('DEEPSEEK_API_KEY', '')
+DEEPSEEK_BASE_URL = 'https://api.deepseek.com'
+DEEPSEEK_MODEL = 'deepseek-chat'
