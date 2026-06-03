@@ -4,7 +4,7 @@ from django.utils import timezone
 from datetime import timedelta
 import csv
 
-from .models import Subscriber, EmailList, Subscription, EmailTemplate, EmailSequence, SequenceStep, SentEmail, PipelineStage, PipelineLog, ContactNote, Segment, Tag, ContactTag, Broadcast
+from .models import Subscriber, EmailList, Subscription, EmailTemplate, EmailSequence, SequenceStep, SentEmail, PipelineStage, PipelineLog, ContactNote, Segment, Tag, ContactTag, Broadcast, EmailEvent
 
 
 # ── Actions ──────────────────────────────────────────────────────────────────
@@ -273,3 +273,19 @@ class BroadcastAdmin(admin.ModelAdmin):
             return f"Segmento: {obj.target_segment.name}"
         return "—"
     target_info.short_description = "Destino"
+
+
+# ── Eventos de email ─────────────────────────────────────────────────────────
+
+
+@admin.register(EmailEvent)
+class EmailEventAdmin(admin.ModelAdmin):
+    list_display = ["subscriber_email", "event_type", "occurred_at", "fetched_at"]
+    list_filter = ["event_type", "occurred_at"]
+    search_fields = ["subscriber__email"]
+    readonly_fields = ["subscriber", "sent_email", "event_type", "metadata", "occurred_at", "fetched_at"]
+    date_hierarchy = "occurred_at"
+
+    def subscriber_email(self, obj):
+        return obj.subscriber.email
+    subscriber_email.short_description = "Suscriptor"

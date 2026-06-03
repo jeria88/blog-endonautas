@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 FLYWHEEL_INTERVAL = 3600   # 1 hora
 MAIL_INTERVAL = 300        # 5 minutos
+EVENTS_INTERVAL = 900      # 15 minutos — traer eventos de Brevo
 TICK = 60                  # revisión cada 60 s
 
 
@@ -41,6 +42,7 @@ class Command(BaseCommand):
         # Arrancar inmediatamente en el primer tick
         last_flywheel = 0.0
         last_mail = 0.0
+        last_events = 0.0
 
         while True:
             now = time.monotonic()
@@ -52,6 +54,10 @@ class Command(BaseCommand):
             if now - last_mail >= MAIL_INTERVAL:
                 self._run_queued_mail()
                 last_mail = now
+
+            if now - last_events >= EVENTS_INTERVAL:
+                self._fetch_brevo_events()
+                last_events = now
 
             time.sleep(TICK)
 
@@ -71,3 +77,10 @@ class Command(BaseCommand):
             call_command("send_queued_mail", verbosity=0)
         except Exception as e:
             logger.debug(f"[scheduler] send_queued_mail (respaldo): {e}")
+
+    def _fetch_brevo_events(self):
+        """Trae eventos de apertura/click desde Brevo."""
+        try:
+            call_command("fetch_brevo_events", days=1, verbosity=0)
+        except Exception as e:
+            logger.error(f"[scheduler] fetch_brevo_events error: {e}", exc_info=True)

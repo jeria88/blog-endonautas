@@ -11,7 +11,7 @@ def send_via_brevo(subject, html_content, to_email, to_name="", plain_text=""):
     api_key = settings.BREVO_API_KEY
     if not api_key:
         logger.error("BREVO_API_KEY no configurada")
-        return False, "BREVO_API_KEY no configurada"
+        return False, "BREVO_API_KEY no configurada", ""
 
     payload = {
         "sender": {"name": "Endonautas", "email": settings.DEFAULT_FROM_EMAIL},
@@ -34,13 +34,15 @@ def send_via_brevo(subject, html_content, to_email, to_name="", plain_text=""):
             timeout=30,
         )
         if resp.status_code in (200, 201):
+            data = resp.json()
+            message_id = data.get("messageId", data.get("message_id", ""))
             logger.info(f"Brevo API OK: {subject} -> {to_email}")
-            return True, ""
+            return True, "", message_id
         else:
             error = f"Brevo API error {resp.status_code}: {resp.text[:200]}"
             logger.error(error)
-            return False, error
+            return False, error, ""
     except requests.exceptions.Timeout:
-        return False, "Timeout conectando con API de Brevo"
+        return False, "Timeout conectando con API de Brevo", ""
     except Exception as e:
-        return False, str(e)
+        return False, str(e), ""

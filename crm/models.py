@@ -119,6 +119,7 @@ class SentEmail(models.Model):
         ("failed", "Fallido"),
     ], default="pending")
     error_message = models.TextField(blank=True)
+    brevo_message_id = models.CharField(max_length=255, blank=True, help_text="Message-ID de Brevo para tracking de eventos")
 
     class Meta:
         verbose_name = "Email enviado"
@@ -284,4 +285,37 @@ class Broadcast(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.status})"
+
+
+# ── Eventos de email (tracking deBrevo) ─────────────────────────────────────
+
+class EmailEvent(models.Model):
+    """Evento de email reportado por la API de Brevo (apertura, click, bounce, etc.)."""
+    EVENT_TYPES = [
+        ("opened", "Abierto"),
+        ("clicked", "Click"),
+        ("bounced", "Rebotado"),
+        ("unsubscribed", "Desuscrito"),
+        ("delivered", "Entregado"),
+        ("spam", "Spam"),
+    ]
+
+    subscriber = models.ForeignKey(Subscriber, on_delete=models.CASCADE, related_name="email_events")
+    sent_email = models.ForeignKey(SentEmail, on_delete=models.SET_NULL, null=True, blank=True, related_name="events")
+    event_type = models.CharField(max_length=20, choices=EVENT_TYPES)
+    metadata = models.JSONField(default=dict, blank=True, help_text="Datos extra del evento (link clickeado, IP, etc.)")
+    occurred_at = models.DateTimeField(help_text="Cuándo ocurrió el evento según Brevo")
+    fetched_at = models.DateTimeField(auto_now_add=True, help_text="Cuándo se trajo de la API")
+
+    class Meta:
+        verbose_name = "Evento de email"
+        verbose_name_plural = "Eventos de email"
+        ordering = ["-occurred_at"]
+        indexes = [
+            models.Index(fields=["subscriber", "event_type"]),
+            models.Index(fields=["event_type", "occurred_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.subscriber.email} — {self.get_event_type_display()} — {self.occurred_at:%d/%m %H:%M}"
 

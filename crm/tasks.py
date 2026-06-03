@@ -34,7 +34,7 @@ def _send_sequence_email(subscriber_id, step_id):
 
     from .brevo_api import send_via_brevo
 
-    ok, error_msg = send_via_brevo(subject, html, subscriber.email, subscriber.name or "", plain)
+    ok, error_msg, message_id = send_via_brevo(subject, html, subscriber.email, subscriber.name or "", plain)
     status = "sent" if ok else "failed"
     if ok:
         logger.info(f"Enviado: {subject} → {subscriber.email}")
@@ -47,6 +47,7 @@ def _send_sequence_email(subscriber_id, step_id):
         sequence=step.sequence,
         status=status,
         error_message=error_msg,
+        brevo_message_id=message_id or "",
     )
     return f"{'ok' if status == 'sent' else 'fail'}: {subscriber.email}"
 
