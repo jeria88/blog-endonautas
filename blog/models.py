@@ -143,3 +143,102 @@ class BlogSubmission(models.Model):
     @property
     def is_editable(self):
         return self.status in (self.STATUS_DRAFT, self.STATUS_REJECTED)
+
+
+# ── Artículos generados por IA ────────────────────────────────────────────────
+
+class GeneratedArticle(models.Model):
+    """Artículo generado por IA para revisión antes de publicar en el blog."""
+    STATUS_DRAFT     = 'draft'
+    STATUS_REVIEW    = 'review'
+    STATUS_APPROVED  = 'approved'
+    STATUS_PUBLISHED = 'published'
+    STATUS_REJECTED  = 'rejected'
+    STATUS_CHOICES = [
+        (STATUS_DRAFT,     'Borrador'),
+        (STATUS_REVIEW,    'En revisión'),
+        (STATUS_APPROVED,  'Aprobado'),
+        (STATUS_PUBLISHED, 'Publicado'),
+        (STATUS_REJECTED,  'Rechazado'),
+    ]
+
+    title         = models.CharField('Título', max_length=200)
+    slug          = models.SlugField('Slug', max_length=200, unique=True)
+    meta_description = models.CharField('Meta description', max_length=160, blank=True)
+    keywords      = models.CharField('Keywords', max_length=300, blank=True, help_text="Separadas por coma")
+    intro         = models.CharField('Introducción', max_length=280, blank=True)
+    body          = models.TextField('Contenido (HTML)')
+    cta_text      = models.CharField('Texto del CTA', max_length=80, blank=True)
+    cta_url       = models.URLField('URL del CTA', blank=True)
+    tags          = models.CharField('Tags', max_length=300, blank=True, help_text="Separados por coma")
+
+    # Fuente de inspiración
+    source_type   = models.CharField(max_length=20, choices=[
+        ('test',    'Basado en test'),
+        ('espejo',  'Basado en Espejo'),
+        ('tema',    'Tema libre'),
+        ('keyword', 'Keyword SEO'),
+    ], default='tema')
+    source_detail = models.CharField('Detalle de la fuente', max_length=200, blank=True)
+
+    # Estado y publicación
+    status        = models.CharField(max_length=12, choices=STATUS_CHOICES, default=STATUS_DRAFT)
+    blog_post     = models.OneToOneField('blog.BlogPost', null=True, blank=True, on_delete=models.SET_NULL, related_name='generated_article')
+    reviewer_notes = models.TextField('Notas del revisor', blank=True)
+
+    # Metadata
+    created_at    = models.DateTimeField(auto_now_add=True)
+    updated_at    = models.DateTimeField(auto_now=True)
+    published_at  = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Artículo generado'
+        verbose_name_plural = 'Artículos generados'
+
+    def __str__(self):
+        return f'{self.title} [{self.get_status_display()}]'
+
+    def publish_to_blog(self):
+        """Publica este artículo como un BlogPost de Wagtail."""
+        from wagtail.models import Page
+        from blog.models import BlogPost, BlogIndexPage
+
+        if self.status != self.STATUS_APPROVED:
+            return False, 'El artículo debe estar aprobado para publicar'
+
+        if self.blog_post:
+            return False, 'Ya fue publicado'
+
+        # Buscar el índice del blog
+        try:
+            blog_index = BlogIndexPage.objects.live().first()
+        except BlogIndexPage.DoesNotExist:
+            return False, 'No se encontró el índice del blog'
+
+        if not blog_index:
+            return False, 'No se encontró el índice del blog'
+
+        # Crear el BlogPost
+        post = BlogPost(
+            title=self.title,
+            slug=self.slug,
+            intro=self.intro or '',
+            cta_text=self.cta_text or '',
+            cta_url=self.cta_url or '',
+            author_name='Endonautas',
+        )
+        # Agregar el body como StreamField
+        post.body = [('richtext', self.body)]
+
+        # Agregar como hijo del índice
+        blog_index.add_child(instance=post)
+        post.save_revision().publish()
+
+        # Actualizar estado
+        self.blog_post = post
+        self.status = self.STATUS_PUBLISHED
+        self.published_at = datetime.datetime.now()
+        self.save(update_fields=['blog_post', 'status', 'published_at'])
+
+        return True, f'Publicado: {post.full_url}'
