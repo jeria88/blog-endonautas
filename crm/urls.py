@@ -1,19 +1,18 @@
 from django.urls import path
 from . import views
-from . import views_campaigns
 
 app_name = "crm"
 
 urlpatterns = [
     path("", views.crm_dashboard, name="dashboard"),
-    path("campaigns/", views_campaigns.crm_campaigns, name="campaigns"),
-    path("run-scheduler/", views_campaigns.crm_run_scheduler, name="run_scheduler"),
+    path("campaigns/", views.crm_campaigns, name="campaigns"),
+    path("run-scheduler/", views.crm_run_scheduler, name="run_scheduler"),
     path("lists/", views.crm_lists, name="lists"),
     path("lists/create/", views.crm_list_create, name="list_create"),
     path("lists/<int:list_id>/", views.crm_list_detail, name="list_detail"),
     path("lists/<int:list_id>/edit/", views.crm_list_edit, name="list_edit"),
     path("lists/<int:list_id>/delete/", views.crm_list_delete, name="list_delete"),
-    path("subscribers/<int:subscriber_id>/", views_campaigns.crm_subscriber_detail, name="subscriber_detail"),
+    path("subscribers/<int:subscriber_id>/", views.crm_subscriber_detail, name="subscriber_detail"),
     path("subscribers/", views.crm_subscribers, name="subscribers"),
     path("pipeline/", views.crm_pipeline, name="pipeline"),
     path("pipeline/<int:subscriber_id>/<slug:stage_slug>/", views.crm_pipeline_move, name="pipeline_move"),
