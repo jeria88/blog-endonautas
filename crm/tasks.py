@@ -1,6 +1,5 @@
 from celery import shared_task
 from django.utils import timezone
-from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 from datetime import timedelta
 import logging
@@ -33,24 +32,13 @@ def _send_sequence_email(subscriber_id, step_id):
     html = Template(step.template.html_content).render(context)
     plain = Template(step.template.plain_text_content).render(context) if step.template.plain_text_content else ""
 
-    msg = EmailMultiAlternatives(
-        subject=subject,
-        body=plain or '',
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        to=[subscriber.email],
-    )
-    msg.attach_alternative(html, 'text/html')
+    from .brevo_api import send_via_brevo
 
-    try:
-        sent_count = msg.send(fail_silently=False)
-        if sent_count == 0:
-            raise Exception("El SMTP devolvió 0 (rechazado sin excepción)")
-        status = "sent"
-        error_msg = ""
+    ok, error_msg = send_via_brevo(subject, html, subscriber.email, subscriber.name or "", plain)
+    status = "sent" if ok else "failed"
+    if ok:
         logger.info(f"Enviado: {subject} → {subscriber.email}")
-    except Exception as e:
-        status = "failed"
-        error_msg = str(e)
+    else:
         logger.error(f"FALLO enviando {subject} → {subscriber.email}: {error_msg}")
 
     SentEmail.objects.create(

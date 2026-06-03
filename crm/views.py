@@ -286,44 +286,50 @@ def crm_subscriber_detail(request, subscriber_id):
 
 @staff_member_required
 def crm_test_smtp(request):
-    """Diagnóstico SMTP completo."""
-    import smtplib, socket
+    """Diagnostico: prueba la API de Brevo (sin restriccion de IP)."""
     from django.conf import settings
+    import requests
 
     results = []
-    host = settings.EMAIL_HOST
-    port = settings.EMAIL_PORT
-    user = settings.EMAIL_HOST_USER
-    password = settings.EMAIL_HOST_PASSWORD
+    api_key = settings.BREVO_API_KEY
+    results.append(("BREVO_API_KEY", api_key[:15] + "..." if api_key else "NO CONFIGURADA"))
+    results.append(("DEFAULT_FROM_EMAIL", settings.DEFAULT_FROM_EMAIL))
 
-    results.append(("EMAIL_HOST", host or "NO CONFIGURADO"))
-    results.append(("EMAIL_PORT", str(port)))
-    results.append(("EMAIL_HOST_USER", user[:10] + "..." if user else "NO CONFIGURADO"))
-    results.append(("PASSWORD length", str(len(password)) if password else "0  VACIA"))
-
-    # Probar conexion TCP
-    try:
-        sock = socket.create_connection((host, port), timeout=10)
-        sock.close()
-        results.append(("Conexion TCP", "OK"))
-    except Exception as e:
-        results.append(("Conexion TCP", f"FALLO: {e}"))
-
-    # Probar handshake + STARTTLS + login
-    if user and password:
+    # Probar API key con GET account
+    if api_key:
         try:
-            server = smtplib.SMTP(host, port, timeout=15)
-            server.ehlo()
-            if port == 587:
-                server.starttls()
-                server.ehlo()
-            server.login(user, password)
-            results.append(("Autenticacion SMTP", "LOGIN OK"))
-            server.quit()
+            resp = requests.get(
+                "https://api.brevo.com/v3/account",
+                headers={"api-key": api_key},
+                timeout=15,
+            )
+            if resp.status_code == 200:
+                data = resp.json()
+                email = data.get("email", "?")
+                results.append(("Conexion API Brevo", f"OK - Cuenta: {email}"))
+            else:
+                results.append(("Conexion API Brevo", f"FALLO: {resp.status_code} {resp.text[:100]}"))
         except Exception as e:
-            results.append(("Autenticacion SMTP", f"FALLO: {e}"))
+            results.append(("Conexion API Brevo", f"FALLO: {e}"))
     else:
-        results.append(("Autenticacion SMTP", "Saltado: sin credenciales"))
+        results.append(("Conexion API Brevo", "Saltado: sin API key"))
+
+    # Probar envio real via API
+    if api_key:
+        try:
+            from crm.brevo_api import send_via_brevo
+            ok, err = send_via_brevo(
+                subject="[Diagnostico] Prueba API Brevo",
+                html_content="<p>Si ves esto, la API de Brevo funciona.</p>",
+                to_email=settings.DEFAULT_FROM_EMAIL,
+                to_name="Test",
+            )
+            if ok:
+                results.append(("Envio de prueba", f"OK -> {settings.DEFAULT_FROM_EMAIL}"))
+            else:
+                results.append(("Envio de prueba", f"FALLO: {err}"))
+        except Exception as e:
+            results.append(("Envio de prueba", f"FALLO: {e}"))
 
     return render(request, "crm/smtp_diag.html", {"results": results})
 

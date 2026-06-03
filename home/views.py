@@ -22,7 +22,6 @@ def brevo_subscribe(request):
 
     from crm.models import Subscriber, EmailList, Subscription, EmailSequence, SentEmail, SequenceStep
     from django.template import Template, Context
-    from django.core.mail import EmailMultiAlternatives
 
     try:
         # Crear o actualizar suscriptor
@@ -58,23 +57,12 @@ def brevo_subscribe(request):
                     ctx = Context({'nombre': subscriber.name or 'amigo', 'email': subscriber.email})
                     subject = Template(tmpl.subject).render(ctx)
                     html = Template(tmpl.html_content).render(ctx)
-                    msg = EmailMultiAlternatives(
-                        subject=subject,
-                        body='',
-                        from_email=settings.DEFAULT_FROM_EMAIL,
-                        to=[subscriber.email],
-                    )
-                    msg.attach_alternative(html, 'text/html')
-                    try:
-                        sent_count = msg.send(fail_silently=False)
-                        if sent_count == 0:
-                            raise Exception("SMTP rechazó sin excepción")
-                        email_status = 'sent'
-                        error_msg = ''
+                    from crm.brevo_api import send_via_brevo
+                    ok_send, error_msg = send_via_brevo(subject, html, subscriber.email, subscriber.name or "")
+                    email_status = 'sent' if ok_send else 'failed'
+                    if ok_send:
                         logger.info(f"Email inmediato enviado: {subject} -> {subscriber.email}")
-                    except Exception as send_err:
-                        email_status = 'failed'
-                        error_msg = str(send_err)
+                    else:
                         logger.error(f"FALLO email inmediato {subject} -> {subscriber.email}: {error_msg}")
                     SentEmail.objects.create(
                         subscriber=subscriber,
