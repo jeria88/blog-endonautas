@@ -191,7 +191,8 @@ MASCARA_TEMPLATES = [
 <p>Esa forma funcionó. El problema es que sigue funcionando décadas después, en situaciones que ya no lo necesitan.</p>
 <p>No se trata de destruir la máscara. Se trata de verla. Porque lo que no ves, decide por ti.</p>"""
             + _quote("El problema no es que tengas una máscara. Todos tenemos una. El problema es que no sabes que la tienes puesta.")
-            + '<p>En la guía vas a encontrar los 5 tipos. Fíjate cuál resuena — no con lo que "deberías" ser, sino con lo que ya eres sin darte cuenta.</p>',
+            + '<p>En la guía vas a encontrar los 5 tipos. Fíjate cuál resuena — no con lo que "deberías" ser, sino con lo que ya eres sin darte cuenta.</p>'
+            + _app_cta("Tu herida no es tu identidad. Es tu origen →"),
             preview="Tu máscara no es tu enemiga. Es una herramienta que ya no necesitas usar todo el tiempo."
         ),
     },
@@ -207,7 +208,8 @@ MASCARA_TEMPLATES = [
 <p>La construí de niño, en un contexto donde mostrarme tal cual era peligroso. Funcionó tan bien que a los 30 años todavía la usaba — y ya no había ningún peligro real.</p>
 <p>No fue un momento de iluminación. Fue un proceso. Pero el primer paso fue verla.</p>
 <p>Si estás leyendo esto, ya diste ese paso.</p>"""
-            + _quote("No vemos las cosas como son. Las vemos como somos. La máscara no es una excepción."),
+            + _quote("No vemos las cosas como son. Las vemos como somos. La máscara no es una excepción.")
+            + _app_cta("No te da respuestas. Te hace las preguntas que importan →"),
             preview="Lo que aprendí al verme la mía — y cómo ese primer paso cambió todo."
         ),
     },
@@ -262,7 +264,8 @@ HACKS_TEMPLATES = [
 <p>La mayoría lee sobre arquetipos, sombras, heridas de infancia — y los aplica a los demás. "Mi jefe tiene la herida del abandono." "Mi pareja actúa desde su máscara." Todo eso puede ser cierto. El problema es que mientras señalas afuera, el tuyo opera sin que lo veas.</p>
 <p>El Hack 1 de la guía va exactamente a eso: cómo leer tu propio origen antes de leer el de nadie más.</p>
 <p>Si ya lo leíste, bien. Si no, hoy es buen día para empezar.</p>"""
-            + _quote("Señalar afuera es cómodo. Mirarse adentro es incómodo. Pero lo incómodo es lo que transforma."),
+            + _quote("Señalar afuera es cómodo. Mirarse adentro es incómodo. Pero lo incómodo es lo que transforma.")
+            + _app_cta("Lo que no quieres ver de ti también es parte del mapa →"),
             preview="El error más común cuando empezamos a explorarnos: aplicar todo a los demás antes de mirarnos a nosotros."
         ),
     },
@@ -309,7 +312,8 @@ VIAJE_TEMPLATES = [
             + """<p>La razón por la que la mayoría da vueltas es simple: buscan comprensión antes de buscar contacto.</p>
 <p>Leen, estudian, acumulan conceptos. "Sé que tengo la herida del rechazo." "Entiendo que actúo desde el miedo." Pero entender no mueve nada. Lo que mueve es el contacto directo con lo que está pasando — sin intermediarios teóricos.</p>
 <p>La guía tiene un ejercicio en la página 5 que es exactamente eso: contacto, no análisis. Si no llegaste ahí, vale la pena volver.</p>"""
-            + _quote("Entender es cómodo. Sentir es donde ocurre el cambio. No confundas una con la otra."),
+            + _quote("Entender es cómodo. Sentir es donde ocurre el cambio. No confundas una con la otra.")
+            + _app_cta("No te da respuestas. Te hace las preguntas que importan →"),
             preview="El motivo real por el que muchos se quedan en el mismo lugar — y cómo salir de ahí."
         ),
     },
