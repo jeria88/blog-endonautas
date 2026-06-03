@@ -4,11 +4,12 @@ from crm.models import EmailList, EmailTemplate, EmailSequence, SequenceStep
 # ── Constantes de diseño ────────────────────────────────────────────────────
 
 LOGO = (
-    '<div style="border-radius:50%;width:80px;height:80px;overflow:hidden;display:inline-block;">'
+    '<div style="border-radius:50%;width:80px;height:80px;overflow:hidden;display:inline-block;'
+    'background-color:#0a0a0a;border:2px solid rgba(240,232,220,0.08);">'
     '<img src="https://endonautas.cl/static/img/logo.ffc70eb7b9d7.png" '
     'alt="Endonautas" width="80" height="80" '
     'style="display:block;border:0;outline:none;border-radius:50%;width:80px;height:80px;'
-    'object-fit:cover;transform:scale(1.4);" />'
+    'object-fit:cover;" />'
     '</div>'
 )
 
@@ -17,34 +18,35 @@ _EMAIL_OPEN = f"""<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<div style="display:none;font-size:1px;color:#000;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">
+<div style="display:none;font-size:1px;color:#ffffff;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">
 {{{{ preview }}}}
 </div>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap');
-body{{margin:0;padding:0;background-color:#000000;}}
+body{{margin:0;padding:0;background-color:#f4f4f0;}}
 p{{margin:0 0 16px 0;}}
 p:last-of-type{{margin-bottom:0;}}
 ul{{margin:0 0 16px 0;padding-left:20px;}}
 li{{margin-bottom:8px;}}
-strong{{font-weight:500;}}
+strong{{font-weight:600;color:#e8e4dc;}}
 a{{color:#7ECCCD;}}
 </style>
 </head>
-<body style="margin:0;padding:0;background-color:#000000;">
+<body style="margin:0;padding:0;background-color:#f4f4f0;">
 
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#000000">
-<tr><td align="center" style="padding:24px 16px 40px 16px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f4f4f0">
+<tr><td align="center" style="padding:32px 16px 40px 16px;">
 
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;">
-<tr><td align="center" style="padding:0 0 28px 0;overflow:hidden;">
+<tr><td align="center" style="padding:0 0 24px 0;">
 {LOGO}
 </td></tr>
 </table>
 
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background-color:#0a0a0a;border-radius:12px;overflow:hidden;">
-<tr><td style="padding:0;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="background-color:#7ECCCD;height:2px;font-size:0;line-height:0;">&nbsp;</td></tr></table></td></tr>
-<tr><td style="padding:40px 44px 28px 44px;font-family:'Plus Jakarta Sans',Georgia,serif;font-size:16px;font-weight:300;line-height:1.8;color:#F0E8DC;">
+
+<tr><td style="padding:0;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="background-color:#7ECCCD;height:3px;font-size:0;line-height:0;">&nbsp;</td></tr></table></td></tr>
+
+<tr><td style="padding:36px 44px 24px 44px;font-family:Georgia,'Times New Roman',serif;font-size:16px;font-weight:400;line-height:1.7;color:#e8e4dc;">
 """
 
 _FIRMA = """
@@ -55,11 +57,11 @@ _FIRMA = """
 <table role="presentation" cellpadding="0" cellspacing="0" border="0">
 <tr>
 <td style="padding-right:14px;width:48px;">
-<img src="https://endonautas.cl/static/img/franco-jeria.29d377e25215.jpeg" alt="Franco" width="48" height="48" style="display:block;border-radius:24px;border:2px solid rgba(126,204,205,0.2);width:48px;height:48px;object-fit:cover;" />
+<img src="https://endonautas.cl/static/img/franco-jeria.29d377e25215.jpeg" alt="Franco" width="48" height="48" style="display:block;border-radius:24px;border:2px solid rgba(126,204,205,0.25);width:48px;height:48px;object-fit:cover;" />
 </td>
 <td>
-<p style="margin:0;font-family:'Plus Jakarta Sans',Arial,sans-serif;font-size:15px;font-weight:500;color:#F0E8DC;">Franco</p>
-<p style="margin:2px 0 0 0;font-family:'Plus Jakarta Sans',Arial,sans-serif;font-size:12px;color:rgba(240,232,220,0.35);">Fundador de Endonautas</p>
+<p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:15px;font-weight:600;color:#e8e4dc;">Franco</p>
+<p style="margin:2px 0 0 0;font-family:Arial,sans-serif;font-size:12px;color:rgba(232,228,220,0.4);">Fundador de Endonautas</p>
 </td>
 </tr>
 </table>
@@ -69,15 +71,15 @@ _FIRMA = """
 """
 
 _FOOTER = """
-<tr><td style="padding:20px 44px 24px 44px;background-color:#000000;border-top:1px solid rgba(240,232,220,0.04);">
+<tr><td style="padding:20px 44px 24px 44px;background-color:#000000;border-top:1px solid rgba(232,228,220,0.06);">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-<tr><td style="font-family:'Plus Jakarta Sans',Arial,sans-serif;font-size:11px;line-height:1.7;color:rgba(240,232,220,0.2);">
+<tr><td style="font-family:Arial,sans-serif;font-size:11px;line-height:1.7;color:rgba(232,228,220,0.25);">
 <p style="margin:0 0 4px 0;">
-<a href="https://endonautas.cl" style="color:rgba(240,232,220,0.2);text-decoration:none;">endonautas.cl</a>
-<span style="margin:0 6px;">·</span>
-<a href="https://endonautas.cl/contacto/" style="color:rgba(240,232,220,0.2);text-decoration:none;">Contacto</a>
-<span style="margin:0 6px;">·</span>
-<a href="{{ unsubscribe }}" style="color:rgba(240,232,220,0.2);text-decoration:none;">Cancelar suscripción</a>
+<a href="https://endonautas.cl" style="color:rgba(232,228,220,0.25);text-decoration:none;">endonautas.cl</a>
+<span style="margin:0 6px;">&#183;</span>
+<a href="https://endonautas.cl/contacto/" style="color:rgba(232,228,220,0.25);text-decoration:none;">Contacto</a>
+<span style="margin:0 6px;">&#183;</span>
+<a href="{{ unsubscribe }}" style="color:rgba(232,228,220,0.25);text-decoration:none;">Cancelar suscripci&oacute;n</a>
 </p>
 <p style="margin:0;">Recibiste esto porque te suscribiste en endonautas.cl.</p>
 </td></tr>
@@ -101,11 +103,11 @@ def _email(body: str, preview: str = "") -> str:
 
 
 def _greeting() -> str:
-    return '<p style="margin:0 0 24px 0;font-size:14px;color:rgba(240,232,220,0.4);">Hola {{ nombre }},</p>'
+    return '<p style="margin:0 0 24px 0;font-size:14px;color:rgba(232,228,220,0.45);">Hola {{ nombre }},</p>'
 
 
 def _title(text: str) -> str:
-    return f'<p style="font-size:18px;font-weight:500;color:#F0E8DC;margin-bottom:24px;">{text}</p>'
+    return f'<p style="font-size:18px;font-weight:600;color:#e8e4dc;margin-bottom:24px;">{text}</p>'
 
 
 def _quote(text: str) -> str:
@@ -114,7 +116,7 @@ def _quote(text: str) -> str:
         '<tr><td style="padding:20px 24px;background-color:rgba(126,204,205,0.04);'
         'border-left:2px solid rgba(126,204,205,0.25);border-radius:6px;">'
         f'<p style="margin:0;font-family:\'Plus Jakarta Sans\',Georgia,serif;font-size:15px;'
-        f'color:rgba(240,232,220,0.6);font-style:italic;line-height:1.7;">"{text}"</p>'
+        f'color:rgba(232,228,220,0.55);font-style:italic;line-height:1.7;">"{text}"</p>'
         '</td></tr>'
         '</table>'
     )
@@ -122,7 +124,7 @@ def _quote(text: str) -> str:
 
 def _spam_note() -> str:
     return (
-        '<p style="margin-top:24px;font-size:13px;color:rgba(240,232,220,0.3);">'
+        '<p style="margin-top:24px;font-size:13px;color:rgba(232,228,220,0.3);">'
         'Si este correo llegó a spam, márcalo como "no es spam" para recibir los siguientes.</p>'
     )
 
@@ -136,7 +138,7 @@ def _app_cta(text: str = "Comenzar exploración gratuita →") -> str:
         'border-radius:999px;font-family:\'Space Grotesk\',Arial,sans-serif;font-size:13px;'
         'font-weight:600;letter-spacing:0.3px;text-decoration:none;">'
         f'{text}</a>'
-        '<p style="margin:10px 0 0 0;font-size:12px;color:rgba(240,232,220,0.25);'
+        '<p style="margin:10px 0 0 0;font-size:12px;color:rgba(232,228,220,0.25);'
         '">Sin tarjeta · 2 minutos · Sin compromiso</p>'
         '</td></tr>'
         '</table>'
@@ -152,7 +154,7 @@ def _download_btn(url: str, text: str = "Descargar guía gratuita →") -> str:
         'border-radius:999px;font-family:\'Space Grotesk\',Arial,sans-serif;font-size:14px;'
         'font-weight:600;letter-spacing:0.3px;text-decoration:none;">'
         f'{text}</a>'
-        '<p style="margin:10px 0 0 0;font-size:12px;color:rgba(240,232,220,0.25);'
+        '<p style="margin:10px 0 0 0;font-size:12px;color:rgba(232,228,220,0.25);'
         '">PDF · Sin registro · Descarga inmediata</p>'
         '</td></tr>'
         '</table>'
