@@ -1,103 +1,42 @@
-{% extends "admin/base_site.html" %}
-{% block title %}Listas | CRM{% endblock %}
-{% block extrahead %}
-<style>
-:root { --crm-surface: #12121e; --crm-border: rgba(255,255,255,0.07); --crm-muted: #6b6878; --crm-text: #e8e4dc; --crm-accent: #c4813a; --crm-green: #3d7a5e; }
-.crm { padding: 2rem; max-width: 1280px; margin: 0 auto; }
-.crm-nav { display: flex; gap: 0.25rem; margin-bottom: 2rem; border-bottom: 1px solid var(--crm-border); padding-bottom: 1rem; flex-wrap: wrap; }
-.crm-nav a { color: var(--crm-muted); text-decoration: none; font-size: 0.875rem; padding: 0.4rem 0.9rem; border-radius: 6px; }
-.crm-nav a:hover { color: var(--crm-text); background: rgba(255,255,255,0.05); }
-.crm-nav a.active { color: var(--crm-text); background: rgba(255,255,255,0.08); }
-.crm-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-.crm-header h1 { font-size: 1.25rem; font-weight: 600; color: var(--crm-text); margin: 0; }
-.crm-btn { display: inline-block; padding: 0.45rem 1rem; border-radius: 6px; font-size: 0.85rem; text-decoration: none; cursor: pointer; border: 1px solid var(--crm-border); color: var(--crm-muted); background: transparent; }
-.crm-btn:hover { color: var(--crm-text); border-color: rgba(255,255,255,0.2); }
-.crm-btn.primary { background: rgba(196,129,58,0.15); border-color: rgba(196,129,58,0.3); color: var(--crm-accent); }
-.crm-btn.danger { background: rgba(168,75,60,0.15); border-color: rgba(168,75,60,0.3); color: #a84b3c; }
-.crm-btn.small { padding: 0.25rem 0.65rem; font-size: 0.78rem; }
-.lists-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; }
-.list-card { background: var(--crm-surface); border: 1px solid var(--crm-border); border-radius: 10px; padding: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; }
-.list-card-header { display: flex; align-items: center; gap: 0.75rem; }
-.list-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--crm-accent); flex-shrink: 0; }
-.list-name { font-size: 1rem; font-weight: 600; color: var(--crm-text); text-decoration: none; }
-.list-name:hover { color: var(--crm-accent); }
-.list-slug { font-size: 0.72rem; color: rgba(196,129,58,0.6); font-family: monospace; }
-.list-desc { font-size: 0.82rem; color: var(--crm-muted); line-height: 1.5; }
-.list-stats { display: flex; gap: 1.5rem; margin-top: 0.25rem; }
-.list-stat { display: flex; flex-direction: column; }
-.list-stat-n { font-size: 1.25rem; font-weight: 700; color: var(--crm-text); }
-.list-stat-l { font-size: 0.7rem; color: var(--crm-muted); text-transform: uppercase; letter-spacing: 0.05em; }
-.list-actions { margin-top: 0.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap; }
-.crm-alert { background: rgba(196,129,58,0.1); border: 1px solid rgba(196,129,58,0.2); border-radius: 8px; padding: 0.75rem 1rem; font-size: 0.85rem; color: var(--crm-accent); margin-bottom: 1.5rem; }
-</style>
-{% endblock %}
-{% block content %}
-<div class="crm">
-<nav class="crm-nav">
-        <a href="{% url 'crm:dashboard' %}">Dashboard</a>
-        <a href="{% url 'crm:campaigns' %}">Campañas</a>
-        <a href="{% url 'crm:broadcasts' %}">Broadcasts</a>
-        <a href="{% url 'crm:pipeline' %}">Pipeline</a>
-        <a href="{% url 'crm:segments' %}">Segmentos</a>
-        <a href="{% url 'crm:tags' %}">Tags</a>
-        <a href="{% url 'crm:lists' %}">Listas</a>
-        <a href="{% url 'crm:subscribers' %}">Suscriptores</a>
-        <a href="{% url 'crm:sequences' %}">Secuencias</a>
-        <a href="{% url 'crm:templates' %}">Plantillas</a>
-    </nav>
+{% extends "crm/crm_base.html" %}
+{% block crm_title %}Listas{% endblock %}
 
-    {% if messages %}
-    {% for msg in messages %}
-    <div class="crm-alert">{{ msg }}</div>
-    {% endfor %}
-    {% endif %}
-
-    <div class="crm-header">
-        <h1>Listas de email</h1>
-        <a class="crm-btn primary" href="{% url 'crm:list_create' %}">+ Nueva lista</a>
-    </div>
-
-    <div class="lists-grid">
-        {% for lst in lists %}
-        <div class="list-card">
-            <div class="list-card-header">
-                <span class="list-dot"></span>
-                <div>
-                    <a class="list-name" href="{% url 'crm:list_detail' lst.id %}">{{ lst.name }}</a>
-                    <div class="list-slug">/{{ lst.slug }}</div>
-                </div>
-            </div>
-            {% if lst.description %}
-            <div class="list-desc">{{ lst.description }}</div>
-            {% endif %}
-            <div class="list-stats">
-                <div class="list-stat">
-                    <span class="list-stat-n">{{ lst.sub_count }}</span>
-                    <span class="list-stat-l">Suscriptores</span>
-                </div>
-                <div class="list-stat">
-                    <span class="list-stat-n">{{ lst.sequences.count }}</span>
-                    <span class="list-stat-l">Secuencias</span>
-                </div>
-            </div>
-            {% if lst.sequences.all %}
-            <div style="display:flex;flex-wrap:wrap;gap:0.3rem;">
-                {% for seq in lst.sequences.all %}
-                <span class="crm-badge" style="font-size:0.7rem;">{{ seq.name|truncatechars:25 }}</span>
-                {% endfor %}
-            </div>
-            {% endif %}
-            <div class="list-actions">
-                <a class="crm-btn small" href="{% url 'crm:list_detail' lst.id %}">Ver detalle</a>
-                <a class="crm-btn small" href="{% url 'crm:list_edit' lst.id %}">Editar</a>
-                <a class="crm-btn small danger" href="{% url 'crm:list_delete' lst.id %}">Eliminar</a>
-            </div>
-        </div>
-        {% empty %}
-        <div style="color:var(--crm-muted);padding:3rem;grid-column:1/-1;text-align:center;">
-            No hay listas. Crea la primera.
-        </div>
-        {% endfor %}
-    </div>
+{% block crm_content %}
+<div class="crm-page-header">
+  <h1>Listas</h1>
+  <a href="{% url 'crm:list_create' %}" class="btn btn-primary">+ Nueva lista</a>
 </div>
+
+{% if lists %}
+<table class="crm-table">
+  <thead>
+    <tr>
+      <th>Nombre</th>
+      <th>Slug</th>
+      <th>Suscriptores</th>
+      <th>Secuencias</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for lst in lists %}
+    <tr>
+      <td><a href="{% url 'crm:list_detail' lst.id %}" style="color:var(--accent);text-decoration:none;font-weight:500;">{{ lst.name }}</a></td>
+      <td class="text-sm text-muted">{{ lst.slug }}</td>
+      <td><span class="pill pill-accent">{{ lst.sub_count }}</span></td>
+      <td><span class="pill pill-blue">{{ lst.sequences.count }}</span></td>
+      <td>
+        <a href="{% url 'crm:list_edit' lst.id %}" class="btn btn-sm">Editar</a>
+        <a href="{% url 'crm:list_delete' lst.id %}" class="btn btn-sm btn-danger">Eliminar</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="crm-card crm-empty">
+  <p>Sin listas creadas.</p>
+  <a href="{% url 'crm:list_create' %}" class="btn btn-primary" style="margin-top:12px;">Crear primera lista</a>
+</div>
+{% endif %}
 {% endblock %}

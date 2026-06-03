@@ -1,4 +1,4 @@
-{% extends "admin/base_site.html" %}
+{% extends "crm/crm_base.html" %}
 {% block title %}Diagnóstico SMTP | CRM{% endblock %}
 {% block extrahead %}
 <style>
@@ -17,7 +17,7 @@
 .crm-nav a:hover { color: var(--crm-text); background: rgba(255,255,255,0.05); }
 </style>
 {% endblock %}
-{% block content %}
+{% block crm_content %}
 <div class="crm">
 <nav class="crm-nav">
         <a href="{% url 'crm:dashboard' %}">Dashboard</a>

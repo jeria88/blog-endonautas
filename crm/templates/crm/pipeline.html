@@ -1,4 +1,4 @@
-{% extends "admin/base_site.html" %}
+{% extends "crm/crm_base.html" %}
 {% block title %}Pipeline | CRM{% endblock %}
 {% block extrahead %}
 <style>
@@ -20,7 +20,7 @@
 .pipe-empty { color: var(--crm-muted); font-size: 0.8rem; text-align: center; padding: 1rem; font-style: italic; }
 </style>
 {% endblock %}
-{% block content %}
+{% block crm_content %}
 <div class="crm">
 <nav class="crm-nav">
         <a href="{% url 'crm:dashboard' %}">Dashboard</a>

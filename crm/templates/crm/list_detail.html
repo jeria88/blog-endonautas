@@ -1,4 +1,4 @@
-{% extends "admin/base_site.html" %}
+{% extends "crm/crm_base.html" %}
 {% block title %}{{ list_obj.name }} | CRM{% endblock %}
 {% block extrahead %}
 <style>
@@ -36,7 +36,7 @@
 .seq-meta { font-size: 0.78rem; color: var(--crm-muted); }
 </style>
 {% endblock %}
-{% block content %}
+{% block crm_content %}
 <div class="crm">
 <nav class="crm-nav">
         <a href="{% url 'crm:dashboard' %}">Dashboard</a>

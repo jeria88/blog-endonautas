@@ -1,4 +1,4 @@
-{% extends "admin/base_site.html" %}
+{% extends "crm/crm_base.html" %}
 {% block title %}Plantillas | CRM{% endblock %}
 {% block extrahead %}
 <style>
@@ -19,7 +19,7 @@
 .tmpl-btn.primary { background: rgba(196,129,58,0.15); border-color: rgba(196,129,58,0.3); color: var(--crm-accent); }
 </style>
 {% endblock %}
-{% block content %}
+{% block crm_content %}
 <div class="crm">
 <nav class="crm-nav">
         <a href="{% url 'crm:dashboard' %}">Dashboard</a>

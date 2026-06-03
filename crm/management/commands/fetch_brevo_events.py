@@ -20,7 +20,7 @@ from crm.models import EmailEvent, SentEmail, Subscriber
 
 logger = logging.getLogger(__name__)
 
-BREVO_API_URL = "https://api.brebo.com/v3/smtp/activities"
+BREVO_API_URL = "https://api.brevo.com/v3/smtp/activities"
 
 
 class Command(BaseCommand):

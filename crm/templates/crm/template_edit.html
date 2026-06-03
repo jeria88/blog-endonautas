@@ -1,4 +1,4 @@
-{% extends "admin/base_site.html" %}
+{% extends "crm/crm_base.html" %}
 {% block title %}Editar {{ tmpl.name }} | CRM{% endblock %}
 {% block extrahead %}
 <style>
@@ -29,7 +29,7 @@
 .crm-preview-link a:hover { text-decoration: underline; }
 </style>
 {% endblock %}
-{% block content %}
+{% block crm_content %}
 <div class="crm">
 <nav class="crm-nav">
         <a href="{% url 'crm:dashboard' %}">Dashboard</a>

@@ -356,7 +356,7 @@ def crm_test_smtp(request):
     if api_key:
         try:
             from crm.brevo_api import send_via_brevo
-            ok, err = send_via_brevo(
+            ok, err, _ = send_via_brevo(
                 subject="[Diagnostico] Prueba API Brevo",
                 html_content="<p>Si ves esto, la API de Brevo funciona.</p>",
                 to_email=settings.DEFAULT_FROM_EMAIL,
@@ -646,7 +646,7 @@ def crm_broadcast_send(request, broadcast_id):
         html = Template(broadcast.html_content).render(context)
         plain = Template(broadcast.plain_text_content).render(context) if broadcast.plain_text_content else ""
 
-        ok, error_msg = send_via_brevo(subject, html, subscriber.email, subscriber.name or "", plain)
+        ok, error_msg, _ = send_via_brevo(subject, html, subscriber.email, subscriber.name or "", plain)
         if ok:
             sent_count += 1
         else:

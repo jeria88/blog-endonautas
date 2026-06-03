@@ -1,4 +1,4 @@
-{% extends "admin/base_site.html" %}
+{% extends "crm/crm_base.html" %}
 {% block title %}Segmentos | CRM{% endblock %}
 {% block extrahead %}
 <style>
@@ -16,7 +16,7 @@
 .crm-stat-l { font-size: 0.72rem; color: var(--crm-muted); text-transform: uppercase; letter-spacing: 0.05em; }
 </style>
 {% endblock %}
-{% block content %}
+{% block crm_content %}
 <div class="crm">
 <nav class="crm-nav">
         <a href="{% url 'crm:dashboard' %}">Dashboard</a>
