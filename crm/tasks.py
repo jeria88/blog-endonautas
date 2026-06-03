@@ -10,7 +10,6 @@ logger = logging.getLogger(__name__)
 
 def _send_sequence_email(subscriber_id, step_id):
     """Lógica pura de envío — llamable sin Celery."""
-    from post_office import mail as po_mail
     from django.template import Template, Context
     from .models import Subscriber, SequenceStep, SentEmail
 
@@ -112,17 +111,14 @@ def process_sequence_steps():
     return _process_sequence_steps()
 
 
-@shared_task
 def trigger_sequence_for_subscriber(subscriber_id, sequence_id):
-    """Gatilla una secuencia completa para un suscriptor (uso manual/testing)."""
+    """Gatilla el email inmediato de una secuencia. Sin Celery."""
     from .models import EmailSequence
 
     sequence = EmailSequence.objects.get(id=sequence_id, is_active=True)
+    count = 0
     for step in sequence.steps.order_by("step_number"):
         if step.delay_days == 0:
             _send_sequence_email(subscriber_id, step.id)
-        else:
-            eta = timezone.now() + timedelta(days=step.delay_days)
-            send_sequence_email.apply_async(args=[subscriber_id, step.id], eta=eta)
-
-    return f"Secuencia '{sequence.name}' iniciada para suscriptor {subscriber_id}"
+            count += 1
+    return f"Secuencia '{sequence.name}': {count} email(es) inmediato(s) enviado(s)"

@@ -66,9 +66,8 @@ class Command(BaseCommand):
             self.stderr.write(f"[flywheel] ERROR: {e}")
 
     def _run_queued_mail(self):
+        """Respaldo: despacha emails encolados en post_office (si los hay)."""
         try:
             call_command("send_queued_mail", verbosity=0)
-            logger.info("[scheduler] send_queued_mail: ok")
         except Exception as e:
-            logger.error(f"[scheduler] send_queued_mail error: {e}", exc_info=True)
-            self.stderr.write(f"[send_queued_mail] ERROR: {e}")
+            logger.debug(f"[scheduler] send_queued_mail (respaldo): {e}")
