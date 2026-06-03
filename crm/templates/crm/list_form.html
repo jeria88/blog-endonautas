@@ -1,0 +1,64 @@
+{% extends "admin/base_site.html" %}
+{% block title %}{{ title }} | CRM{% endblock %}
+{% block extrahead %}
+<style>
+:root { --crm-surface: #12121e; --crm-border: rgba(255,255,255,0.07); --crm-muted: #6b6878; --crm-text: #e8e4dc; --crm-accent: #c4813a; }
+.crm { padding: 2rem; max-width: 720px; margin: 0 auto; }
+.crm-nav { display: flex; gap: 0.25rem; margin-bottom: 2rem; border-bottom: 1px solid var(--crm-border); padding-bottom: 1rem; }
+.crm-nav a { color: var(--crm-muted); text-decoration: none; font-size: 0.875rem; padding: 0.4rem 0.9rem; border-radius: 6px; }
+.crm-nav a:hover { color: var(--crm-text); background: rgba(255,255,255,0.05); }
+.crm-nav a.active { color: var(--crm-text); background: rgba(255,255,255,0.08); }
+.crm-back { display: inline-block; color: var(--crm-muted); text-decoration: none; font-size: 0.85rem; margin-bottom: 1.5rem; }
+.crm-back:hover { color: var(--crm-text); }
+.crm-form-card { background: var(--crm-surface); border: 1px solid var(--crm-border); border-radius: 10px; padding: 2rem; }
+.crm-form-title { font-size: 1.1rem; font-weight: 600; color: var(--crm-text); margin-bottom: 1.5rem; }
+.crm-field { margin-bottom: 1.25rem; }
+.crm-label { display: block; font-size: 0.82rem; color: var(--crm-muted); margin-bottom: 0.35rem; font-weight: 500; }
+.crm-input { width: 100%; box-sizing: border-box; background: #0b0b14; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 0.6rem 0.9rem; color: var(--crm-text); font-size: 0.9rem; outline: none; font-family: inherit; }
+.crm-input:focus { border-color: var(--crm-accent); }
+.crm-helptext { font-size: 0.75rem; color: var(--crm-muted); margin-top: 0.3rem; }
+.crm-errors { color: #a84b3c; font-size: 0.8rem; margin-top: 0.25rem; }
+.crm-form-actions { display: flex; gap: 0.75rem; margin-top: 2rem; align-items: center; }
+.crm-btn { display: inline-block; padding: 0.5rem 1.25rem; border-radius: 6px; font-size: 0.85rem; text-decoration: none; cursor: pointer; border: 1px solid var(--crm-border); color: var(--crm-muted); background: transparent; }
+.crm-btn:hover { color: var(--crm-text); border-color: rgba(255,255,255,0.2); }
+.crm-btn.primary { background: rgba(196,129,58,0.15); border-color: rgba(196,129,58,0.3); color: var(--crm-accent); }
+.crm-btn.primary:hover { background: rgba(196,129,58,0.25); }
+textarea.crm-input { resize: vertical; min-height: 80px; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="crm">
+    <nav class="crm-nav">
+        <a href="{% url 'crm:dashboard' %}">Dashboard</a>
+        <a href="{% url 'crm:lists' %}" {% if not list_obj %}class="active"{% endif %}>Listas</a>
+        <a href="{% url 'crm:subscribers' %}">Suscriptores</a>
+        <a href="{% url 'crm:sequences' %}">Secuencias</a>
+        <a href="{% url 'crm:templates' %}">Plantillas</a>
+    </nav>
+
+    <a class="crm-back" href="{% url 'crm:lists' %}">← Volver a listas</a>
+
+    <div class="crm-form-card">
+        <div class="crm-form-title">{{ title }}</div>
+        <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="crm-field">
+                <label class="crm-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}
+                <div class="crm-helptext">{{ field.help_text }}</div>
+                {% endif %}
+                {% if field.errors %}
+                <div class="crm-errors">{{ field.errors|join:", " }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            <div class="crm-form-actions">
+                <button type="submit" class="crm-btn primary">Guardar</button>
+                <a href="{% url 'crm:lists' %}" class="crm-btn">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

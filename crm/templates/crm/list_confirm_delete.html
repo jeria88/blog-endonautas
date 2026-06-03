@@ -1,0 +1,46 @@
+{% extends "admin/base_site.html" %}
+{% block title %}Eliminar lista | CRM{% endblock %}
+{% block extrahead %}
+<style>
+:root { --crm-surface: #12121e; --crm-border: rgba(255,255,255,0.07); --crm-muted: #6b6878; --crm-text: #e8e4dc; --crm-accent: #c4813a; --crm-red: #a84b3c; }
+.crm { padding: 2rem; max-width: 600px; margin: 0 auto; }
+.crm-nav { display: flex; gap: 0.25rem; margin-bottom: 2rem; border-bottom: 1px solid var(--crm-border); padding-bottom: 1rem; }
+.crm-nav a { color: var(--crm-muted); text-decoration: none; font-size: 0.875rem; padding: 0.4rem 0.9rem; border-radius: 6px; }
+.crm-nav a:hover { color: var(--crm-text); background: rgba(255,255,255,0.05); }
+.crm-back { color: var(--crm-muted); text-decoration: none; font-size: 0.85rem; display: inline-block; margin-bottom: 1.5rem; }
+.crm-back:hover { color: var(--crm-text); }
+.crm-card { background: var(--crm-surface); border: 1px solid var(--crm-border); border-radius: 10px; padding: 2rem; text-align: center; }
+.crm-card h2 { font-size: 1.1rem; font-weight: 600; color: var(--crm-text); margin: 0 0 0.5rem 0; }
+.crm-card p { font-size: 0.9rem; color: var(--crm-muted); margin: 0 0 1.5rem 0; line-height: 1.6; }
+.crm-btn { display: inline-block; padding: 0.5rem 1.25rem; border-radius: 6px; font-size: 0.85rem; text-decoration: none; cursor: pointer; border: 1px solid var(--crm-border); color: var(--crm-muted); background: transparent; font-family: inherit; }
+.crm-btn:hover { color: var(--crm-text); border-color: rgba(255,255,255,0.2); }
+.crm-btn.danger { background: rgba(168,75,60,0.15); border-color: rgba(168,75,60,0.3); color: var(--crm-red); }
+.crm-btn.danger:hover { background: rgba(168,75,60,0.25); }
+</style>
+{% endblock %}
+{% block content %}
+<div class="crm">
+    <nav class="crm-nav">
+        <a href="{% url 'crm:dashboard' %}">Dashboard</a>
+        <a href="{% url 'crm:lists' %}">Listas</a>
+        <a href="{% url 'crm:subscribers' %}">Suscriptores</a>
+        <a href="{% url 'crm:sequences' %}">Secuencias</a>
+        <a href="{% url 'crm:templates' %}">Plantillas</a>
+    </nav>
+
+    <a class="crm-back" href="{% url 'crm:lists' %}">← Volver a listas</a>
+
+    <div class="crm-card">
+        <h2>¿Eliminar "{{ list_obj.name }}"?</h2>
+        <p>
+            Esta acción eliminará la lista y todas las suscripciones asociadas.<br>
+            <strong style="color:var(--crm-red)">Los suscriptores no se eliminarán</strong>, solo su relación con esta lista.
+        </p>
+        <form method="post" style="display:flex;gap:0.75rem;justify-content:center;">
+            {% csrf_token %}
+            <button type="submit" class="crm-btn danger">Sí, eliminar lista</button>
+            <a href="{% url 'crm:lists' %}" class="crm-btn">Cancelar</a>
+        </form>
+    </div>
+</div>
+{% endblock %}
