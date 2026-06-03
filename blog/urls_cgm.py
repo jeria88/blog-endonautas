@@ -14,7 +14,7 @@ URLs:
     /cgm/download/<type>/<id>/    — Descargar piezas generadas
 """
 from django.urls import path
-from . import views
+from . import views_cgm as views
 
 app_name = 'cgm'
 
