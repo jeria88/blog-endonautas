@@ -9,7 +9,7 @@
     <div class="cgm-card" style="margin-bottom: 1.5rem;">
       <div class="cgm-form-group">
         <label>Artículo fuente</label>
-        <select id="sourceArticle" class="cgm-select" onchange="loadArticlePreview()">
+        <select id="sourceArticle" class="cgm-select">
           <option value="">Seleccioná un artículo...</option>
           {% for article in articles %}
           <option value="{{ article.pk }}" {% if selected_article and selected_article.pk == article.pk %}selected{% endif %}>
@@ -46,15 +46,9 @@
         <p style="margin-top: 1rem; color: var(--cgm-text-2);">Generando copy...</p>
       </div>
     </div>
-
-    <!-- Preview del artículo seleccionado -->
-    <div id="articlePreview" class="cgm-card" style="display: none;">
-      <div class="cgm-card-title" id="previewTitle"></div>
-      <div class="cgm-card-body" id="previewIntro"></div>
-    </div>
   </div>
 
-  <!-- Columna derecha: Copys generados -->
+  <!-- Columna derecha: Copys generados con editor -->
   <div>
     <h2 style="font-size: 1.1rem; font-weight: 600; color: var(--cgm-text); margin-bottom: 1rem;">Copys generados</h2>
 
@@ -62,50 +56,114 @@
       {% if social_posts %}
         {% for post in social_posts %}
         <div class="cgm-card" style="margin-bottom: 1rem;" id="post-{{ post.pk }}">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
             <div>
               <span class="cgm-badge cgm-badge-{{ post.status }}">{{ post.get_formato_display }}</span>
               <span style="font-size: 0.75rem; color: var(--cgm-text-2); margin-left: 8px;">{{ post.get_plataforma_display }}</span>
             </div>
-            <button class="cgm-btn cgm-btn-sm cgm-btn-red" onclick="deletePost('{{ post.pk }}')">🗑️</button>
+            <div style="display: flex; gap: 4px;">
+              <button class="cgm-btn cgm-btn-sm" onclick="toggleEdit('{{ post.pk }}')">✏️</button>
+              <button class="cgm-btn cgm-btn-sm cgm-btn-red" onclick="deletePost('{{ post.pk }}')">🗑️</button>
+            </div>
           </div>
 
-          {% if post.formato == 'carrusel' %}
-          <div style="margin-bottom: 8px;">
-            <div style="font-size: 0.7rem; color: var(--cgm-text-3); text-transform: uppercase; margin-bottom: 4px;">Gancho</div>
-            <div style="font-size: 0.85rem; color: var(--cgm-text);">{{ post.carrusel_gancho|truncatechars:100|default:"—" }}</div>
-          </div>
-          <div style="margin-bottom: 8px;">
-            <div style="font-size: 0.7rem; color: var(--cgm-text-3); text-transform: uppercase; margin-bottom: 4px;">Descripción</div>
-            <div style="font-size: 0.85rem; color: var(--cgm-text);">{{ post.carrusel_descripcion|truncatechars:150|default:"—" }}</div>
-          </div>
-          {% elif post.formato == 'reel' %}
-          <div style="margin-bottom: 8px;">
-            <div style="font-size: 0.7rem; color: var(--cgm-text-3); text-transform: uppercase; margin-bottom: 4px;">Texto en pantalla</div>
-            <div style="font-size: 0.85rem; color: var(--cgm-text);">{{ post.reel_gancho|truncatechars:100|default:"—" }}</div>
-          </div>
-          <div style="margin-bottom: 8px;">
-            <div style="font-size: 0.7rem; color: var(--cgm-text-3); text-transform: uppercase; margin-bottom: 4px;">Descripción</div>
-            <div style="font-size: 0.85rem; color: var(--cgm-text);">{{ post.reel_descripcion|truncatechars:150|default:"—" }}</div>
-          </div>
-          {% else %}
-          <div style="margin-bottom: 8px;">
-            <div style="font-size: 0.7rem; color: var(--cgm-text-3); text-transform: uppercase; margin-bottom: 4px;">Contenido</div>
-            <div style="font-size: 0.85rem; color: var(--cgm-text);">{{ post.post_cuerpo|truncatechars:150|default:"—" }}</div>
-          </div>
-          {% endif %}
+          <!-- Vista previa -->
+          <div id="preview-{{ post.pk }}">
+            {% if post.formato == 'carrusel' %}
+            <div style="margin-bottom: 8px;">
+              <div style="font-size: 0.7rem; color: var(--cgm-text-3); text-transform: uppercase; margin-bottom: 4px;">🎣 Gancho</div>
+              <div style="font-size: 0.85rem; color: var(--cgm-text);">{{ post.carrusel_gancho|default:"—" }}</div>
+            </div>
+            <div style="margin-bottom: 8px;">
+              <div style="font-size: 0.7rem; color: var(--cgm-text-3); text-transform: uppercase; margin-bottom: 4px;">📝 Cuerpo (slides)</div>
+              <div style="font-size: 0.85rem; color: var(--cgm-text); white-space: pre-line;">{{ post.carrusel_cuerpo|default:"—" }}</div>
+            </div>
+            <div style="margin-bottom: 8px;">
+              <div style="font-size: 0.7rem; color: var(--cgm-text-3); text-transform: uppercase; margin-bottom: 4px;">📢 CTA</div>
+              <div style="font-size: 0.85rem; color: var(--cgm-text);">{{ post.carrusel_cta|default:"—" }}</div>
+            </div>
+            <div style="margin-bottom: 8px;">
+              <div style="font-size: 0.7rem; color: var(--cgm-text-3); text-transform: uppercase; margin-bottom: 4px;">📄 Descripción</div>
+              <div style="font-size: 0.85rem; color: var(--cgm-text-2);">{{ post.carrusel_descripcion|truncatechars:150|default:"—" }}</div>
+            </div>
+            {% elif post.formato == 'reel' %}
+            <div style="margin-bottom: 8px;">
+              <div style="font-size: 0.7rem; color: var(--cgm-text-3); text-transform: uppercase; margin-bottom: 4px;">🎣 Texto en pantalla</div>
+              <div style="font-size: 0.85rem; color: var(--cgm-text);">{{ post.reel_gancho|default:"—" }}</div>
+            </div>
+            <div style="margin-bottom: 8px;">
+              <div style="font-size: 0.7rem; color: var(--cgm-text-3); text-transform: uppercase; margin-bottom: 4px;">📝 Descripción</div>
+              <div style="font-size: 0.85rem; color: var(--cgm-text);">{{ post.reel_descripcion|truncatechars:150|default:"—" }}</div>
+            </div>
+            {% else %}
+            <div style="margin-bottom: 8px;">
+              <div style="font-size: 0.7rem; color: var(--cgm-text-3); text-transform: uppercase; margin-bottom: 4px;">🎣 Gancho</div>
+              <div style="font-size: 0.85rem; color: var(--cgm-text);">{{ post.post_gancho|default:"—" }}</div>
+            </div>
+            <div style="margin-bottom: 8px;">
+              <div style="font-size: 0.7rem; color: var(--cgm-text-3); text-transform: uppercase; margin-bottom: 4px;">📝 Cuerpo</div>
+              <div style="font-size: 0.85rem; color: var(--cgm-text); white-space: pre-line;">{{ post.post_cuerpo|default:"—" }}</div>
+            </div>
+            <div style="margin-bottom: 8px;">
+              <div style="font-size: 0.7rem; color: var(--cgm-text-3); text-transform: uppercase; margin-bottom: 4px;">📢 CTA</div>
+              <div style="font-size: 0.85rem; color: var(--cgm-text);">{{ post.post_cta|default:"—" }}</div>
+            </div>
+            {% endif %}
 
-          <!-- Botones copiar por red -->
-          <div style="display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap;">
-            {% if post.copy_instagram %}
-            <button class="cgm-btn cgm-btn-sm" onclick="copyText(this, `{{ post.copy_instagram|escapejs }})">📸 Copiar IG</button>
+            <!-- Botones copiar -->
+            <div style="display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap;">
+              {% if post.copy_instagram %}<button class="cgm-btn cgm-btn-sm" onclick="copyText(this, `{{ post.copy_instagram|escapejs }}`)">📸 Copiar IG</button>{% endif %}
+              {% if post.copy_tiktok %}<button class="cgm-btn cgm-btn-sm" onclick="copyText(this, `{{ post.copy_tiktok|escapejs }}`)">🎵 Copiar TT</button>{% endif %}
+              {% if post.copy_linkedin %}<button class="cgm-btn cgm-btn-sm" onclick="copyText(this, `{{ post.copy_linkedin|escapejs }}`)">💼 Copiar LI</button>{% endif %}
+            </div>
+          </div>
+
+          <!-- Editor (oculto por defecto) -->
+          <div id="editor-{{ post.pk }}" style="display: none;">
+            {% if post.formato == 'carrusel' %}
+            <div class="cgm-form-group">
+              <label>Gancho</label>
+              <textarea class="cgm-textarea" id="edit-{{ post.pk }}-gancho" style="min-height: 60px;">{{ post.carrusel_gancho }}</textarea>
+            </div>
+            <div class="cgm-form-group">
+              <label>Cuerpo (slides separadas por ---)</label>
+              <textarea class="cgm-textarea" id="edit-{{ post.pk }}-cuerpo" style="min-height: 100px;">{{ post.carrusel_cuerpo }}</textarea>
+            </div>
+            <div class="cgm-form-group">
+              <label>CTA</label>
+              <textarea class="cgm-textarea" id="edit-{{ post.pk }}-cta" style="min-height: 60px;">{{ post.carrusel_cta }}</textarea>
+            </div>
+            <div class="cgm-form-group">
+              <label>Descripción</label>
+              <textarea class="cgm-textarea" id="edit-{{ post.pk }}-descripcion" style="min-height: 80px;">{{ post.carrusel_descripcion }}</textarea>
+            </div>
+            {% elif post.formato == 'reel' %}
+            <div class="cgm-form-group">
+              <label>Texto en pantalla</label>
+              <textarea class="cgm-textarea" id="edit-{{ post.pk }}-gancho" style="min-height: 60px;">{{ post.reel_gancho }}</textarea>
+            </div>
+            <div class="cgm-form-group">
+              <label>Descripción</label>
+              <textarea class="cgm-textarea" id="edit-{{ post.pk }}-descripcion" style="min-height: 100px;">{{ post.reel_descripcion }}</textarea>
+            </div>
+            {% else %}
+            <div class="cgm-form-group">
+              <label>Gancho</label>
+              <textarea class="cgm-textarea" id="edit-{{ post.pk }}-gancho" style="min-height: 60px;">{{ post.post_gancho }}</textarea>
+            </div>
+            <div class="cgm-form-group">
+              <label>Cuerpo</label>
+              <textarea class="cgm-textarea" id="edit-{{ post.pk }}-cuerpo" style="min-height: 100px;">{{ post.post_cuerpo }}</textarea>
+            </div>
+            <div class="cgm-form-group">
+              <label>CTA</label>
+              <textarea class="cgm-textarea" id="edit-{{ post.pk }}-cta" style="min-height: 60px;">{{ post.post_cta }}</textarea>
+            </div>
             {% endif %}
-            {% if post.copy_tiktok %}
-            <button class="cgm-btn cgm-btn-sm" onclick="copyText(this, `{{ post.copy_tiktok|escapejs }})">🎵 Copiar TT</button>
-            {% endif %}
-            {% if post.copy_linkedin %}
-            <button class="cgm-btn cgm-btn-sm" onclick="copyText(this, `{{ post.copy_linkedin|escapejs }})">💼 Copiar LI</button>
-            {% endif %}
+            <div style="display: flex; gap: 8px;">
+              <button class="cgm-btn cgm-btn-sm cgm-btn-green" onclick="savePost('{{ post.pk }}')">💾 Guardar</button>
+              <button class="cgm-btn cgm-btn-sm" onclick="toggleEdit('{{ post.pk }}')">Cancelar</button>
+            </div>
           </div>
         </div>
         {% endfor %}
@@ -113,7 +171,7 @@
       <div class="cgm-empty" style="padding: 2rem;">
         <div class="cgm-empty-icon">📱</div>
         <h3>Sin copys generados</h3>
-        <p>Seleccioná un artículo y generá contenido para redes</p>
+        <p>Seleccioná un artículo y generá contenido</p>
       </div>
       {% endif %}
     </div>
@@ -133,25 +191,9 @@ function selectPlatform(p) {
   document.querySelectorAll('.platform-btn').forEach(b => b.classList.toggle('active', b.dataset.platform === p));
 }
 
-function loadArticlePreview() {
-  const id = document.getElementById('sourceArticle').value;
-  if (!id) { document.getElementById('articlePreview').style.display = 'none'; return; }
-  // Fetch article info
-  fetch('/cgm/api/article-info/' + id + '/')
-    .then(r => r.json())
-    .then(data => {
-      if (data.ok) {
-        document.getElementById('previewTitle').textContent = data.title;
-        document.getElementById('previewIntro').textContent = data.intro || 'Sin introducción';
-        document.getElementById('articlePreview').style.display = 'block';
-      }
-    });
-}
-
 async function generateRRSS() {
   const articleId = document.getElementById('sourceArticle').value;
   if (!articleId) return showToast('Seleccioná un artículo', 'error');
-
   document.getElementById('rrssLoading').classList.add('active');
   try {
     const resp = await fetch('/cgm/api/generate-rrss/', {
@@ -160,26 +202,51 @@ async function generateRRSS() {
       body: JSON.stringify({article_id: parseInt(articleId), plataforma: currentPlatform, formato: currentFormat})
     });
     const data = await resp.json();
-    if (data.ok) {
-      showToast('Copy generado!', 'success');
-      location.reload();
-    } else {
-      showToast('Error: ' + (data.error || 'Desconocido'), 'error');
-    }
-  } catch(e) {
-    showToast('Error de red', 'error');
-  }
+    if (data.ok) { showToast('Copy generado!', 'success'); location.reload(); }
+    else showToast('Error: ' + (data.error || ''), 'error');
+  } catch(e) { showToast('Error de red', 'error'); }
   document.getElementById('rrssLoading').classList.remove('active');
 }
 
 function deletePost(id) {
-  if (!confirm('¿Eliminar este post?')) return;
+  if (!confirm('¿Eliminar?')) return;
   fetch('/cgm/api/delete-social-post/' + id + '/', {
     method: 'POST', headers: {'X-CSRFToken': '{{ csrf_token }}'}
   }).then(r => r.json()).then(data => {
     if (data.ok) { document.getElementById('post-' + id).remove(); showToast('Eliminado', 'success'); }
     else showToast('Error', 'error');
   });
+}
+
+function toggleEdit(id) {
+  const preview = document.getElementById('preview-' + id);
+  const editor = document.getElementById('editor-' + id);
+  if (editor.style.display === 'none') {
+    preview.style.display = 'none';
+    editor.style.display = 'block';
+  } else {
+    preview.style.display = 'block';
+    editor.style.display = 'none';
+  }
+}
+
+async function savePost(id) {
+  const data = {
+    gancho: document.getElementById('edit-' + id + '-gancho')?.value || '',
+    cuerpo: document.getElementById('edit-' + id + '-cuerpo')?.value || '',
+    cta: document.getElementById('edit-' + id + '-cta')?.value || '',
+    descripcion: document.getElementById('edit-' + id + '-descripcion')?.value || '',
+  };
+  try {
+    const resp = await fetch('/cgm/api/save-social-post/' + id + '/', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+      body: JSON.stringify(data)
+    });
+    const result = await resp.json();
+    if (result.ok) { showToast('Guardado', 'success'); location.reload(); }
+    else showToast('Error: ' + (result.error || ''), 'error');
+  } catch(e) { showToast('Error de red', 'error'); }
 }
 </script>
 {% endblock %}

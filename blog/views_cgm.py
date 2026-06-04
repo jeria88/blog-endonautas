@@ -193,12 +193,12 @@ def api_generate_rrss(request):
     try:
         if formato == 'carrusel':
             copy_data = generate_carrusel_copy(article)
-            slides = copy_data.get('slides', [])
+            cuerpo_slides = copy_data.get('cuerpo', copy_data.get('slides', []))
             post = SocialPost.objects.create(
                 generated_article=article, plataforma=plataforma, formato=formato,
-                carrusel_gancho=slides[0] if slides else '',
-                carrusel_cuerpo='\n---\n'.join(slides[1:]) if len(slides) > 1 else '',
-                carrusel_cta='Descubrí más en endonautas.cl',
+                carrusel_gancho=copy_data.get('gancho', ''),
+                carrusel_cuerpo='\n---\n'.join(cuerpo_slides) if isinstance(cuerpo_slides, list) else str(cuerpo_slides),
+                carrusel_cta=copy_data.get('cta', ''),
                 carrusel_hashtags=copy_data.get('hashtags', ''),
                 carrusel_descripcion=copy_data.get('descripcion', ''),
                 copy_instagram=copy_data.get('descripcion', '') + '\n\n' + copy_data.get('hashtags', ''),
@@ -246,6 +246,49 @@ def api_generate_rrss(request):
 def api_delete_social_post(request, pk):
     try:
         SocialPost.objects.get(pk=pk).delete()
+        return JsonResponse({'ok': True})
+    except SocialPost.DoesNotExist:
+        return JsonResponse({'error': 'No encontrado'}, status=404)
+
+
+@staff_member_required
+@require_POST
+def api_save_social_post(request, pk):
+    """API: Guarda los cambios de un post RRSS editado."""
+    try:
+        post = SocialPost.objects.get(pk=pk)
+        data = json.loads(request.body)
+        formato = post.formato
+
+        if formato == 'carrusel':
+            post.carrusel_gancho = data.get('gancho', post.carrusel_gancho)
+            post.carrusel_cuerpo = data.get('cuerpo', post.carrusel_cuerpo)
+            post.carrusel_cta = data.get('cta', post.carrusel_cta)
+            post.carrusel_descripcion = data.get('descripcion', post.carrusel_descripcion)
+        elif formato == 'reel':
+            post.reel_gancho = data.get('gancho', post.reel_gancho)
+            post.reel_descripcion = data.get('descripcion', post.reel_descripcion)
+        else:
+            post.post_gancho = data.get('gancho', post.post_gancho)
+            post.post_cuerpo = data.get('cuerpo', post.post_cuerpo)
+            post.post_cta = data.get('cta', post.post_cta)
+
+        # Reconstruir copy por red social
+        if formato == 'carrusel':
+            base = post.carrusel_descripcion or ''
+            tags = post.carrusel_hashtags or ''
+        elif formato == 'reel':
+            base = post.reel_descripcion or ''
+            tags = post.reel_hashtags or ''
+        else:
+            base = (post.post_cuerpo or '') + '\n\n' + (post.post_cta or '')
+            tags = post.post_hashtags or ''
+
+        full = base + '\n\n' + tags if tags else base
+        post.copy_instagram = full
+        post.copy_tiktok = full
+        post.copy_linkedin = full
+        post.save()
         return JsonResponse({'ok': True})
     except SocialPost.DoesNotExist:
         return JsonResponse({'error': 'No encontrado'}, status=404)

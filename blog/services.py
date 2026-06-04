@@ -247,21 +247,21 @@ INTRO: {content['intro']}
 CONTENIDO: {content['body'][:2000]}
 KEYWORDS: {content['keywords']}
 
-El carrusel debe tener:
-1. Portada (hook que detenga el scroll)
-2. 3-5 slides de contenido (una idea por slide, desarrollada)
-3. Slide de cierre con CTA hacia endonautas.cl
+El carrusel debe tener esta estructura:
+1. GANCHO (portada): Frase que detiene el scroll, máximo 150 chars. Debe ser impactante, pregunta provocadora o afirmación contraintuitiva.
+2. CUERPO (3-5 slides): Cada slide desarrolla UNA idea clave del artículo. Máximo 200 chars por slide. Texto claro y directo.
+3. CTA (slide cierre): Llamada a la acción que invita a ir a endonautas.cl. Máximo 150 chars.
 
-Devuelve JSON:
+Devuelve JSON exactamente así:
 {{
-    "slides": [
-        "Texto portada (hook potente, máx 150 chars)",
-        "Texto slide 2 (desarrollo idea 1, máx 200 chars)",
-        "Texto slide 3 (desarrollo idea 2, máx 200 chars)",
-        "Texto slide 4 (desarrollo idea 3, máx 200 chars)",
-        "Texto cierre con CTA (máx 150 chars)"
+    "gancho": "Texto del gancho/portada (máx 150 chars)",
+    "cuerpo": [
+        "Slide 2: idea 1 (máx 200 chars)",
+        "Slide 3: idea 2 (máx 200 chars)",
+        "Slide 4: idea 3 (máx 200 chars)"
     ],
-    "descripcion": "Descripción del carrusel para Instagram (máx 2200 chars, incluye CTA y pregunta final)",
+    "cta": "Texto CTA cierre (máx 150 chars, incluye mención a endonautas.cl)",
+    "descripcion": "Descripción completa para Instagram (máx 2200 chars, incluye pregunta final y CTA)",
     "hashtags": "#hashtag1 #hashtag2 #hashtag3 (máx 15 hashtags relevantes)"
 }}"""
 

@@ -75,3 +75,6 @@ LOGGING = {
 DEEPSEEK_API_KEY = os.environ.get('DEEPSEEK_API_KEY', '')
 DEEPSEEK_BASE_URL = 'https://api.deepseek.com'
 DEEPSEEK_MODEL = 'deepseek-chat'
+
+# Pexels API para imágenes de artículos
+PEXELS_API_KEY = os.environ.get('PEXELS_API_KEY', '')
