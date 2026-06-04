@@ -1,155 +1,133 @@
-{% extends "admin/base_site.html" %}
-{% load static %}
+{% extends "blog/cgm/base.html" %}
 
-{% block title %}CGM — Content Generation Management{% endblock %}
-
-{% block extrahead %}
-<style>
-:root {
-  --cgm-bg: #0c0c1a;
-  --cgm-surface: #111128;
-  --cgm-surface-alt: #1a1a35;
-  --cgm-border: rgba(255,255,255,0.06);
-  --cgm-text: #e8e6f0;
-  --cgm-muted: #6b6880;
-  --cgm-accent: #c4813a;
-  --cgm-green: #4caf7d;
-  --cgm-red: #e06060;
-  --cgm-blue: #5b8def;
-  --cgm-radius: 8px;
-  --cgm-radius-lg: 12px;
-}
-
-.cgm-wrap { padding: 2rem; max-width: 1400px; margin: 0 auto; }
-
-/* Header */
-.cgm-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-.cgm-header h1 { font-size: 1.6rem; font-weight: 700; color: var(--cgm-text); margin: 0; }
-.cgm-header h1 span { color: var(--cgm-accent); }
-
-/* Stats */
-.cgm-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-.cgm-stat { background: var(--cgm-surface); border: 1px solid var(--cgm-border); border-radius: var(--cgm-radius-lg); padding: 1.25rem; text-align: center; }
-.cgm-stat-n { font-size: 2rem; font-weight: 700; color: var(--cgm-text); line-height: 1; }
-.cgm-stat-l { font-size: 0.7rem; color: var(--cgm-muted); margin-top: 0.5rem; text-transform: uppercase; letter-spacing: 0.06em; }
-
-/* Grid principal */
-.cgm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-
-/* Cards */
-.cgm-card { background: var(--cgm-surface); border: 1px solid var(--cgm-border); border-radius: var(--cgm-radius-lg); padding: 1.5rem; }
-.cgm-card-title { font-size: 0.95rem; font-weight: 600; color: var(--cgm-text); margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--cgm-border); display: flex; justify-content: space-between; align-items: center; }
-
-/* Botones */
-.cgm-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; border-radius: var(--cgm-radius); font-size: 0.85rem; font-weight: 500; text-decoration: none; cursor: pointer; border: 1px solid var(--cgm-border); color: var(--cgm-muted); background: transparent; transition: all 0.15s; font-family: inherit; }
-.cgm-btn:hover { color: var(--cgm-text); border-color: rgba(255,255,255,0.2); }
-.cgm-btn-primary { background: var(--cgm-accent); border-color: var(--cgm-accent); color: #000; }
-.cgm-btn-primary:hover { background: #d4914a; color: #000; }
-.cgm-btn-sm { padding: 5px 12px; font-size: 0.78rem; }
-.cgm-btn-green { background: var(--cgm-green); border-color: var(--cgm-green); color: #000; }
-
-/* Tabla */
-.cgm-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-.cgm-table th { padding: 10px 12px; text-align: left; font-size: 0.7rem; color: var(--cgm-muted); text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid var(--cgm-border); }
-.cgm-table td { padding: 10px 12px; color: var(--cgm-text); border-bottom: 1px solid var(--cgm-border); }
-.cgm-table tr:hover td { background: rgba(255,255,255,0.02); }
-
-/* Status pills */
-.pill { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 0.72rem; font-weight: 600; }
-.pill-draft { background: rgba(107,104,128,0.2); color: #9a96a8; }
-.pill-review { background: rgba(224,192,64,0.2); color: #e0c040; }
-.pill-approved { background: rgba(76,175,125,0.2); color: #4caf7d; }
-.pill-published { background: rgba(91,141,239,0.2); color: #5b8def; }
-.pill-rejected { background: rgba(224,96,96,0.2); color: #e06060; }
-
-/* Links */
-.cgm-link { color: var(--cgm-accent); text-decoration: none; }
-.cgm-link:hover { text-decoration: underline; }
-
-/* Empty state */
-.cgm-empty { text-align: center; padding: 2rem; color: var(--cgm-muted); font-size: 0.85rem; }
-
-/* Responsive */
-@media (max-width: 768px) { .cgm-grid { grid-template-columns: 1fr; } }
-</style>
-{% endblock %}
-
-{% block content %}
-<div class="cgm-wrap">
-
-  <!-- Header -->
-  <div class="cgm-header">
-    <h1>✦ CGM <span>Content Generation</span></h1>
-    <a href="{% url 'cgm:generate' %}" class="cgm-btn cgm-btn-primary">+ Nuevo Contenido</a>
+{% block cgm_content %}
+<!-- Stats -->
+<div class="cgm-stats">
+  <div class="cgm-stat">
+    <div class="cgm-stat-n">{{ total_articles }}</div>
+    <div class="cgm-stat-l">Artículos generados</div>
   </div>
-
-  <!-- Stats -->
-  <div class="cgm-stats">
-    <div class="cgm-stat">
-      <div class="cgm-stat-n">{{ total_articles }}</div>
-      <div class="cgm-stat-l">Artículos generados</div>
-    </div>
-    <div class="cgm-stat">
-      <div class="cgm-stat-n">{{ total_social }}</div>
-      <div class="cgm-stat-l">Posts RRSS</div>
-    </div>
-    <div class="cgm-stat">
-      <div class="cgm-stat-n">{{ topics|length }}</div>
-      <div class="cgm-stat-l">Temas SEO</div>
-    </div>
+  <div class="cgm-stat">
+    <div class="cgm-stat-n">{{ total_social }}</div>
+    <div class="cgm-stat-l">Posts RRSS</div>
   </div>
-
-  <!-- Grid -->
-  <div class="cgm-grid">
-
-    <!-- Artículos recientes -->
-    <div class="cgm-card">
-      <div class="cgm-card-title">
-        📝 Artículos generados
-        <a href="{% url 'cgm:generate' %}" class="cgm-btn cgm-btn-sm">+ Nuevo</a>
-      </div>
-      {% if articles %}
-      <table class="cgm-table">
-        <thead><tr><th>Título</th><th>Estado</th><th>Fecha</th></tr></thead>
-        <tbody>
-          {% for article in articles %}
-          <tr>
-            <td><a href="{% url 'cgm:article_detail' article.pk %}" class="cgm-link">{{ article.title|truncatechars:40 }}</a></td>
-            <td><span class="pill pill-{{ article.status }}">{{ article.get_status_display }}</span></td>
-            <td class="text-muted">{{ article.created_at|date:"d/m" }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      {% else %}
-      <div class="cgm-empty">Sin artículos generados todavía</div>
-      {% endif %}
-    </div>
-
-    <!-- Posts RRSS -->
-    <div class="cgm-card">
-      <div class="cgm-card-title">
-        📱 Posts RRSS
-        <span class="text-sm text-muted">{{ social_posts|length }} posts</span>
-      </div>
-      {% if social_posts %}
-      <table class="cgm-table">
-        <thead><tr><th>Fuente</th><th>Formato</th><th>Estado</th></tr></thead>
-        <tbody>
-          {% for post in social_posts %}
-          <tr>
-            <td><a href="{% url 'cgm:social_detail' post.pk %}" class="cgm-link">{{ post.fuente_titulo|truncatechars:30 }}</a></td>
-            <td>{{ post.get_formato_display }}</td>
-            <td><span class="pill pill-{{ post.status }}">{{ post.get_status_display }}</span></td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      {% else %}
-      <div class="cgm-empty">Sin posts RRSS generados</div>
-      {% endif %}
-    </div>
-
+  <div class="cgm-stat">
+    <div class="cgm-stat-n">{{ total_published }}</div>
+    <div class="cgm-stat-l">Publicados en blog</div>
+  </div>
+  <div class="cgm-stat">
+    <div class="cgm-stat-n">{{ topics_count }}</div>
+    <div class="cgm-stat-l">Temas SEO</div>
   </div>
 </div>
+
+<!-- Quick actions -->
+<div style="display: flex; gap: 12px; margin-bottom: 2rem; flex-wrap: wrap;">
+  <button class="cgm-btn cgm-btn-primary" onclick="openModal('articleModal')">+ Nuevo Artículo</button>
+  <a href="{% url 'cgm:articles' %}" class="cgm-btn">Ver todos los artículos →</a>
+  <a href="{% url 'cgm:rrss' %}" class="cgm-btn">Generar RRSS →</a>
+</div>
+
+<!-- Recent articles -->
+<h2 style="font-size: 1.1rem; font-weight: 600; color: var(--cgm-text); margin-bottom: 1rem;">Últimos artículos</h2>
+{% if recent_articles %}
+<div class="cgm-grid">
+  {% for article in recent_articles %}
+  <div class="cgm-card">
+    <div class="cgm-card-title">{{ article.title|truncatechars:60 }}</div>
+    <div class="cgm-card-meta">
+      <span class="cgm-badge cgm-badge-{{ article.status }}">{{ article.get_status_display }}</span>
+      <span style="margin-left: 8px;">{{ article.source_type }}</span>
+      <span style="margin-left: 8px; color: var(--cgm-text-3);">{{ article.created_at|date:"d/m/Y" }}</span>
+    </div>
+    <div class="cgm-card-body">{{ article.intro|truncatechars:120|default:"Sin introducción" }}</div>
+    <div class="cgm-card-actions">
+      <button class="cgm-btn cgm-btn-sm" onclick="editArticle('{{ article.pk }}')">✏️ Editar</button>
+      <a href="{% url 'cgm:rrss' %}?article={{ article.pk }}" class="cgm-btn cgm-btn-sm">📱 Generar RRSS</a>
+      {% if article.status == 'approved' %}
+      <button class="cgm-btn cgm-btn-sm cgm-btn-green" onclick="publishToBlog('{{ article.pk }}')">📤 Publicar</button>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="cgm-empty">
+  <div class="cgm-empty-icon">📝</div>
+  <h3>Sin artículos todavía</h3>
+  <p>Creá tu primer artículo con IA o escribilo manualmente</p>
+  <button class="cgm-btn cgm-btn-primary" onclick="openModal('articleModal')">+ Crear artículo</button>
+</div>
+{% endif %}
+
+<!-- Article Modal -->
+<div class="cgm-modal-overlay" id="articleModal">
+  <div class="cgm-modal">
+    <div class="cgm-modal-header">
+      <h2 id="articleModalTitle">Nuevo Artículo</h2>
+      <button class="cgm-modal-close" onclick="closeModal('articleModal')">&times;</button>
+    </div>
+    <div class="cgm-modal-body">
+      <div class="cgm-form-group">
+        <label>Tema del artículo</label>
+        <input type="text" id="articleTopic" class="cgm-input" placeholder="Elegí un tema o escribilo...">
+      </div>
+      <div class="cgm-form-group">
+        <label> Temas SEO sugeridos</label>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;">
+          {% for topic in suggested_topics %}
+          <button class="cgm-btn cgm-btn-sm" onclick="document.getElementById('articleTopic').value='{{ topic.title|escapejs }}'" title="{{ topic.keywords }}">
+            {{ topic.title|truncatechars:30 }}
+          </button>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="cgm-loading" id="articleLoading">
+        <div class="cgm-spinner"></div>
+        <p style="margin-top: 1rem; color: var(--cgm-text-2);">Generando artículo con IA...</p>
+      </div>
+    </div>
+    <div class="cgm-modal-footer">
+      <button class="cgm-btn" onclick="closeModal('articleModal')">Cancelar</button>
+      <button class="cgm-btn cgm-btn-primary" onclick="generateArticle()">⚡ Generar con IA</button>
+    </div>
+  </div>
+</div>
+
+<script>
+async function generateArticle() {
+  const topic = document.getElementById('articleTopic').value.trim();
+  if (!topic) return showToast('Escribí un tema', 'error');
+  document.getElementById('articleLoading').classList.add('active');
+  try {
+    const resp = await fetch('/cgm/api/generate-article/', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+      body: JSON.stringify({topic})
+    });
+    const data = await resp.json();
+    if (data.ok) {
+      showToast('Artículo generado: ' + data.title, 'success');
+      location.href = '/cgm/article/' + data.article_id + '/edit/';
+    } else {
+      showToast('Error: ' + (data.error || 'Desconocido'), 'error');
+    }
+  } catch(e) {
+    showToast('Error de red: ' + e, 'error');
+  }
+  document.getElementById('articleLoading').classList.remove('active');
+}
+
+function editArticle(id) { location.href = '/cgm/article/' + id + '/edit/'; }
+function publishToBlog(id) {
+  if (!confirm('¿Publicar este artículo en el blog?')) return;
+  fetch('/cgm/api/publish-article/' + id + '/', {
+    method: 'POST',
+    headers: {'X-CSRFToken': '{{ csrf_token }}'}
+  }).then(r => r.json()).then(data => {
+    if (data.ok) { showToast('Publicado: ' + data.msg, 'success'); location.reload(); }
+    else showToast('Error: ' + (data.error || 'Desconocido'), 'error');
+  });
+}
+</script>
 {% endblock %}

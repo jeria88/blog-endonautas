@@ -1,35 +1,22 @@
 """
 CGM — Content Generation Management
-Panel de generación de contenido para Endonautas.
-
-URLs:
-    /cgm/                    — Dashboard principal
-    /cgm/generate/           — Generar nuevo contenido
-    /cgm/article/<id>/       — Detalle de artículo generado
-    /cgm/social/<id>/        — Detalle de post RRSS
-    /cgm/api/generate-article/    — API: generar artículo
-    /cgm/api/generate-rrss/       — API: generar copy RRSS
-    /cgm/api/generate-carrusel/   — API: generar carrusel PNG
-    /cgm/api/generate-reel/       — API: generar reel video
-    /cgm/download/<type>/<id>/    — Descargar piezas generadas
 """
 from django.urls import path
-from . import views_cgm as views
+from . import views_cgm
 
 app_name = 'cgm'
 
 urlpatterns = [
-    path('', views.cgm_dashboard, name='dashboard'),
-    path('generate/', views.cgm_generate, name='generate'),
-    path('article/<int:pk>/', views.cgm_article_detail, name='article_detail'),
-    path('social/<int:pk>/', views.cgm_social_detail, name='social_detail'),
+    path('', views_cgm.cgm_dashboard, name='dashboard'),
+    path('articles/', views_cgm.cgm_articles, name='articles'),
+    path('article/<int:pk>/edit/', views_cgm.cgm_article_edit, name='article_edit'),
+    path('rrss/', views_cgm.cgm_rrss, name='rrss'),
 
     # API endpoints
-    path('api/generate-article/', views.api_generate_article, name='api_generate_article'),
-    path('api/generate-rrss/', views.api_generate_rrss, name='api_generate_rrss'),
-    path('api/generate-carrusel/', views.api_generate_carrusel, name='api_generate_carrusel'),
-    path('api/generate-reel/', views.api_generate_reel, name='api_generate_reel'),
-
-    # Descargas
-    path('download/<str:asset_type>/<int:pk>/', views.cgm_download, name='download'),
+    path('api/generate-article/', views_cgm.api_generate_article, name='api_generate_article'),
+    path('api/save-article/<int:pk>/', views_cgm.api_save_article, name='api_save_article'),
+    path('api/delete-article/<int:pk>/', views_cgm.api_delete_article, name='api_delete_article'),
+    path('api/publish-article/<int:pk>/', views_cgm.api_publish_article, name='api_publish_article'),
+    path('api/generate-rrss/', views_cgm.api_generate_rrss, name='api_generate_rrss'),
+    path('api/delete-social-post/<int:pk>/', views_cgm.api_delete_social_post, name='api_delete_social_post'),
 ]
