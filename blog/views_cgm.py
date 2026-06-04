@@ -311,14 +311,48 @@ def api_generate_slides(request):
     try:
         brand_template = Path(settings.BASE_DIR).parent / 'brand' / 'social' / 'plantilla' / '05-post-completo'
         sys.path.insert(0, str(brand_template))
-        from generate_v4 import generate_carousel_slides
+        from layouts import render_slide_html, LAYOUTS
         output_dir = Path(settings.MEDIA_ROOT) / 'slides' / str(article_id)
         output_dir.mkdir(parents=True, exist_ok=True)
-        generated = generate_carousel_slides(
-            slides=slides, article_title=article.title,
-            template_style=template_style, bg_image_url=bg_image_url,
-            output_dir=str(output_dir),
-        )
+
+        generated = []
+        for i, slide_data in enumerate(slides):
+            layout_id = slide_data.get('layout', 'portada')
+            slide_text = slide_data.get('text', '')
+            slide_bg = slide_data.get('bg_url', bg_image_url)
+
+            # Renderizar HTML de la slide
+            html_content = render_slide_html(
+                layout_id=layout_id,
+                data={"title": slide_text, "body": slide_text, "quote": slide_text, **slide_data},
+                slide_num=i+1,
+                total=len(slides),
+                bg_url=slide_bg
+            )
+
+            # Guardar HTML
+            html_path = output_dir / f"slide-{i+1:02d}.html"
+            html_path.write_text(html_content, encoding='utf-8')
+
+            # Renderizar PNG con Chrome
+            jpg_path = output_dir / f"slide-{i+1:02d}.jpg"
+            try:
+                chrome_render(str(html_path), str(jpg_path))
+                png_path = Path(str(jpg_path).replace('.jpg', '.png'))
+                generated.append(str(png_path if png_path.exists() else jpg_path))
+            except Exception as e:
+                logger.error(f"Error renderizando slide {i+1}: {e}")
+                generated.append(str(html_path))  # Fallback a HTML
+
+        article.slides_data = {
+            'slides': slides,
+            'template_style': template_style,
+            'bg_image_url': bg_image_url,
+            'generated_files': generated,
+        }
+        article.save()
+
+        return JsonResponse({'ok': True, 'files': generated})
         article.slides_data = {
             'slides': slides, 'template_style': template_style,
             'bg_image_url': bg_image_url, 'generated_files': generated,
