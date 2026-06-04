@@ -70,8 +70,8 @@ class Migration(migrations.Migration):
                 'verbose_name_plural': 'Eventos de email',
                 'ordering': ['-occurred_at'],
                 'indexes': [
-                    models.Index(fields=['subscriber', 'event_type']),
-                    models.Index(fields=['event_type', 'occurred_at']),
+                    models.Index(fields=['subscriber', 'event_type'], name='emailevent_sub_evt_idx'),
+                    models.Index(fields=['event_type', 'occurred_at'], name='emailevent_evt_occ_idx'),
                 ],
             },
         ),
