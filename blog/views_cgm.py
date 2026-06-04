@@ -46,9 +46,35 @@ def cgm_dashboard(request):
 
 
 @staff_member_required
-def cgm_workspace(request):
-    """Workspace principal del CGM con tabs: Artículo → Copy → Slides."""
+def cgm_articles(request):
+    """Lista de artículos con CRUD."""
     articles = GeneratedArticle.objects.all()
+    suggested_topics = [
+        {'title': get_topic_title(t), 'capa': t[1], 'keywords': t[2]}
+        for t in BLOG_TOPICS[:12]
+    ]
+    context = {
+        'tab': 'articles',
+        'articles': articles,
+        'suggested_topics': suggested_topics,
+    }
+    return render(request, 'blog/cgm/articles.html', context)
+
+
+@staff_member_required
+def cgm_article_edit(request, pk):
+    """Editor de un artículo."""
+    article = get_object_or_404(GeneratedArticle, pk=pk)
+    return render(request, 'blog/cgm/article_edit.html', {
+        'tab': 'articles',
+        'article': article,
+    })
+
+
+@staff_member_required
+def cgm_rrss(request):
+    """Generador de contenido RRSS + Editor de slides."""
+    articles = GeneratedArticle.objects.filter(status__in=['draft', 'review', 'approved'])
     social_posts = SocialPost.objects.all()[:20]
     selected_article = None
     article_id = request.GET.get('article')
@@ -58,16 +84,12 @@ def cgm_workspace(request):
         except GeneratedArticle.DoesNotExist:
             pass
     context = {
-        'tab': 'workspace',
+        'tab': 'rrss',
         'articles': articles,
         'social_posts': social_posts,
         'selected_article': selected_article,
-        'suggested_topics': [
-            {'title': get_topic_title(t), 'capa': t[1], 'keywords': t[2]}
-            for t in BLOG_TOPICS[:12]
-        ],
     }
-    return render(request, 'blog/cgm/workspace.html', context)
+    return render(request, 'blog/cgm/rrss.html', context)
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -268,6 +290,58 @@ def api_save_social_post(request, pk):
 
 
 @staff_member_required
+def api_slide_preview(request):
+    """GET /cgm/api/slide-preview/?template_id=portada&title=...&body=..."""
+    template_id = request.GET.get('template_id', 'portada')
+    title = request.GET.get('title', '')
+    body = request.GET.get('body', '')
+    cta = request.GET.get('cta', 'Deslizá →')
+    tag = request.GET.get('tag', '')
+    bg_url = request.GET.get('bg_url', '')
+
+    template_path = Path(settings.BASE_DIR) / 'blog' / 'slide_templates' / f'slide-{_get_template_index(template_id):02d}.html'
+    if not template_path.exists():
+        return HttpResponse('Template no encontrado', content_type='text/plain', status=404)
+
+    html = template_path.read_text(encoding='utf-8')
+    html = html.replace('{{TITLE}}', title)
+    html = html.replace('{{BODY}}', body)
+    html = html.replace('{{CTA}}', cta)
+    html = html.replace('{{TAG}}', tag)
+    html = html.replace('{{BG_URL}}', bg_url)
+
+    return HttpResponse(html, content_type='text/html')
+
+
+def _get_template_index(template_id):
+    mapping = {'portada': 1, 'problema': 2, 'diferenciacion': 3, 'definicion': 4, 'cta': 5}
+    return mapping.get(template_id, 1)
+
+
+@staff_member_required
+@require_POST
+def api_save_slides(request):
+    """POST /cgm/api/save-slides/ — Guarda los slides_data de un artículo."""
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        data = request.POST
+
+    article_id = data.get('article_id')
+    if not article_id:
+        return JsonResponse({'error': 'Falta article_id'}, status=400)
+
+    try:
+        article = GeneratedArticle.objects.get(pk=article_id)
+    except GeneratedArticle.DoesNotExist:
+        return JsonResponse({'error': 'No encontrado'}, status=404)
+
+    article.slides_data = data.get('slides', [])
+    article.save()
+    return JsonResponse({'ok': True})
+
+
+@staff_member_required
 @require_POST
 def api_generate_slides(request):
     """API: Genera PNGs de slides para un artículo."""
@@ -353,60 +427,3 @@ def api_download_slides(request, pk):
             if fp.exists():
                 zf.write(str(fp), arcname=fp.name)
     return FileResponse(open(str(zip_path), 'rb'), as_attachment=True, filename=f'{article.slug}-slides.zip')
-
-
-@staff_member_required
-def api_slide_preview(request):
-    """GET /cgm/api/slide-preview/?template_id=portada&title=...&body=...&cta=...&tag=...
-    Devuelve el HTML del template con los valores inyectados."""
-    template_id = request.GET.get('template_id', 'portada')
-    title = request.GET.get('title', '')
-    body = request.GET.get('body', '')
-    cta = request.GET.get('cta', 'Deslizá →')
-    tag = request.GET.get('tag', '')
-    bg_url = request.GET.get('bg_url', '')
-
-    # Cargar template HTML
-    template_path = Path(settings.BASE_DIR) / 'blog' / 'slide_templates' / f'slide-{_get_template_index(template_id):02d}.html'
-    if not template_path.exists():
-        return HttpResponse('Template no encontrado', content_type='text/plain', status=404)
-
-    html = template_path.read_text(encoding='utf-8')
-
-    # Reemplazar placeholders
-    html = html.replace('{{TITLE}}', title)
-    html = html.replace('{{BODY}}', body)
-    html = html.replace('{{CTA}}', cta)
-    html = html.replace('{{TAG}}', tag)
-    html = html.replace('{{BG_URL}}', bg_url)
-
-    return HttpResponse(html, content_type='text/html')
-
-
-def _get_template_index(template_id):
-    """Devuelve el número de archivo para un template_id."""
-    mapping = {'portada': 1, 'problema': 2, 'diferenciacion': 3, 'definicion': 4, 'cta': 5}
-    return mapping.get(template_id, 1)
-
-
-@staff_member_required
-@require_POST
-def api_save_slides(request):
-    """POST /cgm/api/save-slides/ — Guarda los slides_data de un artículo."""
-    try:
-        data = json.loads(request.body)
-    except json.JSONDecodeError:
-        data = request.POST
-
-    article_id = data.get('article_id')
-    if not article_id:
-        return JsonResponse({'error': 'Falta article_id'}, status=400)
-
-    try:
-        article = GeneratedArticle.objects.get(pk=article_id)
-    except GeneratedArticle.DoesNotExist:
-        return JsonResponse({'error': 'No encontrado'}, status=404)
-
-    article.slides_data = data.get('slides', [])
-    article.save()
-    return JsonResponse({'ok': True})

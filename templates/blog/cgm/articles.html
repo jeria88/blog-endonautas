@@ -6,13 +6,12 @@
     <span class="cgm-search-icon">🔍</span>
     <input type="text" id="searchInput" placeholder="Buscar artículos..." oninput="filterArticles()">
   </div>
-  <select id="statusFilter" class="cgm-select" style="width: auto;" onchange="filterArticles()">
+  <select id="statusFilter" class="cgm-select" style="width:auto;" onchange="filterArticles()">
     <option value="">Todos los estados</option>
     <option value="draft">Borrador</option>
     <option value="review">En revisión</option>
     <option value="approved">Aprobado</option>
     <option value="published">Publicado</option>
-    <option value="rejected">Rechazado</option>
   </select>
   <button class="cgm-btn cgm-btn-primary" onclick="openModal('articleModal')">+ Nuevo Artículo</button>
 </div>
@@ -21,17 +20,15 @@
 <div class="cgm-grid" id="articlesGrid">
   {% for article in articles %}
   <div class="cgm-card" data-status="{{ article.status }}" data-title="{{ article.title|lower }}">
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
       <span class="cgm-badge cgm-badge-{{ article.status }}">{{ article.get_status_display }}</span>
-      <span style="font-size: 0.75rem; color: var(--cgm-text-3);">{{ article.created_at|date:"d/m" }}</span>
+      <span style="font-size:0.75rem;color:var(--cgm-text-3);">{{ article.created_at|date:"d/m" }}</span>
     </div>
     <div class="cgm-card-title">{{ article.title|truncatechars:50 }}</div>
-    <div class="cgm-card-meta">
-      {{ article.source_type }} · {{ article.keywords|truncatechars:40 }}
-    </div>
+    <div class="cgm-card-meta">{{ article.source_type }} · {{ article.keywords|truncatechars:40 }}</div>
     <div class="cgm-card-body">{{ article.intro|truncatechars:100|default:"Sin introducción" }}</div>
     <div class="cgm-card-actions">
-      <button class="cgm-btn cgm-btn-sm" onclick="location.href='/cgm/article/{{ article.pk }}/edit/'">✏️ Editar</button>
+      <a href="{% url 'cgm:article_edit' article.pk %}" class="cgm-btn cgm-btn-sm">✏️ Editar</a>
       <a href="{% url 'cgm:rrss' %}?article={{ article.pk }}" class="cgm-btn cgm-btn-sm">📱 RRSS</a>
       {% if article.status == 'approved' %}
       <button class="cgm-btn cgm-btn-sm cgm-btn-green" onclick="publishToBlog('{{ article.pk }}')">📤 Publicar</button>
@@ -50,7 +47,7 @@
 </div>
 {% endif %}
 
-<!-- Article Modal (same as dashboard) -->
+<!-- Article Modal -->
 <div class="cgm-modal-overlay" id="articleModal">
   <div class="cgm-modal">
     <div class="cgm-modal-header">
@@ -64,17 +61,15 @@
       </div>
       <div class="cgm-form-group">
         <label>Temas SEO sugeridos</label>
-        <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;">
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">
           {% for topic in suggested_topics %}
-          <button class="cgm-btn cgm-btn-sm" onclick="document.getElementById('articleTopic').value='{{ topic.title|escapejs }}'" title="{{ topic.keywords }}">
-            {{ topic.title|truncatechars:25 }}
-          </button>
+          <button class="cgm-btn cgm-btn-sm" onclick="document.getElementById('articleTopic').value='{{ topic.title|escapejs }}'">{{ topic.title|truncatechars:25 }}</button>
           {% endfor %}
         </div>
       </div>
       <div class="cgm-loading" id="articleLoading">
         <div class="cgm-spinner"></div>
-        <p style="margin-top: 1rem; color: var(--cgm-text-2);">Generando artículo con IA...</p>
+        <p style="margin-top:1rem;color:var(--cgm-text-2);">Generando artículo con IA...</p>
       </div>
     </div>
     <div class="cgm-modal-footer">
@@ -108,12 +103,8 @@ async function generateArticle() {
     if (data.ok) {
       showToast('Artículo generado!', 'success');
       location.href = '/cgm/article/' + data.article_id + '/edit/';
-    } else {
-      showToast('Error: ' + (data.error || 'Desconocido'), 'error');
-    }
-  } catch(e) {
-    showToast('Error de red', 'error');
-  }
+    } else { showToast('Error: ' + (data.error || ''), 'error'); }
+  } catch(e) { showToast('Error de red', 'error'); }
   document.getElementById('articleLoading').classList.remove('active');
 }
 function publishToBlog(id) {
@@ -131,7 +122,7 @@ function deleteArticle(id) {
     method: 'POST', headers: {'X-CSRFToken': '{{ csrf_token }}'}
   }).then(r => r.json()).then(data => {
     if (data.ok) { showToast('Eliminado', 'success'); location.reload(); }
-    else showToast('Error: ' + (data.error || ''), 'error');
+    else showToast('Error', 'error');
   });
 }
 </script>

@@ -7,8 +7,10 @@ from . import views_cgm
 app_name = 'cgm'
 
 urlpatterns = [
-    path('', views_cgm.cgm_workspace, name='workspace'),
-    path('workspace/', views_cgm.cgm_workspace, name='workspace_alt'),
+    path('', views_cgm.cgm_dashboard, name='dashboard'),
+    path('articles/', views_cgm.cgm_articles, name='articles'),
+    path('article/<int:pk>/edit/', views_cgm.cgm_article_edit, name='article_edit'),
+    path('rrss/', views_cgm.cgm_rrss, name='rrss'),
 
     # API endpoints
     path('api/generate-article/', views_cgm.api_generate_article, name='api_generate_article'),
