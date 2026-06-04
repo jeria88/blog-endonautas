@@ -76,6 +76,12 @@
 
       <div id="zipSection" style="margin-top:1rem;display:none;">
         <button class="cgm-btn cgm-btn-primary" style="width:100%;justify-content:center;" onclick="downloadZIP()">📦 Descargar ZIP</button>
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <button class="cgm-btn" style="flex:1;justify-content:center;" onclick="sendToTelegram('instagram')">📸 IG</button>
+          <button class="cgm-btn" style="flex:1;justify-content:center;" onclick="sendToTelegram('tiktok')">🎵 TT</button>
+          <button class="cgm-btn" style="flex:1;justify-content:center;" onclick="sendToTelegram('linkedin')">💼 LI</button>
+        </div>
+        <div id="telegramStatus" style="margin-top:8px;font-size:0.78rem;color:var(--cgm-text-2);text-align:center;"></div>
       </div>
     </div>
 
@@ -346,6 +352,30 @@ async function generateAllSlides() {
 function downloadZIP() {
   if (!selectedArticleId) return;
   window.location.href = `/cgm/api/download-slides/${selectedArticleId}/`;
+}
+
+async function sendToTelegram(platform) {
+  if (!selectedArticleId) return showToast('Seleccioná un artículo', 'error');
+  const status = document.getElementById('telegramStatus');
+  status.textContent = '⏳ Enviando a Telegram...';
+  try {
+    const r = await fetch('/cgm/api/send-to-telegram/' + selectedArticleId + '/', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+      body: JSON.stringify({platform: platform})
+    });
+    const d = await r.json();
+    if (d.ok) {
+      status.textContent = '✓ ' + d.msg;
+      showToast(`Post enviado a Telegram para ${platform}`, 'success');
+    } else {
+      status.textContent = '✗ ' + (d.error || 'Error');
+      showToast('Error', 'error');
+    }
+  } catch(e) {
+    status.textContent = '✗ Error de red';
+    showToast('Error de red', 'error');
+  }
 }
 
 // RRSS generation

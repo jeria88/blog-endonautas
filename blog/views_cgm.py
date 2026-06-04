@@ -7,6 +7,7 @@ import sys
 import zipfile
 from pathlib import Path
 
+import requests
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import JsonResponse, FileResponse, HttpResponse
@@ -412,3 +413,41 @@ def api_download_slides(request, pk):
             if fp.exists():
                 zf.write(str(fp), arcname=fp.name)
     return FileResponse(open(str(zip_path), 'rb'), as_attachment=True, filename=f'{article.slug}-slides.zip')
+
+
+@staff_member_required
+@require_POST
+def api_send_to_telegram(request, pk):
+    """
+    Marca el post como 'listo para enviar' y guarda en una cola local.
+    Hermes (el agente) lo lee y envía a Telegram.
+    """
+    from blog.telegram_service import format_post_for_telegram
+    article = get_object_or_404(GeneratedArticle, pk=pk)
+
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        data = request.POST
+
+    platform = data.get('platform', 'instagram')
+    site_url = getattr(settings, 'SITE_URL', 'https://endonautas.cl')
+    zip_url = f"{site_url}/cgm/api/download-slides/{pk}/"
+
+    msg = format_post_for_telegram(
+        article=article,
+        platform=platform,
+        zip_url=zip_url,
+    )
+
+    # Guardar en archivo de cola para que Hermes lo lea
+    queue_dir = Path(settings.BASE_DIR) / 'telegram_queue'
+    queue_dir.mkdir(exist_ok=True)
+    queue_file = queue_dir / f'{pk}_{platform}.txt'
+    queue_file.write_text(msg, encoding='utf-8')
+
+    return JsonResponse({
+        'ok': True,
+        'msg': 'Post en cola. Te llega a Telegram en breve.',
+        'queue_file': str(queue_file)
+    })

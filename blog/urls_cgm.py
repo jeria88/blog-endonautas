@@ -26,4 +26,5 @@ urlpatterns = [
     path('api/save-slides/', views_cgm.api_save_slides, name='api_save_slides'),
     path('api/generate-slides/', views_cgm.api_generate_slides, name='api_generate_slides'),
     path('api/download-slides/<int:pk>/', views_cgm.api_download_slides, name='api_download_slides'),
+    path('api/send-to-telegram/<int:pk>/', views_cgm.api_send_to_telegram, name='api_send_to_telegram'),
 ]
