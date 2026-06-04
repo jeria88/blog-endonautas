@@ -278,3 +278,18 @@ def api_delete_social_post(request, pk):
         return JsonResponse({'ok': True})
     except SocialPost.DoesNotExist:
         return JsonResponse({'error': 'Post no encontrado'}, status=404)
+
+
+@staff_member_required
+def api_article_info(request, pk):
+    """API: Devuelve info de un artículo para preview."""
+    try:
+        article = GeneratedArticle.objects.get(pk=pk)
+        return JsonResponse({
+            'ok': True,
+            'title': article.title,
+            'intro': article.intro or '',
+            'body': article.body[:500] if article.body else '',
+        })
+    except GeneratedArticle.DoesNotExist:
+        return JsonResponse({'error': 'Artículo no encontrado'}, status=404)

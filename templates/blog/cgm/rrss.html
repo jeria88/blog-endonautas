@@ -1,0 +1,185 @@
+{% extends "blog/cgm/base.html" %}
+
+{% block cgm_content %}
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+  <!-- Columna izquierda: Generador -->
+  <div>
+    <h2 style="font-size: 1.1rem; font-weight: 600; color: var(--cgm-text); margin-bottom: 1rem;">Generar contenido RRSS</h2>
+
+    <div class="cgm-card" style="margin-bottom: 1.5rem;">
+      <div class="cgm-form-group">
+        <label>Artículo fuente</label>
+        <select id="sourceArticle" class="cgm-select" onchange="loadArticlePreview()">
+          <option value="">Seleccioná un artículo...</option>
+          {% for article in articles %}
+          <option value="{{ article.pk }}" {% if selected_article and selected_article.pk == article.pk %}selected{% endif %}>
+            {{ article.title|truncatechars:50 }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="cgm-form-group">
+        <label>Formato</label>
+        <div style="display: flex; gap: 8px;">
+          <button class="cgm-btn format-btn active" data-format="carrusel" onclick="selectFormat('carrusel')">📱 Carrusel</button>
+          <button class="cgm-btn format-btn" data-format="reel" onclick="selectFormat('reel')">🎬 Reel</button>
+          <button class="cgm-btn format-btn" data-format="post" onclick="selectFormat('post')">📄 Post</button>
+        </div>
+      </div>
+
+      <div class="cgm-form-group">
+        <label>Red social</label>
+        <div style="display: flex; gap: 8px;">
+          <button class="cgm-btn platform-btn active" data-platform="instagram" onclick="selectPlatform('instagram')">📸 Instagram</button>
+          <button class="cgm-btn platform-btn" data-platform="tiktok" onclick="selectPlatform('tiktok')">🎵 TikTok</button>
+          <button class="cgm-btn platform-btn" data-platform="linkedin" onclick="selectPlatform('linkedin')">💼 LinkedIn</button>
+        </div>
+      </div>
+
+      <button class="cgm-btn cgm-btn-primary" style="width: 100%; justify-content: center;" onclick="generateRRSS()">
+        ⚡ Generar copy con IA
+      </button>
+
+      <div class="cgm-loading" id="rrssLoading" style="margin-top: 1rem;">
+        <div class="cgm-spinner"></div>
+        <p style="margin-top: 1rem; color: var(--cgm-text-2);">Generando copy...</p>
+      </div>
+    </div>
+
+    <!-- Preview del artículo seleccionado -->
+    <div id="articlePreview" class="cgm-card" style="display: none;">
+      <div class="cgm-card-title" id="previewTitle"></div>
+      <div class="cgm-card-body" id="previewIntro"></div>
+    </div>
+  </div>
+
+  <!-- Columna derecha: Copys generados -->
+  <div>
+    <h2 style="font-size: 1.1rem; font-weight: 600; color: var(--cgm-text); margin-bottom: 1rem;">Copys generados</h2>
+
+    <div id="generatedCopies">
+      {% if social_posts %}
+        {% for post in social_posts %}
+        <div class="cgm-card" style="margin-bottom: 1rem;" id="post-{{ post.pk }}">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div>
+              <span class="cgm-badge cgm-badge-{{ post.status }}">{{ post.get_formato_display }}</span>
+              <span style="font-size: 0.75rem; color: var(--cgm-text-2); margin-left: 8px;">{{ post.get_plataforma_display }}</span>
+            </div>
+            <button class="cgm-btn cgm-btn-sm cgm-btn-red" onclick="deletePost('{{ post.pk }}')">🗑️</button>
+          </div>
+
+          {% if post.formato == 'carrusel' %}
+          <div style="margin-bottom: 8px;">
+            <div style="font-size: 0.7rem; color: var(--cgm-text-3); text-transform: uppercase; margin-bottom: 4px;">Gancho</div>
+            <div style="font-size: 0.85rem; color: var(--cgm-text);">{{ post.carrusel_gancho|truncatechars:100|default:"—" }}</div>
+          </div>
+          <div style="margin-bottom: 8px;">
+            <div style="font-size: 0.7rem; color: var(--cgm-text-3); text-transform: uppercase; margin-bottom: 4px;">Descripción</div>
+            <div style="font-size: 0.85rem; color: var(--cgm-text);">{{ post.carrusel_descripcion|truncatechars:150|default:"—" }}</div>
+          </div>
+          {% elif post.formato == 'reel' %}
+          <div style="margin-bottom: 8px;">
+            <div style="font-size: 0.7rem; color: var(--cgm-text-3); text-transform: uppercase; margin-bottom: 4px;">Texto en pantalla</div>
+            <div style="font-size: 0.85rem; color: var(--cgm-text);">{{ post.reel_gancho|truncatechars:100|default:"—" }}</div>
+          </div>
+          <div style="margin-bottom: 8px;">
+            <div style="font-size: 0.7rem; color: var(--cgm-text-3); text-transform: uppercase; margin-bottom: 4px;">Descripción</div>
+            <div style="font-size: 0.85rem; color: var(--cgm-text);">{{ post.reel_descripcion|truncatechars:150|default:"—" }}</div>
+          </div>
+          {% else %}
+          <div style="margin-bottom: 8px;">
+            <div style="font-size: 0.7rem; color: var(--cgm-text-3); text-transform: uppercase; margin-bottom: 4px;">Contenido</div>
+            <div style="font-size: 0.85rem; color: var(--cgm-text);">{{ post.post_cuerpo|truncatechars:150|default:"—" }}</div>
+          </div>
+          {% endif %}
+
+          <!-- Botones copiar por red -->
+          <div style="display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap;">
+            {% if post.copy_instagram %}
+            <button class="cgm-btn cgm-btn-sm" onclick="copyText(this, `{{ post.copy_instagram|escapejs }})">📸 Copiar IG</button>
+            {% endif %}
+            {% if post.copy_tiktok %}
+            <button class="cgm-btn cgm-btn-sm" onclick="copyText(this, `{{ post.copy_tiktok|escapejs }})">🎵 Copiar TT</button>
+            {% endif %}
+            {% if post.copy_linkedin %}
+            <button class="cgm-btn cgm-btn-sm" onclick="copyText(this, `{{ post.copy_linkedin|escapejs }})">💼 Copiar LI</button>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+      <div class="cgm-empty" style="padding: 2rem;">
+        <div class="cgm-empty-icon">📱</div>
+        <h3>Sin copys generados</h3>
+        <p>Seleccioná un artículo y generá contenido para redes</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+let currentFormat = 'carrusel';
+let currentPlatform = 'instagram';
+
+function selectFormat(f) {
+  currentFormat = f;
+  document.querySelectorAll('.format-btn').forEach(b => b.classList.toggle('active', b.dataset.format === f));
+}
+function selectPlatform(p) {
+  currentPlatform = p;
+  document.querySelectorAll('.platform-btn').forEach(b => b.classList.toggle('active', b.dataset.platform === p));
+}
+
+function loadArticlePreview() {
+  const id = document.getElementById('sourceArticle').value;
+  if (!id) { document.getElementById('articlePreview').style.display = 'none'; return; }
+  // Fetch article info
+  fetch('/cgm/api/article-info/' + id + '/')
+    .then(r => r.json())
+    .then(data => {
+      if (data.ok) {
+        document.getElementById('previewTitle').textContent = data.title;
+        document.getElementById('previewIntro').textContent = data.intro || 'Sin introducción';
+        document.getElementById('articlePreview').style.display = 'block';
+      }
+    });
+}
+
+async function generateRRSS() {
+  const articleId = document.getElementById('sourceArticle').value;
+  if (!articleId) return showToast('Seleccioná un artículo', 'error');
+
+  document.getElementById('rrssLoading').classList.add('active');
+  try {
+    const resp = await fetch('/cgm/api/generate-rrss/', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+      body: JSON.stringify({article_id: parseInt(articleId), plataforma: currentPlatform, formato: currentFormat})
+    });
+    const data = await resp.json();
+    if (data.ok) {
+      showToast('Copy generado!', 'success');
+      location.reload();
+    } else {
+      showToast('Error: ' + (data.error || 'Desconocido'), 'error');
+    }
+  } catch(e) {
+    showToast('Error de red', 'error');
+  }
+  document.getElementById('rrssLoading').classList.remove('active');
+}
+
+function deletePost(id) {
+  if (!confirm('¿Eliminar este post?')) return;
+  fetch('/cgm/api/delete-social-post/' + id + '/', {
+    method: 'POST', headers: {'X-CSRFToken': '{{ csrf_token }}'}
+  }).then(r => r.json()).then(data => {
+    if (data.ok) { document.getElementById('post-' + id).remove(); showToast('Eliminado', 'success'); }
+    else showToast('Error', 'error');
+  });
+}
+</script>
+{% endblock %}

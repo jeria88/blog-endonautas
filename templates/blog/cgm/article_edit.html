@@ -1,0 +1,119 @@
+{% extends "blog/cgm/base.html" %}
+
+{% block cgm_content %}
+<div style="max-width: 900px; margin: 0 auto;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <div>
+      <a href="{% url 'cgm:articles' %}" class="cgm-btn cgm-btn-sm">← Volver a artículos</a>
+    </div>
+    <div style="display: flex; gap: 8px;">
+      <button class="cgm-btn cgm-btn-sm" onclick="saveArticle()">💾 Guardar</button>
+      {% if article.status == 'approved' %}
+      <button class="cgm-btn cgm-btn-sm cgm-btn-green" onclick="publishToBlog()">📤 Publicar en blog</button>
+      {% endif %}
+      <a href="{% url 'cgm:rrss' %}?article={{ article.pk }}" class="cgm-btn cgm-btn-sm">📱 Generar RRSS</a>
+    </div>
+  </div>
+
+  <div class="cgm-card" style="margin-bottom: 1.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <span class="cgm-badge cgm-badge-{{ article.status }}" id="statusBadge">{{ article.get_status_display }}</span>
+      <select id="statusSelect" class="cgm-select" style="width: auto;" onchange="document.getElementById('statusBadge').className='cgm-badge cgm-badge-'+this.value; document.getElementById('statusBadge').textContent=this.options[this.selectedIndex].text;">
+        <option value="draft" {% if article.status == 'draft' %}selected{% endif %}>Borrador</option>
+        <option value="review" {% if article.status == 'review' %}selected{% endif %}>En revisión</option>
+        <option value="approved" {% if article.status == 'approved' %}selected{% endif %}>Aprobado</option>
+        <option value="published" {% if article.status == 'published' %}selected{% endif %}>Publicado</option>
+        <option value="rejected" {% if article.status == 'rejected' %}selected{% endif %}>Rechazado</option>
+      </select>
+    </div>
+
+    <div class="cgm-form-group">
+      <label>Título</label>
+      <input type="text" id="editTitle" class="cgm-input" value="{{ article.title|default:'' }}" placeholder="Título del artículo...">
+    </div>
+
+    <div class="cgm-form-group">
+      <label>Slug</label>
+      <input type="text" id="editSlug" class="cgm-input" value="{{ article.slug|default:'' }}" placeholder="slug-del-articulo">
+    </div>
+
+    <div class="cgm-form-group">
+      <label>Introducción</label>
+      <textarea id="editIntro" class="cgm-textarea" style="min-height: 80px;" placeholder="Introducción breve (máx 280 chars)...">{{ article.intro|default:'' }}</textarea>
+    </div>
+
+    <div class="cgm-form-group">
+      <label>Contenido (HTML)</label>
+      <textarea id="editBody" class="cgm-textarea" style="min-height: 300px; font-family: monospace;" placeholder="Contenido del artículo en HTML...">{{ article.body|default:'' }}</textarea>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+      <div class="cgm-form-group">
+        <label>Texto CTA</label>
+        <input type="text" id="editCtaText" class="cgm-input" value="{{ article.cta_text|default:'' }}" placeholder="Ej: Descubrí más">
+      </div>
+      <div class="cgm-form-group">
+        <label>URL CTA</label>
+        <input type="text" id="editCtaUrl" class="cgm-input" value="{{ article.cta_url|default:'' }}" placeholder="Ej: /mascara/">
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+      <div class="cgm-form-group">
+        <label>Keywords SEO</label>
+        <input type="text" id="editKeywords" class="cgm-input" value="{{ article.keywords|default:'' }}" placeholder="keyword1, keyword2, keyword3">
+      </div>
+      <div class="cgm-form-group">
+        <label>Tags</label>
+        <input type="text" id="editTags" class="cgm-input" value="{{ article.tags|default:'' }}" placeholder="tag1, tag2, tag3">
+      </div>
+    </div>
+
+    <div class="cgm-form-group">
+      <label>Meta Description</label>
+      <input type="text" id="editMeta" class="cgm-input" value="{{ article.meta_description|default:'' }}" placeholder="Meta description SEO (máx 160 chars)">
+    </div>
+  </div>
+</div>
+
+<script>
+const articleId = {{ article.pk }};
+
+async function saveArticle() {
+  const data = {
+    title: document.getElementById('editTitle').value,
+    slug: document.getElementById('editSlug').value,
+    intro: document.getElementById('editIntro').value,
+    body: document.getElementById('editBody').value,
+    cta_text: document.getElementById('editCtaText').value,
+    cta_url: document.getElementById('editCtaUrl').value,
+    keywords: document.getElementById('editKeywords').value,
+    tags: document.getElementById('editTags').value,
+    meta_description: document.getElementById('editMeta').value,
+    status: document.getElementById('statusSelect').value,
+  };
+  try {
+    const resp = await fetch('/cgm/api/save-article/' + articleId + '/', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+      body: JSON.stringify(data)
+    });
+    const result = await resp.json();
+    if (result.ok) showToast('Artículo guardado', 'success');
+    else showToast('Error: ' + (result.error || ''), 'error');
+  } catch(e) {
+    showToast('Error de red', 'error');
+  }
+}
+
+function publishToBlog() {
+  if (!confirm('¿Publicar este artículo en el blog de Wagtail?')) return;
+  fetch('/cgm/api/publish-article/' + articleId + '/', {
+    method: 'POST', headers: {'X-CSRFToken': '{{ csrf_token }}'}
+  }).then(r => r.json()).then(data => {
+    if (data.ok) { showToast('Publicado en blog!', 'success'); location.reload(); }
+    else showToast('Error: ' + (data.error || ''), 'error');
+  });
+}
+</script>
+{% endblock %}
