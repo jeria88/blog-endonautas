@@ -184,6 +184,8 @@ class GeneratedArticle(models.Model):
     created_at    = models.DateTimeField(auto_now_add=True)
     updated_at    = models.DateTimeField(auto_now=True)
     published_at  = models.DateTimeField(null=True, blank=True)
+    featured_image_url = models.URLField('URL imagen destacada', blank=True,
+        help_text='Imagen de Pexels u otra fuente para el artículo')
 
     class Meta:
         ordering = ['-created_at']

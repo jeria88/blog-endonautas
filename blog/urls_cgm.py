@@ -20,4 +20,5 @@ urlpatterns = [
     path('api/generate-rrss/', views_cgm.api_generate_rrss, name='api_generate_rrss'),
     path('api/delete-social-post/<int:pk>/', views_cgm.api_delete_social_post, name='api_delete_social_post'),
     path('api/article-info/<int:pk>/', views_cgm.api_article_info, name='api_article_info'),
+    path('api/search-pexels/', views_cgm.api_search_pexels, name='api_search_pexels'),
 ]

@@ -1,77 +1,130 @@
 {% extends "blog/cgm/base.html" %}
 
 {% block cgm_content %}
-<div style="max-width: 900px; margin: 0 auto;">
+<div style="max-width: 1000px; margin: 0 auto;">
   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-    <div>
-      <a href="{% url 'cgm:articles' %}" class="cgm-btn cgm-btn-sm">← Volver a artículos</a>
-    </div>
+    <a href="{% url 'cgm:articles' %}" class="cgm-btn cgm-btn-sm">← Volver</a>
     <div style="display: flex; gap: 8px;">
+      <button class="cgm-btn cgm-btn-sm" onclick="openPreview()">👁️ Preview</button>
       <button class="cgm-btn cgm-btn-sm" onclick="saveArticle()">💾 Guardar</button>
       {% if article.status == 'approved' %}
-      <button class="cgm-btn cgm-btn-sm cgm-btn-green" onclick="publishToBlog()">📤 Publicar en blog</button>
+      <button class="cgm-btn cgm-btn-sm cgm-btn-green" onclick="publishToBlog()">📤 Publicar</button>
       {% endif %}
-      <a href="{% url 'cgm:rrss' %}?article={{ article.pk }}" class="cgm-btn cgm-btn-sm">📱 Generar RRSS</a>
     </div>
   </div>
 
-  <div class="cgm-card" style="margin-bottom: 1.5rem;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-      <span class="cgm-badge cgm-badge-{{ article.status }}" id="statusBadge">{{ article.get_status_display }}</span>
-      <select id="statusSelect" class="cgm-select" style="width: auto;" onchange="document.getElementById('statusBadge').className='cgm-badge cgm-badge-'+this.value; document.getElementById('statusBadge').textContent=this.options[this.selectedIndex].text;">
-        <option value="draft" {% if article.status == 'draft' %}selected{% endif %}>Borrador</option>
-        <option value="review" {% if article.status == 'review' %}selected{% endif %}>En revisión</option>
-        <option value="approved" {% if article.status == 'approved' %}selected{% endif %}>Aprobado</option>
-        <option value="published" {% if article.status == 'published' %}selected{% endif %}>Publicado</option>
-        <option value="rejected" {% if article.status == 'rejected' %}selected{% endif %}>Rechazado</option>
-      </select>
-    </div>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+    <!-- Editor -->
+    <div>
+      <div class="cgm-card" style="margin-bottom: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <span class="cgm-badge cgm-badge-{{ article.status }}" id="statusBadge">{{ article.get_status_display }}</span>
+          <select id="statusSelect" class="cgm-select" style="width: auto; padding: 4px 8px;" onchange="document.getElementById('statusBadge').className='cgm-badge cgm-badge-'+this.value; document.getElementById('statusBadge').textContent=this.options[this.selectedIndex].text;">
+            <option value="draft" {% if article.status == 'draft' %}selected{% endif %}>Borrador</option>
+            <option value="review" {% if article.status == 'review' %}selected{% endif %}>En revisión</option>
+            <option value="approved" {% if article.status == 'approved' %}selected{% endif %}>Aprobado</option>
+            <option value="published" {% if article.status == 'published' %}selected{% endif %}>Publicado</option>
+          </select>
+        </div>
 
-    <div class="cgm-form-group">
-      <label>Título</label>
-      <input type="text" id="editTitle" class="cgm-input" value="{{ article.title|default:'' }}" placeholder="Título del artículo...">
-    </div>
-
-    <div class="cgm-form-group">
-      <label>Slug</label>
-      <input type="text" id="editSlug" class="cgm-input" value="{{ article.slug|default:'' }}" placeholder="slug-del-articulo">
-    </div>
-
-    <div class="cgm-form-group">
-      <label>Introducción</label>
-      <textarea id="editIntro" class="cgm-textarea" style="min-height: 80px;" placeholder="Introducción breve (máx 280 chars)...">{{ article.intro|default:'' }}</textarea>
-    </div>
-
-    <div class="cgm-form-group">
-      <label>Contenido (HTML)</label>
-      <textarea id="editBody" class="cgm-textarea" style="min-height: 300px; font-family: monospace;" placeholder="Contenido del artículo en HTML...">{{ article.body|default:'' }}</textarea>
-    </div>
-
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-      <div class="cgm-form-group">
-        <label>Texto CTA</label>
-        <input type="text" id="editCtaText" class="cgm-input" value="{{ article.cta_text|default:'' }}" placeholder="Ej: Descubrí más">
+        <div class="cgm-form-group">
+          <label>Título</label>
+          <input type="text" id="editTitle" class="cgm-input" value="{{ article.title|default:'' }}" placeholder="Título del artículo...">
+        </div>
+        <div class="cgm-form-group">
+          <label>Slug</label>
+          <input type="text" id="editSlug" class="cgm-input" value="{{ article.slug|default:'' }}" placeholder="slug-del-articulo">
+        </div>
+        <div class="cgm-form-group">
+          <label>Introducción</label>
+          <textarea id="editIntro" class="cgm-textarea" style="min-height: 60px;" placeholder="Introducción breve...">{{ article.intro|default:'' }}</textarea>
+        </div>
+        <div class="cgm-form-group">
+          <label>Contenido (HTML)</label>
+          <textarea id="editBody" class="cgm-textarea" style="min-height: 250px; font-family: monospace; font-size: 0.82rem;" placeholder="Contenido en HTML...">{{ article.body|default:'' }}</textarea>
+        </div>
       </div>
-      <div class="cgm-form-group">
-        <label>URL CTA</label>
-        <input type="text" id="editCtaUrl" class="cgm-input" value="{{ article.cta_url|default:'' }}" placeholder="Ej: /mascara/">
+
+      <div class="cgm-card" style="margin-bottom: 1rem;">
+        <h3 style="font-size: 0.9rem; font-weight: 600; color: var(--cgm-text); margin-bottom: 1rem;">🖼️ Imagen destacada</h3>
+        <div id="imagePreview" style="margin-bottom: 1rem; display: {% if article.featured_image_url %}block{% else %}none{% endif %};">
+          <img id="previewImg" src="{{ article.featured_image_url|default:'' }}" style="width: 100%; border-radius: var(--cgm-radius-sm); max-height: 200px; object-fit: cover;">
+        </div>
+        <div style="display: flex; gap: 8px; margin-bottom: 1rem;">
+          <input type="text" id="pexelsQuery" class="cgm-input" placeholder="Buscar imagen en Pexels..." style="flex: 1;">
+          <button class="cgm-btn cgm-btn-sm" onclick="searchPexels()">🔍 Buscar</button>
+        </div>
+        <div id="pexelsResults" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;"></div>
+        <input type="hidden" id="editImageUrl" value="{{ article.featured_image_url|default:'' }}">
+      </div>
+
+      <div class="cgm-card">
+        <h3 style="font-size: 0.9rem; font-weight: 600; color: var(--cgm-text); margin-bottom: 1rem;">⚙️ SEO & CTA</h3>
+        <div class="cgm-form-group">
+          <label>Meta Description</label>
+          <input type="text" id="editMeta" class="cgm-input" value="{{ article.meta_description|default:'' }}" placeholder="Meta description (máx 160 chars)">
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="cgm-form-group">
+            <label>Texto CTA</label>
+            <input type="text" id="editCtaText" class="cgm-input" value="{{ article.cta_text|default:'' }}" placeholder="Descubrí más">
+          </div>
+          <div class="cgm-form-group">
+            <label>URL CTA</label>
+            <input type="text" id="editCtaUrl" class="cgm-input" value="{{ article.cta_url|default:'' }}" placeholder="/mascara/">
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="cgm-form-group">
+            <label>Keywords</label>
+            <input type="text" id="editKeywords" class="cgm-input" value="{{ article.keywords|default:'' }}" placeholder="keyword1, keyword2">
+          </div>
+          <div class="cgm-form-group">
+            <label>Tags</label>
+            <input type="text" id="editTags" class="cgm-input" value="{{ article.tags|default:'' }}" placeholder="tag1, tag2">
+          </div>
+        </div>
       </div>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-      <div class="cgm-form-group">
-        <label>Keywords SEO</label>
-        <input type="text" id="editKeywords" class="cgm-input" value="{{ article.keywords|default:'' }}" placeholder="keyword1, keyword2, keyword3">
-      </div>
-      <div class="cgm-form-group">
-        <label>Tags</label>
-        <input type="text" id="editTags" class="cgm-input" value="{{ article.tags|default:'' }}" placeholder="tag1, tag2, tag3">
+    <!-- Preview en vivo -->
+    <div>
+      <h3 style="font-size: 0.9rem; font-weight: 600; color: var(--cgm-text); margin-bottom: 1rem;">👁️ Vista previa</h3>
+      <div class="cgm-card" style="background: #fff; color: #333; border-radius: var(--cgm-radius); overflow: hidden;">
+        <!-- Imagen -->
+        <div id="liveImageWrap" style="display: {% if article.featured_image_url %}block{% else %}none{% endif %}; width: 100%; height: 200px; background: #eee; overflow: hidden;">
+          <img id="liveImage" src="{{ article.featured_image_url|default:'' }}" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+        <div style="padding: 1.5rem;">
+          <div style="font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px;">Blog · Artículo</div>
+          <h2 id="liveTitle" style="font-size: 1.4rem; font-weight: 700; color: #1a1a2e; margin-bottom: 12px; line-height: 1.2;">{{ article.title|default:"Título del artículo" }}</h2>
+          <p id="liveIntro" style="font-size: 0.95rem; color: #555; line-height: 1.6; margin-bottom: 16px;">{{ article.intro|default:"Introducción del artículo..." }}</p>
+          <div id="liveBody" style="font-size: 0.9rem; color: #444; line-height: 1.7;">{{ article.body|truncatewords:50|default:"Contenido del artículo..." }}</div>
+          <div id="liveCta" style="margin-top: 20px; display: {% if article.cta_text %}block{% else %}none{% endif %};">
+            <a href="{{ article.cta_url|default:'#' }}" style="display: inline-block; padding: 10px 24px; background: #c4813a; color: #000; border-radius: 999px; text-decoration: none; font-weight: 600; font-size: 0.85rem;">{{ article.cta_text|default:"Descubrí más" }} →</a>
+          </div>
+        </div>
       </div>
     </div>
+  </div>
+</div>
 
-    <div class="cgm-form-group">
-      <label>Meta Description</label>
-      <input type="text" id="editMeta" class="cgm-input" value="{{ article.meta_description|default:'' }}" placeholder="Meta description SEO (máx 160 chars)">
+<!-- Preview Modal (full) -->
+<div class="cgm-modal-overlay" id="previewModal">
+  <div class="cgm-modal" style="max-width: 800px;">
+    <div class="cgm-modal-header">
+      <h2>Preview del artículo</h2>
+      <button class="cgm-modal-close" onclick="closeModal('previewModal')">&times;</button>
+    </div>
+    <div class="cgm-modal-body" style="background: #fff; color: #333; border-radius: 0 0 var(--cgm-radius) var(--cgm-radius);">
+      <div id="modalImageWrap" style="width: 100%; height: 250px; background: #eee; overflow: hidden;">
+        <img id="modalImage" src="" style="width: 100%; height: 100%; object-fit: cover;">
+      </div>
+      <div style="padding: 2rem;">
+        <h1 id="modalTitle" style="font-size: 1.8rem; font-weight: 700; color: #1a1a2e; margin-bottom: 16px;"></h1>
+        <p id="modalIntro" style="font-size: 1.1rem; color: #555; line-height: 1.6; margin-bottom: 20px;"></p>
+        <div id="modalBody" style="font-size: 1rem; color: #444; line-height: 1.8;"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -79,6 +132,62 @@
 <script>
 const articleId = {{ article.pk }};
 
+// Live preview updates
+document.getElementById('editTitle').addEventListener('input', e => {
+  document.getElementById('liveTitle').textContent = e.target.value || 'Título del artículo';
+  document.getElementById('modalTitle').textContent = e.target.value;
+});
+document.getElementById('editIntro').addEventListener('input', e => {
+  document.getElementById('liveIntro').textContent = e.target.value || 'Introducción del artículo...';
+  document.getElementById('modalIntro').textContent = e.target.value;
+});
+document.getElementById('editBody').addEventListener('input', e => {
+  document.getElementById('liveBody').textContent = e.target.value.substring(0, 300) + '...';
+  document.getElementById('modalBody').innerHTML = e.target.value;
+});
+document.getElementById('editCtaText').addEventListener('input', e => {
+  const el = document.getElementById('liveCta');
+  if (e.target.value) { el.style.display = 'block'; el.querySelector('a').textContent = e.target.value + ' →'; }
+  else { el.style.display = 'none'; }
+});
+
+// Pexels search
+async function searchPexels() {
+  const q = document.getElementById('pexelsQuery').value.trim();
+  if (!q) return;
+  const container = document.getElementById('pexelsResults');
+  container.innerHTML = '<div class="cgm-spinner" style="margin: 1rem auto;"></div>';
+  try {
+    const resp = await fetch('/cgm/api/search-pexels/?q=' + encodeURIComponent(q));
+    const data = await resp.json();
+    if (data.ok && data.images.length) {
+      container.innerHTML = data.images.map(img => `
+        <div onclick="selectImage('${img.url}')" style="cursor: pointer; border-radius: var(--cgm-radius-sm); overflow: hidden; border: 2px solid transparent; transition: border-color 0.15s;">
+          <img src="${img.url_small}" style="width: 100%; height: 80px; object-fit: cover;">
+        </div>
+      `).join('');
+    } else {
+      container.innerHTML = '<p style="color: var(--cgm-text-2); font-size: 0.85rem; grid-column: 1/-1;">No se encontraron imágenes. Probá con otra búsqueda.</p>';
+    }
+  } catch(e) {
+    container.innerHTML = '<p style="color: var(--cgm-red); font-size: 0.85rem; grid-column: 1/-1;">Error de red</p>';
+  }
+}
+
+function selectImage(url) {
+  document.getElementById('editImageUrl').value = url;
+  document.getElementById('previewImg').src = url;
+  document.getElementById('imagePreview').style.display = 'block';
+  document.getElementById('liveImage').src = url;
+  document.getElementById('liveImageWrap').style.display = 'block';
+  document.getElementById('modalImage').src = url;
+  document.getElementById('modalImageWrap').style.display = 'block';
+  // Highlight selected
+  document.querySelectorAll('#pexelsResults > div').forEach(d => d.style.borderColor = 'transparent');
+  event.currentTarget.style.borderColor = '#c4813a';
+}
+
+// Save
 async function saveArticle() {
   const data = {
     title: document.getElementById('editTitle').value,
@@ -90,6 +199,7 @@ async function saveArticle() {
     keywords: document.getElementById('editKeywords').value,
     tags: document.getElementById('editTags').value,
     meta_description: document.getElementById('editMeta').value,
+    featured_image_url: document.getElementById('editImageUrl').value,
     status: document.getElementById('statusSelect').value,
   };
   try {
@@ -101,17 +211,25 @@ async function saveArticle() {
     const result = await resp.json();
     if (result.ok) showToast('Artículo guardado', 'success');
     else showToast('Error: ' + (result.error || ''), 'error');
-  } catch(e) {
-    showToast('Error de red', 'error');
-  }
+  } catch(e) { showToast('Error de red', 'error'); }
+}
+
+function openPreview() {
+  document.getElementById('modalTitle').textContent = document.getElementById('editTitle').value;
+  document.getElementById('modalIntro').textContent = document.getElementById('editIntro').value;
+  document.getElementById('modalBody').innerHTML = document.getElementById('editBody').value;
+  const img = document.getElementById('editImageUrl').value;
+  if (img) { document.getElementById('modalImage').src = img; document.getElementById('modalImageWrap').style.display = 'block'; }
+  else { document.getElementById('modalImageWrap').style.display = 'none'; }
+  openModal('previewModal');
 }
 
 function publishToBlog() {
-  if (!confirm('¿Publicar este artículo en el blog de Wagtail?')) return;
+  if (!confirm('¿Publicar en el blog de Wagtail?')) return;
   fetch('/cgm/api/publish-article/' + articleId + '/', {
     method: 'POST', headers: {'X-CSRFToken': '{{ csrf_token }}'}
   }).then(r => r.json()).then(data => {
-    if (data.ok) { showToast('Publicado en blog!', 'success'); location.reload(); }
+    if (data.ok) { showToast('Publicado!', 'success'); location.reload(); }
     else showToast('Error: ' + (data.error || ''), 'error');
   });
 }

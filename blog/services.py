@@ -446,3 +446,49 @@ def get_topic_cta(topic_tuple):
     return topic_tuple[3]
 
 BLOG_TOPIC_TITLES = [t[0] for t in BLOG_TOPICS]
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# Búsqueda de imágenes en Pexels
+# ════════════════════════════════════════════════════════════════════════════
+
+PEXELS_API_KEY = getattr(settings, 'PEXELS_API_KEY', '')
+
+def search_pexels_images(query, count=6):
+    """
+    Busca imágenes en Pexels relacionadas con un tema.
+    
+    Args:
+        query: Término de búsqueda en inglés
+        count: Cantidad de imágenes (default: 6, max: 80)
+    
+    Returns:
+        Lista de dicts con: id, url_landscape, url_portrait, photographer, photographer_url
+    """
+    if not PEXELS_API_KEY:
+        return []
+
+    try:
+        headers = {"Authorization": PEXELS_API_KEY}
+        params = {"query": query, "per_page": min(count, 80), "orientation": "landscape"}
+        resp = requests.get(
+            "https://api.pexels.com/v1/search",
+            headers=headers,
+            params=params,
+            timeout=10,
+        )
+        if resp.status_code == 200:
+            data = resp.json()
+            images = []
+            for photo in data.get("photos", []):
+                images.append({
+                    "id": photo["id"],
+                    "url": photo["src"]["landscape"],
+                    "url_small": photo["src"]["medium"],
+                    "photographer": photo["photographer"],
+                    "photographer_url": photo["photographer_url"],
+                })
+            return images
+    except Exception as e:
+        logger.error(f"Error buscando imágenes Pexels: {e}")
+    return []
