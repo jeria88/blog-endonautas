@@ -373,3 +373,76 @@ def generate_social_posts(article, plataformas=None, formatos=None):
                 logger.error(f"Error generando {formato} para {plataforma}: {e}")
 
     return posts
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# Temas SEO/GEO de 3 capas para generación de artículos
+# ════════════════════════════════════════════════════════════════════════════
+
+# Cada tema tiene: (título, capa SEO, keywords sugeridos, CTA sugerido)
+BLOG_TOPICS = [
+    # ── Capa 1: Autoconocimiento (volumen, búsqueda activa) ──
+    ("Cómo conocerse a sí mismo: guía práctica para empezar",
+     "capa1", "autoconocimiento, conocerse a uno mismo, psicología personal", "/mascara/"),
+    ("Qué es el autoconocimiento y por qué importa",
+     "capa1", "autoconocimiento, desarrollo personal, crecimiento interior", "/mascara/"),
+    ("Señales de que necesitas conocerte mejor",
+     "capa1", "autoconocimiento, señales, desarrollo personal", "/hacks/"),
+    ("Los 5 tipos de personalidad según la psicología",
+     "capa1", "tipos de personalidad, psicología, autoconocimiento", "/mascara/"),
+    ("Cómo identificar tus patrones repetitivos",
+     "capa1", "patrones repetitivos, autoconocimiento, psicología", "/hacks/"),
+
+    # ── Capa 2: Viaje interior (intención, personas en proceso) ──
+    ("Qué es el viaje interior y en qué se diferencia de la autoayuda",
+     "capa2", "viaje interior, trabajo interior, mundo interior", "/viaje/"),
+    ("Heridas de infancia: cómo se manifiestan en la vida adulta",
+     "capa2", "heridas de infancia, infancia, relaciones, psicología", "/mascara/"),
+    ("La máscara que usas para sobrevivir (y cómo reconocerla)",
+     "capa2", "máscara, personalidad, autoconocimiento, sombra", "/mascara/"),
+    ("Patrones repetitivos en el amor: por qué eliges siempre lo mismo",
+     "capa2", "patrones en el amor, relaciones, apego, psicología", "/viaje/"),
+    ("El autosabotaje: cómo tu propia sombra boicotea tus logros",
+     "capa2", "autosabotaje, sombra, jung, psicología", "/hacks/"),
+    ("Herida de abandono: cómo se manifiesta en las relaciones",
+     "capa2", "herida de abandono, relaciones, apego, psicología", "/mascara/"),
+    ("Herida de rechazo: el miedo a no ser suficiente",
+     "capa2", "herida de rechazo, autoestima, psicología", "/mascara/"),
+    ("La máscara del salvador: ayudar para no ser vulnerable",
+     "capa2", "máscara del salvador, relaciones, límites", "/mascara/"),
+    ("Del dolor al patrón: cómo usar tu historia como brújula",
+     "capa2", "dolor, patrón, historia personal, crecimiento", "/viaje/"),
+
+    # ── Capa 3: Nivel de conciencia (brand, retención, conversión) ──
+    ("Qué es la endonáutica: el mapa del mundo interior",
+     "capa3", "endonáutica, cartografía interior, mapa interior", "/viaje/"),
+    ("Cómo aumentar tu nivel de conciencia en 30 días",
+     "capa3", "nivel de conciencia, expansión de conciencia, crecimiento", "/viaje/"),
+    ("La sombra según Jung: integrar lo que rechazas de ti",
+     "capa3", "sombra, jung, integración, psicología analítica", "/hacks/"),
+    ("Eneagrama tipo 2: el ayudante que olvida sus propias necesidades",
+     "capa3", "eneagrama tipo 2, eneagrama, personalidad", "/mascara/"),
+    ("Eneagrama tipo 4: la búsqueda de autenticidad en la melancolía",
+     "capa3", "eneagrama tipo 4, eneagrama, autenticidad", "/mascara/"),
+    ("Apego ansioso en adultos: cuando la incertidumbre se siente como abandono",
+     "capa3", "apego ansioso, apego, relaciones, psicología", "/viaje/"),
+    ("Big Five: qué dice tu apertura a la experiencia sobre ti",
+     "capa3", "big five, personalidad, psicología, test de personalidad", "/mascara/"),
+    ("Heridas de infancia en la pareja: el origen de los conflictos",
+     "capa3", "heridas de infancia, pareja, conflictos, relaciones", "/mascara/"),
+]
+
+# Helper functions
+def get_topic_title(topic_tuple):
+    return topic_tuple[0]
+
+def get_topic_capa(topic_tuple):
+    return topic_tuple[1]
+
+def get_topic_keywords(topic_tuple):
+    return topic_tuple[2]
+
+def get_topic_cta(topic_tuple):
+    return topic_tuple[3]
+
+BLOG_TOPIC_TITLES = [t[0] for t in BLOG_TOPICS]
