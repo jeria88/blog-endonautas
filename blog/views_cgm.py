@@ -46,32 +46,9 @@ def cgm_dashboard(request):
 
 
 @staff_member_required
-def cgm_articles(request):
+def cgm_workspace(request):
+    """Workspace principal del CGM con tabs: Artículo → Copy → Slides."""
     articles = GeneratedArticle.objects.all()
-    suggested_topics = [
-        {'title': get_topic_title(t), 'capa': t[1], 'keywords': t[2]}
-        for t in BLOG_TOPICS[:12]
-    ]
-    context = {
-        'tab': 'articles',
-        'articles': articles,
-        'suggested_topics': suggested_topics,
-    }
-    return render(request, 'blog/cgm/articles.html', context)
-
-
-@staff_member_required
-def cgm_article_edit(request, pk):
-    article = get_object_or_404(GeneratedArticle, pk=pk)
-    return render(request, 'blog/cgm/article_edit.html', {
-        'tab': 'articles',
-        'article': article,
-    })
-
-
-@staff_member_required
-def cgm_rrss(request):
-    articles = GeneratedArticle.objects.filter(status__in=['draft', 'review', 'approved'])
     social_posts = SocialPost.objects.all()[:20]
     selected_article = None
     article_id = request.GET.get('article')
@@ -81,12 +58,16 @@ def cgm_rrss(request):
         except GeneratedArticle.DoesNotExist:
             pass
     context = {
-        'tab': 'rrss',
+        'tab': 'workspace',
         'articles': articles,
         'social_posts': social_posts,
         'selected_article': selected_article,
+        'suggested_topics': [
+            {'title': get_topic_title(t), 'capa': t[1], 'keywords': t[2]}
+            for t in BLOG_TOPICS[:12]
+        ],
     }
-    return render(request, 'blog/cgm/rrss.html', context)
+    return render(request, 'blog/cgm/workspace.html', context)
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -172,7 +153,7 @@ def api_search_pexels(request):
 def api_article_info(request, pk):
     try:
         article = GeneratedArticle.objects.get(pk=pk)
-        return JsonResponse({'ok': True, 'title': article.title, 'intro': article.intro or ''})
+        return JsonResponse({'ok': True, 'title': article.title, 'intro': article.intro or '', 'body': article.body or ''})
     except GeneratedArticle.DoesNotExist:
         return JsonResponse({'error': 'No encontrado'}, status=404)
 
@@ -311,7 +292,8 @@ def api_generate_slides(request):
     try:
         brand_template = Path(settings.BASE_DIR).parent / 'brand' / 'social' / 'plantilla' / '05-post-completo'
         sys.path.insert(0, str(brand_template))
-        from layouts import render_slide_html, LAYOUTS
+        from layouts import render_slide_html
+        from generate_v4 import chrome_render
         output_dir = Path(settings.MEDIA_ROOT) / 'slides' / str(article_id)
         output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -321,7 +303,6 @@ def api_generate_slides(request):
             slide_text = slide_data.get('text', '')
             slide_bg = slide_data.get('bg_url', bg_image_url)
 
-            # Renderizar HTML de la slide
             html_content = render_slide_html(
                 layout_id=layout_id,
                 data={"title": slide_text, "body": slide_text, "quote": slide_text, **slide_data},
@@ -330,11 +311,9 @@ def api_generate_slides(request):
                 bg_url=slide_bg
             )
 
-            # Guardar HTML
             html_path = output_dir / f"slide-{i+1:02d}.html"
             html_path.write_text(html_content, encoding='utf-8')
 
-            # Renderizar PNG con Chrome
             jpg_path = output_dir / f"slide-{i+1:02d}.jpg"
             try:
                 chrome_render(str(html_path), str(jpg_path))
@@ -342,7 +321,7 @@ def api_generate_slides(request):
                 generated.append(str(png_path if png_path.exists() else jpg_path))
             except Exception as e:
                 logger.error(f"Error renderizando slide {i+1}: {e}")
-                generated.append(str(html_path))  # Fallback a HTML
+                generated.append(str(html_path))
 
         article.slides_data = {
             'slides': slides,
@@ -352,12 +331,6 @@ def api_generate_slides(request):
         }
         article.save()
 
-        return JsonResponse({'ok': True, 'files': generated})
-        article.slides_data = {
-            'slides': slides, 'template_style': template_style,
-            'bg_image_url': bg_image_url, 'generated_files': generated,
-        }
-        article.save()
         return JsonResponse({'ok': True, 'files': generated})
     except Exception as e:
         logger.error(f"Error generando slides: {e}")
