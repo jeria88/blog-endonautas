@@ -36,8 +36,8 @@ class Migration(migrations.Migration):
                 'verbose_name': 'Evento de email',
                 'verbose_name_plural': 'Eventos de email',
                 'indexes': [
-                    models.Index(fields=['subscriber', 'event_type']),
-                    models.Index(fields=['message_id']),
+                    models.Index(fields=['subscriber', 'event_type'], name='crm_emailsubscriber_idx'),
+                    models.Index(fields=['message_id'], name='crm_emailmessage_idx'),
                 ],
             },
         ),
