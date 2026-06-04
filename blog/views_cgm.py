@@ -363,52 +363,37 @@ def api_generate_slides(request):
     if not slides:
         return JsonResponse({'error': 'No hay slides'}, status=400)
 
-    try:
-        brand_template = Path(settings.BASE_DIR).parent / 'brand' / 'social' / 'plantilla' / '05-post-completo'
-        sys.path.insert(0, str(brand_template))
-        from layouts import render_slide_html
-        from generate_v4 import chrome_render
-        output_dir = Path(settings.MEDIA_ROOT) / 'slides' / str(article_id)
-        output_dir.mkdir(parents=True, exist_ok=True)
+    templates_dir = Path(settings.BASE_DIR) / 'blog' / 'slide_templates'
+    output_dir = Path(settings.MEDIA_ROOT) / 'slides' / str(article_id)
+    output_dir.mkdir(parents=True, exist_ok=True)
 
-        generated = []
-        for i, slide_data in enumerate(slides):
-            layout_id = slide_data.get('layout', 'portada')
-            slide_text = slide_data.get('text', '')
-            slide_bg = slide_data.get('bg_url', bg_image_url)
+    generated = []
+    for i, slide_data in enumerate(slides):
+        template_id = slide_data.get('layout') or slide_data.get('template_id', 'portada')
+        template_path = templates_dir / f'slide-{_get_template_index(template_id):02d}.html'
+        if not template_path.exists():
+            template_path = templates_dir / 'slide-01.html'
 
-            html_content = render_slide_html(
-                layout_id=layout_id,
-                data={"title": slide_text, "body": slide_text, "quote": slide_text, **slide_data},
-                slide_num=i+1,
-                total=len(slides),
-                bg_url=slide_bg
-            )
+        html = template_path.read_text(encoding='utf-8')
+        html = html.replace('{{TITLE}}', slide_data.get('title', slide_data.get('text', '')))
+        html = html.replace('{{BODY}}', slide_data.get('body', slide_data.get('text', '')))
+        html = html.replace('{{CTA}}', slide_data.get('cta', 'Deslizá →'))
+        html = html.replace('{{TAG}}', slide_data.get('tag', ''))
+        html = html.replace('{{BG_URL}}', slide_data.get('bg_url', bg_image_url))
 
-            html_path = output_dir / f"slide-{i+1:02d}.html"
-            html_path.write_text(html_content, encoding='utf-8')
+        html_path = output_dir / f"slide-{i+1:02d}.html"
+        html_path.write_text(html, encoding='utf-8')
+        generated.append(str(html_path))
 
-            jpg_path = output_dir / f"slide-{i+1:02d}.jpg"
-            try:
-                chrome_render(str(html_path), str(jpg_path))
-                png_path = Path(str(jpg_path).replace('.jpg', '.png'))
-                generated.append(str(png_path if png_path.exists() else jpg_path))
-            except Exception as e:
-                logger.error(f"Error renderizando slide {i+1}: {e}")
-                generated.append(str(html_path))
+    article.slides_data = {
+        'slides': slides,
+        'template_style': template_style,
+        'bg_image_url': bg_image_url,
+        'generated_files': generated,
+    }
+    article.save()
 
-        article.slides_data = {
-            'slides': slides,
-            'template_style': template_style,
-            'bg_image_url': bg_image_url,
-            'generated_files': generated,
-        }
-        article.save()
-
-        return JsonResponse({'ok': True, 'files': generated})
-    except Exception as e:
-        logger.error(f"Error generando slides: {e}")
-        return JsonResponse({'error': str(e)}, status=500)
+    return JsonResponse({'ok': True, 'files': [f.split('/')[-1] for f in generated]})
 
 
 @staff_member_required

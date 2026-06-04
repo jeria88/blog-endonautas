@@ -172,12 +172,11 @@ function renderSlidesList() {
     const fieldsHtml = (TEMPLATES.find(t => t.id === s.template_id) || TEMPLATES[0]).fields.map(f => {
       const val = s[f] || '';
       const fl = f === 'title' ? 'Título' : f === 'body' ? 'Cuerpo' : f === 'cta' ? 'CTA' : f === 'tag' ? 'Tag' : f;
-      return `<div class="cgm-form-group" style="margin-top:4px;"><label>${fl}</label><input type="text" class="cgm-input" style="padding:6px 10px;font-size:0.82rem;" value="${val}" oninput="slides[${i}]['${f}']=this.value"></div>`;
+      return `<div class="cgm-form-group" style="margin-top:4px;"><label>${fl}</label><input type="text" class="cgm-input" style="padding:6px 10px;font-size:0.82rem;" value="${val}" oninput="slides[${i}]['${f}']=this.value;debouncedPreviewUpdate(${i})"></div>`;
     }).join('');
 
-    const previewHtml = s.previewUrl
-      ? `<div style="margin-top:8px;border-radius:var(--cgm-radius-sm);overflow:hidden;border:1px solid var(--cgm-border);"><img src="${s.previewUrl}" style="width:100%;aspect-ratio:1080/1350;object-fit:cover;"></div><div style="display:flex;gap:4px;margin-top:4px;"><button class="cgm-btn cgm-btn-sm cgm-btn-green" onclick="generateOneSlide(${i})">🔄 Regenerar</button><a class="cgm-btn cgm-btn-sm" href="${s.previewUrl}" download="slide-${i+1}.png" target="_blank">⬇️ Descargar</a></div>`
-      : `<div style="margin-top:8px;"><iframe src="/cgm/api/slide-preview/?template_id=${s.template_id}&title=${encodeURIComponent(s.title||'')}&body=${encodeURIComponent(s.body||'')}&cta=${encodeURIComponent(s.cta||'')}&tag=${encodeURIComponent(s.tag||'')}&bg_url=${encodeURIComponent(s.bg_url||curBgUrl)}" style="width:100%;aspect-ratio:1080/1350;border:1px solid var(--cgm-border);border-radius:var(--cgm-radius-sm);background:#000;" scrolling="no"></iframe></div>`;
+    const previewSrc = buildPreviewUrl(s);
+    const previewHtml = `<div class="slide-preview-wrapper" style="position:relative;width:100%;padding-bottom:125%;overflow:hidden;border-radius:var(--cgm-radius-sm);border:1px solid var(--cgm-border);background:#000;margin-top:8px;"><iframe src="${previewSrc}" data-preview-idx="${i}" class="slide-preview-iframe" style="position:absolute;top:0;left:0;width:1080px;height:1350px;transform-origin:top left;border:none;" scrolling="no"></iframe></div>`;
 
     return `<div class="cgm-card" style="margin-bottom:12px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
@@ -188,12 +187,38 @@ function renderSlidesList() {
           <button class="cgm-btn cgm-btn-sm cgm-btn-red" onclick="removeSlide(${i})">✕</button>
         </div>
       </div>
-      <div class="cgm-form-group"><label>Template</label><select class="cgm-select" style="padding:4px 8px;font-size:0.8rem;" onchange="slides[${i}].template_id=this.value">${tplOptions}</select></div>
+      <div class="cgm-form-group"><label>Template</label><select class="cgm-select" style="padding:4px 8px;font-size:0.8rem;" onchange="slides[${i}].template_id=this.value;renderSlidesList()">${tplOptions}</select></div>
       ${fieldsHtml}
       ${previewHtml}
     </div>`;
   }).join('');
+  requestAnimationFrame(scaleIframes);
 }
+
+function buildPreviewUrl(s) {
+  return `/cgm/api/slide-preview/?template_id=${encodeURIComponent(s.template_id||'portada')}&title=${encodeURIComponent(s.title||'')}&body=${encodeURIComponent(s.body||'')}&cta=${encodeURIComponent(s.cta||'Deslizá →')}&tag=${encodeURIComponent(s.tag||'')}&bg_url=${encodeURIComponent(s.bg_url||curBgUrl)}`;
+}
+
+function scaleIframes() {
+  document.querySelectorAll('.slide-preview-wrapper').forEach(wrapper => {
+    const iframe = wrapper.querySelector('.slide-preview-iframe');
+    if (!iframe) return;
+    const scale = wrapper.offsetWidth / 1080;
+    iframe.style.transform = `scale(${scale})`;
+  });
+}
+
+const _previewTimers = {};
+function debouncedPreviewUpdate(idx) {
+  clearTimeout(_previewTimers[idx]);
+  _previewTimers[idx] = setTimeout(() => {
+    const s = slides[idx];
+    const iframe = document.querySelector(`[data-preview-idx="${idx}"]`);
+    if (iframe) iframe.src = buildPreviewUrl(s);
+  }, 500);
+}
+
+window.addEventListener('resize', scaleIframes);
 
 function addSlide() {
   const pos = slides.length > 1 ? slides.length - 1 : slides.length;
