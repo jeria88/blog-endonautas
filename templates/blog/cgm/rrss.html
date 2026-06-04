@@ -21,34 +21,40 @@
 
       <div class="cgm-form-group">
         <label>Formato</label>
-        <div style="display: flex; gap: 8px;">
-          <button class="cgm-btn format-btn active" data-format="carrusel" onclick="selectFormat('carrusel')">📱 Carrusel</button>
-          <button class="cgm-btn format-btn" data-format="reel" onclick="selectFormat('reel')">🎬 Reel</button>
-          <button class="cgm-btn format-btn" data-format="post" onclick="selectFormat('post')">📄 Post</button>
+        <div style="display: flex; gap: 8px;" id="formatButtons">
+          <button class="cgm-btn cgm-btn-sm format-btn active" data-format="carrusel" onclick="selectFormat('carrusel')">📱 Carrusel</button>
+          <button class="cgm-btn cgm-btn-sm format-btn" data-format="reel" onclick="selectFormat('reel')">🎬 Reel</button>
+          <button class="cgm-btn cgm-btn-sm format-btn" data-format="post" onclick="selectFormat('post')">📄 Post</button>
         </div>
       </div>
 
       <div class="cgm-form-group">
-        <label>Red social</label>
-        <div style="display: flex; gap: 8px;">
-          <button class="cgm-btn platform-btn active" data-platform="instagram" onclick="selectPlatform('instagram')">📸 Instagram</button>
-          <button class="cgm-btn platform-btn" data-platform="tiktok" onclick="selectPlatform('tiktok')">🎵 TikTok</button>
-          <button class="cgm-btn platform-btn" data-platform="linkedin" onclick="selectPlatform('linkedin')">💼 LinkedIn</button>
+        <label>Red social destino</label>
+        <div style="display: flex; gap: 8px;" id="platformButtons">
+          <button class="cgm-btn cgm-btn-sm platform-btn active" data-platform="instagram" onclick="selectPlatform('instagram')">📸 Instagram</button>
+          <button class="cgm-btn cgm-btn-sm platform-btn" data-platform="tiktok" onclick="selectPlatform('tiktok')">🎵 TikTok</button>
+          <button class="cgm-btn cgm-btn-sm platform-btn" data-platform="linkedin" onclick="selectPlatform('linkedin')">💼 LinkedIn</button>
         </div>
       </div>
 
-      <button class="cgm-btn cgm-btn-primary" style="width: 100%; justify-content: center;" onclick="generateRRSS()">
-        ⚡ Generar copy con IA
+      <button class="cgm-btn cgm-btn-primary" style="width: 100%; justify-content: center; margin-top: 1rem;" onclick="generateRRSS()">
+        ⚡ Generar copy para <span id="genLabel">Carrusel</span>
       </button>
 
       <div class="cgm-loading" id="rrssLoading" style="margin-top: 1rem;">
         <div class="cgm-spinner"></div>
-        <p style="margin-top: 1rem; color: var(--cgm-text-2);">Generando copy...</p>
+        <p style="margin-top: 1rem; color: var(--cgm-text-2);">Generando copy con IA...</p>
       </div>
+    </div>
+
+    <!-- Info del artículo seleccionado -->
+    <div id="articleInfo" class="cgm-card" style="display: none;">
+      <div class="cgm-card-title" id="articleInfoTitle"></div>
+      <div class="cgm-card-body" id="articleInfoBody"></div>
     </div>
   </div>
 
-  <!-- Columna derecha: Copys generados con editor -->
+  <!-- Columna derecha: Copys generados -->
   <div>
     <h2 style="font-size: 1.1rem; font-weight: 600; color: var(--cgm-text); margin-bottom: 1rem;">Copys generados</h2>
 
@@ -62,8 +68,8 @@
               <span style="font-size: 0.75rem; color: var(--cgm-text-2); margin-left: 8px;">{{ post.get_plataforma_display }}</span>
             </div>
             <div style="display: flex; gap: 4px;">
-              <button class="cgm-btn cgm-btn-sm" onclick="toggleEdit('{{ post.pk }}')">✏️</button>
-              <button class="cgm-btn cgm-btn-sm cgm-btn-red" onclick="deletePost('{{ post.pk }}')">🗑️</button>
+              <button class="cgm-btn cgm-btn-sm" onclick="toggleEdit('{{ post.pk }}')" title="Editar">✏️</button>
+              <button class="cgm-btn cgm-btn-sm cgm-btn-red" onclick="deletePost('{{ post.pk }}')" title="Eliminar">🗑️</button>
             </div>
           </div>
 
@@ -75,20 +81,16 @@
               <div style="font-size: 0.85rem; color: var(--cgm-text);">{{ post.carrusel_gancho|default:"—" }}</div>
             </div>
             <div style="margin-bottom: 8px;">
-              <div style="font-size: 0.7rem; color: var(--cgm-text-3); text-transform: uppercase; margin-bottom: 4px;">📝 Cuerpo (slides)</div>
+              <div style="font-size: 0.7rem; color: var(--cgm-text-3); text-transform: uppercase; margin-bottom: 4px;">📝 Cuerpo</div>
               <div style="font-size: 0.85rem; color: var(--cgm-text); white-space: pre-line;">{{ post.carrusel_cuerpo|default:"—" }}</div>
             </div>
             <div style="margin-bottom: 8px;">
               <div style="font-size: 0.7rem; color: var(--cgm-text-3); text-transform: uppercase; margin-bottom: 4px;">📢 CTA</div>
               <div style="font-size: 0.85rem; color: var(--cgm-text);">{{ post.carrusel_cta|default:"—" }}</div>
             </div>
-            <div style="margin-bottom: 8px;">
-              <div style="font-size: 0.7rem; color: var(--cgm-text-3); text-transform: uppercase; margin-bottom: 4px;">📄 Descripción</div>
-              <div style="font-size: 0.85rem; color: var(--cgm-text-2);">{{ post.carrusel_descripcion|truncatechars:150|default:"—" }}</div>
-            </div>
             {% elif post.formato == 'reel' %}
             <div style="margin-bottom: 8px;">
-              <div style="font-size: 0.7rem; color: var(--cgm-text-3); text-transform: uppercase; margin-bottom: 4px;">🎣 Texto en pantalla</div>
+              <div style="font-size: 0.7rem; color: var(--cgm-text-3); text-transform: uppercase; margin-bottom: 4px;">🎣 Texto pantalla</div>
               <div style="font-size: 0.85rem; color: var(--cgm-text);">{{ post.reel_gancho|default:"—" }}</div>
             </div>
             <div style="margin-bottom: 8px;">
@@ -110,15 +112,15 @@
             </div>
             {% endif %}
 
-            <!-- Botones copiar -->
+            <!-- Botones copiar por red social -->
             <div style="display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap;">
-              {% if post.copy_instagram %}<button class="cgm-btn cgm-btn-sm" onclick="copyText(this, `{{ post.copy_instagram|escapejs }}`)">📸 Copiar IG</button>{% endif %}
-              {% if post.copy_tiktok %}<button class="cgm-btn cgm-btn-sm" onclick="copyText(this, `{{ post.copy_tiktok|escapejs }}`)">🎵 Copiar TT</button>{% endif %}
-              {% if post.copy_linkedin %}<button class="cgm-btn cgm-btn-sm" onclick="copyText(this, `{{ post.copy_linkedin|escapejs }}`)">💼 Copiar LI</button>{% endif %}
+              <button class="cgm-btn cgm-btn-sm" onclick="copyText(this, `{{ post.copy_instagram|escapejs }}`)">📸 Copiar IG</button>
+              <button class="cgm-btn cgm-btn-sm" onclick="copyText(this, `{{ post.copy_tiktok|escapejs }}`)">🎵 Copiar TT</button>
+              <button class="cgm-btn cgm-btn-sm" onclick="copyText(this, `{{ post.copy_linkedin|escapejs }}`)">💼 Copiar LI</button>
             </div>
           </div>
 
-          <!-- Editor (oculto por defecto) -->
+          <!-- Editor (oculto) -->
           <div id="editor-{{ post.pk }}" style="display: none;">
             {% if post.formato == 'carrusel' %}
             <div class="cgm-form-group">
@@ -185,7 +187,9 @@ let currentPlatform = 'instagram';
 function selectFormat(f) {
   currentFormat = f;
   document.querySelectorAll('.format-btn').forEach(b => b.classList.toggle('active', b.dataset.format === f));
+  document.getElementById('genLabel').textContent = f.charAt(0).toUpperCase() + f.slice(1);
 }
+
 function selectPlatform(p) {
   currentPlatform = p;
   document.querySelectorAll('.platform-btn').forEach(b => b.classList.toggle('active', b.dataset.platform === p));
@@ -194,27 +198,43 @@ function selectPlatform(p) {
 async function generateRRSS() {
   const articleId = document.getElementById('sourceArticle').value;
   if (!articleId) return showToast('Seleccioná un artículo', 'error');
+
   document.getElementById('rrssLoading').classList.add('active');
+
   try {
     const resp = await fetch('/cgm/api/generate-rrss/', {
       method: 'POST',
       headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
-      body: JSON.stringify({article_id: parseInt(articleId), plataforma: currentPlatform, formato: currentFormat})
+      body: JSON.stringify({
+        article_id: parseInt(articleId),
+        plataforma: currentPlatform,
+        formato: currentFormat
+      })
     });
     const data = await resp.json();
-    if (data.ok) { showToast('Copy generado!', 'success'); location.reload(); }
-    else showToast('Error: ' + (data.error || ''), 'error');
-  } catch(e) { showToast('Error de red', 'error'); }
+    if (data.ok) {
+      showToast(`Copy de ${data.formato} generado!`, 'success');
+      location.reload();
+    } else {
+      showToast('Error: ' + (data.error || 'Desconocido'), 'error');
+    }
+  } catch(e) {
+    showToast('Error de red: ' + e, 'error');
+  }
   document.getElementById('rrssLoading').classList.remove('active');
 }
 
 function deletePost(id) {
-  if (!confirm('¿Eliminar?')) return;
+  if (!confirm('¿Eliminar este post?')) return;
   fetch('/cgm/api/delete-social-post/' + id + '/', {
     method: 'POST', headers: {'X-CSRFToken': '{{ csrf_token }}'}
   }).then(r => r.json()).then(data => {
-    if (data.ok) { document.getElementById('post-' + id).remove(); showToast('Eliminado', 'success'); }
-    else showToast('Error', 'error');
+    if (data.ok) {
+      document.getElementById('post-' + id).remove();
+      showToast('Eliminado', 'success');
+    } else {
+      showToast('Error', 'error');
+    }
   });
 }
 
@@ -244,9 +264,15 @@ async function savePost(id) {
       body: JSON.stringify(data)
     });
     const result = await resp.json();
-    if (result.ok) { showToast('Guardado', 'success'); location.reload(); }
-    else showToast('Error: ' + (result.error || ''), 'error');
-  } catch(e) { showToast('Error de red', 'error'); }
+    if (result.ok) {
+      showToast('Guardado', 'success');
+      location.reload();
+    } else {
+      showToast('Error: ' + (result.error || ''), 'error');
+    }
+  } catch(e) {
+    showToast('Error de red', 'error');
+  }
 }
 </script>
 {% endblock %}

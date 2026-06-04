@@ -179,63 +179,110 @@ def api_generate_rrss(request):
         data = json.loads(request.body)
     except json.JSONDecodeError:
         data = request.POST
+
     article_id = data.get('article_id')
     if not article_id:
         return JsonResponse({'error': 'Falta article_id'}, status=400)
-    try:
-        article = GeneratedArticle.objects.get(pk=article_id)
-    except GeneratedArticle.DoesNotExist:
-        return JsonResponse({'error': 'No encontrado'}, status=404)
 
     plataforma = data.get('plataforma', 'instagram')
     formato = data.get('formato', 'carrusel')
 
     try:
+        article = GeneratedArticle.objects.get(pk=article_id)
+    except GeneratedArticle.DoesNotExist:
+        return JsonResponse({'error': 'No encontrado'}, status=404)
+
+    try:
         if formato == 'carrusel':
             copy_data = generate_carrusel_copy(article)
-            cuerpo_slides = copy_data.get('cuerpo', copy_data.get('slides', []))
+            gancho = copy_data.get('gancho', '')
+            cuerpo_slides = copy_data.get('cuerpo', [])
+            if isinstance(cuerpo_slides, str):
+                cuerpo_slides = [s.strip() for s in cuerpo_slides.split('---') if s.strip()]
+            cta = copy_data.get('cta', '')
+            descripcion = copy_data.get('descripcion', '')
+            hashtags = copy_data.get('hashtags', '')
+
+            # Construir descripción completa para cada red
+            full_desc = descripcion
+            if hashtags:
+                full_desc = full_desc + '\n\n' + hashtags
+
             post = SocialPost.objects.create(
-                generated_article=article, plataforma=plataforma, formato=formato,
-                carrusel_gancho=copy_data.get('gancho', ''),
-                carrusel_cuerpo='\n---\n'.join(cuerpo_slides) if isinstance(cuerpo_slides, list) else str(cuerpo_slides),
-                carrusel_cta=copy_data.get('cta', ''),
-                carrusel_hashtags=copy_data.get('hashtags', ''),
-                carrusel_descripcion=copy_data.get('descripcion', ''),
-                copy_instagram=copy_data.get('descripcion', '') + '\n\n' + copy_data.get('hashtags', ''),
-                copy_tiktok=copy_data.get('descripcion', '') + '\n\n' + copy_data.get('hashtags', ''),
-                copy_linkedin=copy_data.get('descripcion', '') + '\n\n' + copy_data.get('hashtags', ''),
+                generated_article=article,
+                plataforma=plataforma,
+                formato=formato,
+                carrusel_gancho=gancho,
+                carrusel_cuerpo='\n---\n'.join(cuerpo_slides),
+                carrusel_cta=cta,
+                carrusel_hashtags=hashtags,
+                carrusel_descripcion=descripcion,
+                copy_instagram=full_desc,
+                copy_tiktok=full_desc,
+                copy_linkedin=full_desc,
             )
+
         elif formato == 'reel':
             copy_data = generate_reel_copy(article)
-            desc = copy_data.get('descripcion', '')
-            tags = copy_data.get('hashtags', '')
+            texto_pantalla = copy_data.get('texto_pantalla', '')
+            descripcion = copy_data.get('descripcion', '')
+            hashtags = copy_data.get('hashtags', '')
+
+            full_desc = descripcion
+            if hashtags:
+                full_desc = full_desc + '\n\n' + hashtags
+
             post = SocialPost.objects.create(
-                generated_article=article, plataforma=plataforma, formato=formato,
-                reel_gancho=copy_data.get('texto_pantalla', ''),
-                reel_cuerpo=desc,
+                generated_article=article,
+                plataforma=plataforma,
+                formato=formato,
+                reel_gancho=texto_pantalla,
+                reel_cuerpo=descripcion,
                 reel_cta='Descubrí más en endonautas.cl',
-                reel_hashtags=tags,
-                reel_descripcion=desc,
-                copy_instagram=desc + '\n\n' + tags,
-                copy_tiktok=desc + '\n\n' + tags,
-                copy_linkedin=desc + '\n\n' + tags,
+                reel_hashtags=hashtags,
+                reel_descripcion=descripcion,
+                copy_instagram=full_desc,
+                copy_tiktok=full_desc,
+                copy_linkedin=full_desc,
             )
-        else:
+
+        else:  # post simple
             copy_data = generate_carrusel_copy(article)
-            slides = copy_data.get('slides', [])
-            desc = copy_data.get('descripcion', '')
-            tags = copy_data.get('hashtags', '')
+            gancho = copy_data.get('gancho', '')
+            cuerpo_slides = copy_data.get('cuerpo', [])
+            if isinstance(cuerpo_slides, str):
+                cuerpo_slides = [s.strip() for s in cuerpo_slides.split('---') if s.strip()]
+            cta = copy_data.get('cta', '')
+            descripcion = copy_data.get('descripcion', '')
+            hashtags = copy_data.get('hashtags', '')
+
+            # Para post simple, el copy es gancho + cuerpo + CTA
+            partes = []
+            if gancho:
+                partes.append(gancho)
+            if cuerpo_slides:
+                partes.extend(cuerpo_slides)
+            if cta:
+                partes.append(cta)
+            full_desc = '\n\n'.join(partes)
+            if hashtags:
+                full_desc = full_desc + '\n\n' + hashtags
+
             post = SocialPost.objects.create(
-                generated_article=article, plataforma=plataforma, formato=formato,
-                post_gancho=slides[0] if slides else '',
-                post_cuerpo='\n\n'.join(slides[1:]) if len(slides) > 1 else '',
-                post_cta='Descubrí más en endonautas.cl',
-                post_hashtags=tags,
-                copy_instagram=desc + '\n\n' + tags,
-                copy_tiktok=desc + '\n\n' + tags,
-                copy_linkedin=desc + '\n\n' + tags,
+                generated_article=article,
+                plataforma=plataforma,
+                formato=formato,
+                post_gancho=gancho,
+                post_cuerpo='\n\n'.join(cuerpo_slides),
+                post_cta=cta,
+                post_hashtags=hashtags,
+                copy_instagram=full_desc,
+                copy_tiktok=full_desc,
+                copy_linkedin=full_desc,
             )
-        return JsonResponse({'ok': True, 'post_id': post.pk})
+
+        return JsonResponse({'ok': True, 'post_id': post.pk, 'formato': formato})
+
     except Exception as e:
         logger.error(f"Error generando RRSS: {e}")
         return JsonResponse({'error': str(e)}, status=500)
