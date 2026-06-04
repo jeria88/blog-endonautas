@@ -164,7 +164,7 @@ def api_search_pexels(request):
     if not query:
         return JsonResponse({'error': 'Falta query'}, status=400)
     from blog.services import search_pexels_images
-    images = search_pexels_images(query, count=6)
+    images = search_pexels_images(query, count=12)
     return JsonResponse({'ok': True, 'images': images})
 
 
@@ -309,7 +309,8 @@ def api_generate_slides(request):
         return JsonResponse({'error': 'No hay slides'}, status=400)
 
     try:
-        sys.path.insert(0, str(Path(settings.BASE_DIR).parent / 'brand' / 'social' / 'plantilla' / '05-post-completo'))
+        brand_template = Path(settings.BASE_DIR).parent / 'brand' / 'social' / 'plantilla' / '05-post-completo'
+        sys.path.insert(0, str(brand_template))
         from generate_v4 import generate_carousel_slides
         output_dir = Path(settings.MEDIA_ROOT) / 'slides' / str(article_id)
         output_dir.mkdir(parents=True, exist_ok=True)

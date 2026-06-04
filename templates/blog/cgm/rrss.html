@@ -2,14 +2,15 @@
 
 {% block cgm_content %}
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-  <!-- Columna izquierda: Generador + Slides -->
+  <!-- Columna izquierda: Generador + Editor de Slides -->
   <div>
     <h2 style="font-size: 1.1rem; font-weight: 600; color: var(--cgm-text); margin-bottom: 1rem;">Generar contenido RRSS</h2>
 
+    <!-- Selector de artículo y formato -->
     <div class="cgm-card" style="margin-bottom: 1.5rem;">
       <div class="cgm-form-group">
         <label>Artículo fuente</label>
-        <select id="sourceArticle" class="cgm-select" onchange="loadArticleForSlides()">
+        <select id="sourceArticle" class="cgm-select" onchange="onArticleChange()">
           <option value="">Seleccioná un artículo...</option>
           {% for article in articles %}
           <option value="{{ article.pk }}" {% if selected_article and selected_article.pk == article.pk %}selected{% endif %}>
@@ -21,132 +22,111 @@
       <div class="cgm-form-group">
         <label>Formato</label>
         <div style="display: flex; gap: 8px;">
-          <button class="cgm-btn cgm-btn-sm format-btn active" data-format="carrusel" onclick="selectFormat('carrusel')">📱 Carrusel</button>
-          <button class="cgm-btn cgm-btn-sm format-btn" data-format="reel" onclick="selectFormat('reel')">🎬 Reel</button>
-          <button class="cgm-btn cgm-btn-sm format-btn" data-format="post" onclick="selectFormat('post')">📄 Post</button>
+          <button class="cgm-btn cgm-btn-sm fmt-btn active" data-fmt="carrusel" onclick="selectFmt('carrusel')">📱 Carrusel</button>
+          <button class="cgm-btn cgm-btn-sm fmt-btn" data-fmt="reel" onclick="selectFmt('reel')">🎬 Reel</button>
+          <button class="cgm-btn cgm-btn-sm fmt-btn" data-fmt="post" onclick="selectFmt('post')">📄 Post</button>
         </div>
       </div>
       <div class="cgm-form-group">
-        <label>Red social destino</label>
+        <label>Red social</label>
         <div style="display: flex; gap: 8px;">
-          <button class="cgm-btn cgm-btn-sm platform-btn active" data-platform="instagram" onclick="selectPlatform('instagram')">📸 Instagram</button>
-          <button class="cgm-btn cgm-btn-sm platform-btn" data-platform="tiktok" onclick="selectPlatform('tiktok')">🎵 TikTok</button>
-          <button class="cgm-btn cgm-btn-sm platform-btn" data-platform="linkedin" onclick="selectPlatform('linkedin')">💼 LinkedIn</button>
+          <button class="cgm-btn cgm-btn-sm plat-btn active" data-plat="instagram" onclick="selectPlat('instagram')">📸 IG</button>
+          <button class="cgm-btn cgm-btn-sm plat-btn" data-plat="tiktok" onclick="selectPlat('tiktok')">🎵 TT</button>
+          <button class="cgm-btn cgm-btn-sm plat-btn" data-plat="linkedin" onclick="selectPlat('linkedin')">💼 LI</button>
         </div>
       </div>
-      <button class="cgm-btn cgm-btn-primary" style="width: 100%; justify-content: center; margin-top: 1rem;" onclick="generateRRSS()">
-        ⚡ Generar copy para <span id="genLabel">Carrusel</span>
+      <button class="cgm-btn cgm-btn-primary" style="width:100%;justify-content:center;margin-top:1rem;" onclick="generateRRSS()">
+        ⚡ Generar copy
       </button>
-      <div class="cgm-loading" id="rrssLoading" style="margin-top: 1rem;">
+      <div class="cgm-loading" id="rrssLoading" style="margin-top:1rem;">
         <div class="cgm-spinner"></div>
-        <p style="margin-top: 1rem; color: var(--cgm-text-2);">Generando copy con IA...</p>
+        <p style="margin-top:1rem;color:var(--cgm-text-2);">Generando copy con IA...</p>
       </div>
     </div>
 
-    <!-- SECCIÓN DE SLIDES (solo visible cuando hay artículo seleccionado y formato carrusel/post) -->
-    <div id="slidesSection" class="cgm-card" style="margin-bottom: 1.5rem; border-color: var(--cgm-accent); display: none;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-        <h3 style="font-size: 0.9rem; font-weight: 600; color: var(--cgm-text);">📱 Slides del Carrusel</h3>
-        <div style="display: flex; gap: 6px;">
-          <button class="cgm-btn cgm-btn-sm" onclick="autoGenerateSlides()">⚡ Auto</button>
-          <button class="cgm-btn cgm-btn-sm cgm-btn-green" onclick="generateSlidePNGs()">🎨 PNGs</button>
+    <!-- EDITOR DE SLIDES -->
+    <div id="slidesEditor" class="cgm-card" style="border-color:var(--cgm-accent);display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <h3 style="font-size:0.9rem;font-weight:600;color:var(--cgm-text);">📱 Editor de Slides</h3>
+        <div style="display:flex;gap:6px;">
+          <button class="cgm-btn cgm-btn-sm" onclick="autoSlides()">⚡ Auto</button>
+          <button class="cgm-btn cgm-btn-sm cgm-btn-green" onclick="renderAllSlides()">🎨 Generar Todas</button>
         </div>
       </div>
 
-      <!-- Selector de plantilla -->
+      <!-- Fondo global -->
       <div class="cgm-form-group">
-        <label>Estilo de plantilla</label>
-        <div style="display: flex; gap: 6px;">
-          <button class="cgm-btn cgm-btn-sm tpl-btn active" data-tpl="A" onclick="selectTpl('A')">A — Editorial</button>
-          <button class="cgm-btn cgm-btn-sm tpl-btn" data-tpl="B" onclick="selectTpl('B')">B — Canva</button>
-          <button class="cgm-btn cgm-btn-sm tpl-btn" data-tpl="C" onclick="selectTpl('C')">C — Bold</button>
+        <label>Fondo global (Pexels)</label>
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="bgQuery" class="cgm-input" placeholder="Buscar fondo..." style="flex:1;">
+          <button class="cgm-btn cgm-btn-sm" onclick="searchBg()">🔍</button>
         </div>
-      </div>
-
-      <!-- Fondo -->
-      <div class="cgm-form-group">
-        <label>Fondo (Pexels)</label>
-        <div style="display: flex; gap: 8px;">
-          <input type="text" id="slideBgQuery" class="cgm-input" placeholder="Buscar fondo..." style="flex: 1;">
-          <button class="cgm-btn cgm-btn-sm" onclick="searchSlideBg()">🔍</button>
-        </div>
-        <div id="slideBgResults" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 8px;"></div>
-        <input type="hidden" id="slideBgUrl" value="">
+        <div id="bgResults" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px;"></div>
+        <input type="hidden" id="bgUrl" value="">
       </div>
 
       <!-- Lista de slides -->
-      <div id="slidesList" style="margin-top: 1rem;">
-        <div style="font-size: 0.8rem; color: var(--cgm-text-2); text-align: center; padding: 1rem;">
-          Seleccioná un artículo y hacé clic en "Auto" para generar slides
-        </div>
-      </div>
+      <div id="slidesList" style="margin-top:1rem;"></div>
 
-      <button class="cgm-btn cgm-btn-sm" style="width: 100%; margin-top: 8px;" onclick="addSlide()">+ Agregar slide</button>
+      <button class="cgm-btn cgm-btn-sm" style="width:100%;margin-top:8px;" onclick="addSlide()">+ Agregar slide</button>
 
       <!-- Descarga ZIP -->
-      <div id="downloadSection" style="margin-top: 1rem; display: none;">
-        <a id="downloadZipBtn" class="cgm-btn cgm-btn-primary" style="width: 100%; justify-content: center;" href="#">📦 Descargar ZIP</a>
+      <div id="zipSection" style="margin-top:1rem;display:none;">
+        <button class="cgm-btn cgm-btn-primary" style="width:100%;justify-content:center;" onclick="downloadZIP()">📦 Descargar ZIP</button>
       </div>
-    </div>
-
-    <!-- Preview de slides generados -->
-    <div id="slidesPreviewSection" style="display: none;">
-      <h3 style="font-size: 0.9rem; font-weight: 600; color: var(--cgm-text); margin-bottom: 1rem;">Preview de slides</h3>
-      <div id="slidesPreview" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;"></div>
     </div>
   </div>
 
   <!-- Columna derecha: Copys generados -->
   <div>
-    <h2 style="font-size: 1.1rem; font-weight: 600; color: var(--cgm-text); margin-bottom: 1rem;">Copys generados</h2>
-    <div id="generatedCopies">
+    <h2 style="font-size:1.1rem;font-weight:600;color:var(--cgm-text);margin-bottom:1rem;">Copys generados</h2>
+    <div id="copiesList">
       {% if social_posts %}
         {% for post in social_posts %}
-        <div class="cgm-card" style="margin-bottom: 1rem;" id="post-{{ post.pk }}">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <div class="cgm-card" style="margin-bottom:1rem;" id="post-{{ post.pk }}">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
             <div>
               <span class="cgm-badge cgm-badge-{{ post.status }}">{{ post.get_formato_display }}</span>
-              <span style="font-size: 0.75rem; color: var(--cgm-text-2); margin-left: 8px;">{{ post.get_plataforma_display }}</span>
+              <span style="font-size:0.75rem;color:var(--cgm-text-2);margin-left:8px;">{{ post.get_plataforma_display }}</span>
             </div>
-            <div style="display: flex; gap: 4px;">
+            <div style="display:flex;gap:4px;">
               <button class="cgm-btn cgm-btn-sm" onclick="toggleEdit('{{ post.pk }}')">✏️</button>
               <button class="cgm-btn cgm-btn-sm cgm-btn-red" onclick="deletePost('{{ post.pk }}')">🗑️</button>
             </div>
           </div>
-          <div id="preview-{{ post.pk }}">
+          <div id="prev-{{ post.pk }}">
             {% if post.formato == 'carrusel' %}
-            <div style="margin-bottom: 8px;"><div style="font-size: 0.7rem; color: var(--cgm-text-3); text-transform: uppercase; margin-bottom: 4px;">🎣 Gancho</div><div style="font-size: 0.85rem; color: var(--cgm-text);">{{ post.carrusel_gancho|default:"—" }}</div></div>
-            <div style="margin-bottom: 8px;"><div style="font-size: 0.7rem; color: var(--cgm-text-3); text-transform: uppercase; margin-bottom: 4px;">📝 Cuerpo</div><div style="font-size: 0.85rem; color: var(--cgm-text); white-space: pre-line;">{{ post.carrusel_cuerpo|default:"—" }}</div></div>
-            <div style="margin-bottom: 8px;"><div style="font-size: 0.7rem; color: var(--cgm-text-3); text-transform: uppercase; margin-bottom: 4px;">📢 CTA</div><div style="font-size: 0.85rem; color: var(--cgm-text);">{{ post.carrusel_cta|default:"—" }}</div></div>
+            <div style="margin-bottom:6px;"><span style="font-size:0.7rem;color:var(--cgm-text-3);">🎣 Gancho</span><div style="font-size:0.85rem;">{{ post.carrusel_gancho|default:"—" }}</div></div>
+            <div style="margin-bottom:6px;"><span style="font-size:0.7rem;color:var(--cgm-text-3);">📝 Cuerpo</span><div style="font-size:0.85rem;white-space:pre-line;">{{ post.carrusel_cuerpo|default:"—" }}</div></div>
+            <div style="margin-bottom:6px;"><span style="font-size:0.7rem;color:var(--cgm-text-3);">📢 CTA</span><div style="font-size:0.85rem;">{{ post.carrusel_cta|default:"—" }}</div></div>
             {% elif post.formato == 'reel' %}
-            <div style="margin-bottom: 8px;"><div style="font-size: 0.7rem; color: var(--cgm-text-3); text-transform: uppercase; margin-bottom: 4px;">🎣 Texto pantalla</div><div style="font-size: 0.85rem; color: var(--cgm-text);">{{ post.reel_gancho|default:"—" }}</div></div>
-            <div style="margin-bottom: 8px;"><div style="font-size: 0.7rem; color: var(--cgm-text-3); text-transform: uppercase; margin-bottom: 4px;">📝 Descripción</div><div style="font-size: 0.85rem; color: var(--cgm-text);">{{ post.reel_descripcion|truncatechars:150|default:"—" }}</div></div>
+            <div style="margin-bottom:6px;"><span style="font-size:0.7rem;color:var(--cgm-text-3);">🎣 Texto pantalla</span><div style="font-size:0.85rem;">{{ post.reel_gancho|default:"—" }}</div></div>
+            <div style="margin-bottom:6px;"><span style="font-size:0.7rem;color:var(--cgm-text-3);">📝 Descripción</span><div style="font-size:0.85rem;">{{ post.reel_descripcion|truncatechars:150|default:"—" }}</div></div>
             {% else %}
-            <div style="margin-bottom: 8px;"><div style="font-size: 0.7rem; color: var(--cgm-text-3); text-transform: uppercase; margin-bottom: 4px;">🎣 Gancho</div><div style="font-size: 0.85rem; color: var(--cgm-text);">{{ post.post_gancho|default:"—" }}</div></div>
-            <div style="margin-bottom: 8px;"><div style="font-size: 0.7rem; color: var(--cgm-text-3); text-transform: uppercase; margin-bottom: 4px;">📝 Cuerpo</div><div style="font-size: 0.85rem; color: var(--cgm-text); white-space: pre-line;">{{ post.post_cuerpo|default:"—" }}</div></div>
-            <div style="margin-bottom: 8px;"><div style="font-size: 0.7rem; color: var(--cgm-text-3); text-transform: uppercase; margin-bottom: 4px;">📢 CTA</div><div style="font-size: 0.85rem; color: var(--cgm-text);">{{ post.post_cta|default:"—" }}</div></div>
+            <div style="margin-bottom:6px;"><span style="font-size:0.7rem;color:var(--cgm-text-3);">🎣 Gancho</span><div style="font-size:0.85rem;">{{ post.post_gancho|default:"—" }}</div></div>
+            <div style="margin-bottom:6px;"><span style="font-size:0.7rem;color:var(--cgm-text-3);">📝 Cuerpo</span><div style="font-size:0.85rem;white-space:pre-line;">{{ post.post_cuerpo|default:"—" }}</div></div>
+            <div style="margin-bottom:6px;"><span style="font-size:0.7rem;color:var(--cgm-text-3);">📢 CTA</span><div style="font-size:0.85rem;">{{ post.post_cta|default:"—" }}</div></div>
             {% endif %}
-            <div style="display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap;">
-              {% if post.copy_instagram %}<button class="cgm-btn cgm-btn-sm" onclick="copyText(this, `{{ post.copy_instagram|escapejs }}`)">📸 Copiar IG</button>{% endif %}
-              {% if post.copy_tiktok %}<button class="cgm-btn cgm-btn-sm" onclick="copyText(this, `{{ post.copy_tiktok|escapejs }}`)">🎵 Copiar TT</button>{% endif %}
-              {% if post.copy_linkedin %}<button class="cgm-btn cgm-btn-sm" onclick="copyText(this, `{{ post.copy_linkedin|escapejs }}`)">💼 Copiar LI</button>{% endif %}
+            <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
+              {% if post.copy_instagram %}<button class="cgm-btn cgm-btn-sm" onclick="copyText(this,'{{ post.copy_instagram|escapejs }}')">📸 IG</button>{% endif %}
+              {% if post.copy_tiktok %}<button class="cgm-btn cgm-btn-sm" onclick="copyText(this,'{{ post.copy_tiktok|escapejs }}')">🎵 TT</button>{% endif %}
+              {% if post.copy_linkedin %}<button class="cgm-btn cgm-btn-sm" onclick="copyText(this,'{{ post.copy_linkedin|escapejs }}')">💼 LI</button>{% endif %}
             </div>
           </div>
-          <!-- Editor oculto -->
-          <div id="editor-{{ post.pk }}" style="display: none;">
+          <div id="edt-{{ post.pk }}" style="display:none;">
             {% if post.formato == 'carrusel' %}
-            <div class="cgm-form-group"><label>Gancho</label><textarea class="cgm-textarea" id="edit-{{ post.pk }}-gancho" style="min-height: 50px;">{{ post.carrusel_gancho }}</textarea></div>
-            <div class="cgm-form-group"><label>Cuerpo (---)</label><textarea class="cgm-textarea" id="edit-{{ post.pk }}-cuerpo" style="min-height: 80px;">{{ post.carrusel_cuerpo }}</textarea></div>
-            <div class="cgm-form-group"><label>CTA</label><textarea class="cgm-textarea" id="edit-{{ post.pk }}-cta" style="min-height: 50px;">{{ post.carrusel_cta }}</textarea></div>
+            <div class="cgm-form-group"><label>Gancho</label><textarea class="cgm-textarea" id="e-{{ post.pk }}-g" style="min-height:40px;">{{ post.carrusel_gancho }}</textarea></div>
+            <div class="cgm-form-group"><label>Cuerpo</label><textarea class="cgm-textarea" id="e-{{ post.pk }}-c" style="min-height:60px;">{{ post.carrusel_cuerpo }}</textarea></div>
+            <div class="cgm-form-group"><label>CTA</label><textarea class="cgm-textarea" id="e-{{ post.pk }}-t" style="min-height:40px;">{{ post.carrusel_cta }}</textarea></div>
             {% elif post.formato == 'reel' %}
-            <div class="cgm-form-group"><label>Texto pantalla</label><textarea class="cgm-textarea" id="edit-{{ post.pk }}-gancho" style="min-height: 50px;">{{ post.reel_gancho }}</textarea></div>
-            <div class="cgm-form-group"><label>Descripción</label><textarea class="cgm-textarea" id="edit-{{ post.pk }}-descripcion" style="min-height: 80px;">{{ post.reel_descripcion }}</textarea></div>
+            <div class="cgm-form-group"><label>Texto pantalla</label><textarea class="cgm-textarea" id="e-{{ post.pk }}-g" style="min-height:40px;">{{ post.reel_gancho }}</textarea></div>
+            <div class="cgm-form-group"><label>Descripción</label><textarea class="cgm-textarea" id="e-{{ post.pk }}-d" style="min-height:60px;">{{ post.reel_descripcion }}</textarea></div>
             {% else %}
-            <div class="cgm-form-group"><label>Gancho</label><textarea class="cgm-textarea" id="edit-{{ post.pk }}-gancho" style="min-height: 50px;">{{ post.post_gancho }}</textarea></div>
-            <div class="cgm-form-group"><label>Cuerpo</label><textarea class="cgm-textarea" id="edit-{{ post.pk }}-cuerpo" style="min-height: 80px;">{{ post.post_cuerpo }}</textarea></div>
-            <div class="cgm-form-group"><label>CTA</label><textarea class="cgm-textarea" id="edit-{{ post.pk }}-cta" style="min-height: 50px;">{{ post.post_cta }}</textarea></div>
+            <div class="cgm-form-group"><label>Gancho</label><textarea class="cgm-textarea" id="e-{{ post.pk }}-g" style="min-height:40px;">{{ post.post_gancho }}</textarea></div>
+            <div class="cgm-form-group"><label>Cuerpo</label><textarea class="cgm-textarea" id="e-{{ post.pk }}-c" style="min-height:60px;">{{ post.post_cuerpo }}</textarea></div>
+            <div class="cgm-form-group"><label>CTA</label><textarea class="cgm-textarea" id="e-{{ post.pk }}-t" style="min-height:40px;">{{ post.post_cta }}</textarea></div>
             {% endif %}
-            <div style="display: flex; gap: 8px;">
+            <div style="display:flex;gap:8px;">
               <button class="cgm-btn cgm-btn-sm cgm-btn-green" onclick="savePost('{{ post.pk }}')">💾 Guardar</button>
               <button class="cgm-btn cgm-btn-sm" onclick="toggleEdit('{{ post.pk }}')">Cancelar</button>
             </div>
@@ -154,7 +134,7 @@
         </div>
         {% endfor %}
       {% else %}
-      <div class="cgm-empty" style="padding: 2rem;">
+      <div class="cgm-empty" style="padding:2rem;">
         <div class="cgm-empty-icon">📱</div>
         <h3>Sin copys generados</h3>
         <p>Seleccioná un artículo y generá contenido</p>
@@ -165,35 +145,33 @@
 </div>
 
 <script>
-let currentFormat = 'carrusel';
-let currentPlatform = 'instagram';
-let currentTpl = 'A';
-let slides = [];
-let slideBgUrl = '';
+let curFmt = 'carrusel';
+let curPlat = 'instagram';
+let curBgUrl = '';
+let slides = []; // [{text, layout, bgUrl, previewUrl, generated}]
 let selectedArticleId = null;
 
-function selectFormat(f) {
-  currentFormat = f;
-  document.querySelectorAll('.format-btn').forEach(b => b.classList.toggle('active', b.dataset.format === f));
-  document.getElementById('genLabel').textContent = f.charAt(0).toUpperCase() + f.slice(1);
-  // Mostrar sección de slides solo para carrusel y post
-  document.getElementById('slidesSection').style.display = (f === 'carrusel' || f === 'post') ? 'block' : 'none';
+const LAYOUTS = [
+  {id: 'A', name: 'Editorial Dark', desc: 'Fondo estrellado, texto grande, gradiente inferior'},
+  {id: 'B', name: 'Canva Premium', desc: 'Nebula, sidebar jade, numeración'},
+  {id: 'C', name: 'Bold Statement', desc: 'Tipografía brutal, fondo visible, líneas'},
+];
+
+function selectFmt(f) {
+  curFmt = f;
+  document.querySelectorAll('.fmt-btn').forEach(b => b.classList.toggle('active', b.dataset.fmt === f));
+  document.getElementById('slidesEditor').style.display = (f === 'carrusel' || f === 'post') ? 'block' : 'none';
 }
 
-function selectPlatform(p) {
-  currentPlatform = p;
-  document.querySelectorAll('.platform-btn').forEach(b => b.classList.toggle('active', b.dataset.platform === p));
+function selectPlat(p) {
+  curPlat = p;
+  document.querySelectorAll('.plat-btn').forEach(b => b.classList.toggle('active', b.dataset.plat === p));
 }
 
-function selectTpl(t) {
-  currentTpl = t;
-  document.querySelectorAll('.tpl-btn').forEach(b => b.classList.toggle('active', b.dataset.tpl === t));
-}
-
-function loadArticleForSlides() {
+function onArticleChange() {
   selectedArticleId = document.getElementById('sourceArticle').value;
   if (selectedArticleId) {
-    document.getElementById('slidesSection').style.display = (currentFormat === 'carrusel' || currentFormat === 'post') ? 'block' : 'none';
+    document.getElementById('slidesEditor').style.display = (curFmt === 'carrusel' || curFmt === 'post') ? 'block' : 'none';
   }
 }
 
@@ -205,9 +183,16 @@ function renderSlidesList() {
     return;
   }
   c.innerHTML = slides.map((s, i) => {
-    const label = i === 0 ? '🎣 Gancho' : i === slides.length - 1 ? '📢 CTA' : `📝 Slide ${i}`;
-    return `<div style="margin-bottom:8px;padding:8px;background:var(--cgm-bg);border-radius:var(--cgm-radius-sm);">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+    const isFirst = i === 0;
+    const isLast = i === slides.length - 1;
+    const label = isFirst ? '🎣 Gancho' : isLast ? '📢 CTA' : `📝 Slide ${i}`;
+    const layoutOptions = LAYOUTS.map(l => `<option value="${l.id}" ${s.layout === l.id ? 'selected' : ''}>${l.id} — ${l.name}</option>`).join('');
+    const previewHtml = s.previewUrl
+      ? `<div style="margin-top:8px;border-radius:var(--cgm-radius-sm);overflow:hidden;border:1px solid var(--cgm-border);"><img src="${s.previewUrl}" style="width:100%;aspect-ratio:1;object-fit:cover;"></div><div style="display:flex;gap:4px;margin-top:4px;"><button class="cgm-btn cgm-btn-sm cgm-btn-green" onclick="generateOneSlide(${i})">🔄 Regenerar</button><a class="cgm-btn cgm-btn-sm" href="${s.previewUrl}" download="slide-${i+1}.png" target="_blank">⬇️ Descargar</a></div>`
+      : `<div style="margin-top:8px;padding:1rem;background:var(--cgm-bg);border-radius:var(--cgm-radius-sm);text-align:center;color:var(--cgm-text-3);font-size:0.8rem;">Sin preview — hacé clic en "Regenerar" o "Generar Todas"</div>`;
+
+    return `<div style="margin-bottom:12px;padding:12px;background:var(--cgm-bg);border-radius:var(--cgm-radius-sm);border:1px solid var(--cgm-border);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
         <span style="font-size:0.7rem;color:var(--cgm-accent);font-weight:600;">${label}</span>
         <div style="display:flex;gap:4px;">
           ${i>0?`<button class="cgm-btn cgm-btn-sm" onclick="moveSlide(${i},-1)">↑</button>`:''}
@@ -215,19 +200,26 @@ function renderSlidesList() {
           <button class="cgm-btn cgm-btn-sm cgm-btn-red" onclick="removeSlide(${i})">✕</button>
         </div>
       </div>
-      <textarea class="cgm-textarea" style="min-height:40px;font-size:0.82rem;" onchange="slides[${i}]=this.value">${s}</textarea>
+      <textarea class="cgm-textarea" style="min-height:50px;font-size:0.82rem;" onchange="slides[${i}].text=this.value">${s.text}</textarea>
+      <div class="cgm-form-group" style="margin-top:6px;">
+        <label>Layout</label>
+        <select class="cgm-select" style="padding:4px 8px;font-size:0.8rem;" onchange="slides[${i}].layout=this.value">
+          ${layoutOptions}
+        </select>
+      </div>
+      ${previewHtml}
     </div>`;
   }).join('');
 }
 
 function addSlide() {
   const pos = slides.length > 1 ? slides.length - 1 : slides.length;
-  slides.splice(pos, 0, 'Nuevo slide - editá este texto');
+  slides.splice(pos, 0, {text: 'Nuevo slide', layout: 'A', bgUrl: '', previewUrl: ''});
   renderSlidesList();
 }
 
 function removeSlide(i) {
-  if (slides.length <= 2) return showToast('Mínimo 2 slides (gancho + CTA)', 'error');
+  if (slides.length <= 2) return showToast('Mínimo 2 slides', 'error');
   slides.splice(i, 1);
   renderSlidesList();
 }
@@ -239,94 +231,127 @@ function moveSlide(i, dir) {
   renderSlidesList();
 }
 
-async function autoGenerateSlides() {
+async function autoSlides() {
   if (!selectedArticleId) return showToast('Seleccioná un artículo', 'error');
   try {
     const r = await fetch('/cgm/api/article-info/' + selectedArticleId + '/');
     const d = await r.json();
-    if (!d.ok) return showToast('Error cargando artículo', 'error');
-
+    if (!d.ok) return showToast('Error', 'error');
     slides = [];
-    // Gancho del título o intro
     if (d.intro) {
       const lines = d.intro.split('\n').filter(l => l.trim());
-      slides.push(lines.slice(0, 2).join(' ') || d.title);
+      slides.push({text: lines.slice(0, 2).join(' ') || d.title, layout: 'A', bgUrl: '', previewUrl: ''});
     } else {
-      slides.push(d.title);
+      slides.push({text: d.title, layout: 'A', bgUrl: '', previewUrl: ''});
     }
-    // CTA
-    slides.push('Descubrí más en endonautas.cl');
-
+    slides.push({text: 'Descubrí más en endonautas.cl', layout: 'A', bgUrl: '', previewUrl: ''});
     renderSlidesList();
-    showToast(`Generados ${slides.length} slides`, 'success');
+    showToast(`${slides.length} slides generados`, 'success');
   } catch(e) { showToast('Error', 'error'); }
 }
 
-async function searchSlideBg() {
-  const q = document.getElementById('slideBgQuery').value.trim();
+// Pexels background search
+async function searchBg() {
+  const q = document.getElementById('bgQuery').value.trim();
   if (!q) return;
-  const c = document.getElementById('slideBgResults');
+  const c = document.getElementById('bgResults');
   c.innerHTML = '<div class="cgm-spinner" style="margin:1rem auto;"></div>';
   try {
     const r = await fetch('/cgm/api/search-pexels/?q=' + encodeURIComponent(q));
     const d = await r.json();
     if (d.ok && d.images && d.images.length) {
-      c.innerHTML = d.images.map(img => `<div onclick="selectSlideBg('${img.url}')" style="cursor:pointer;border-radius:var(--cgm-radius-sm);overflow:hidden;border:2px solid transparent;"><img src="${img.url_small}" style="width:100%;height:50px;object-fit:cover;"></div>`).join('');
+      c.innerHTML = d.images.map(img => `<div onclick="selectBg('${img.url}')" style="cursor:pointer;border-radius:var(--cgm-radius-sm);overflow:hidden;border:2px solid transparent;"><img src="${img.url_small}" style="width:100%;height:50px;object-fit:cover;"></div>`).join('');
     } else {
       c.innerHTML = '<p style="color:var(--cgm-text-2);font-size:0.85rem;grid-column:1/-1;">No se encontraron imágenes.</p>';
     }
   } catch(e) { c.innerHTML = '<p style="color:var(--cgm-red);font-size:0.85rem;">Error</p>'; }
 }
 
-function selectSlideBg(url) {
-  slideBgUrl = url;
-  document.getElementById('slideBgUrl').value = url;
-  document.querySelectorAll('#slideBgResults > div').forEach(d => d.style.borderColor = 'transparent');
+function selectBg(url) {
+  curBgUrl = url;
+  document.getElementById('bgUrl').value = url;
+  // Aplicar a todas las slides que no tengan bg propio
+  slides.forEach(s => { if (!s.bgUrl) s.bgUrl = url; });
+  document.querySelectorAll('#bgResults > div').forEach(d => d.style.borderColor = 'transparent');
   event.currentTarget.style.borderColor = '#c4813a';
+  renderSlidesList();
 }
 
-async function generateSlidePNGs() {
+// Generate slides
+async function generateOneSlide(idx) {
   if (!selectedArticleId) return showToast('Seleccioná un artículo', 'error');
-  if (slides.length < 2) return showToast('Mínimo 2 slides', 'error');
-
-  showToast('Generando PNGs...', 'success');
+  const s = slides[idx];
+  showToast(`Generando slide ${idx+1}...`, 'success');
   try {
     const r = await fetch('/cgm/api/generate-slides/', {
       method: 'POST',
       headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
       body: JSON.stringify({
         article_id: parseInt(selectedArticleId),
-        slides: slides,
-        template_style: currentTpl,
-        bg_image_url: slideBgUrl,
+        slides: [s.text],
+        template_style: s.layout,
+        bg_image_url: s.bgUrl || curBgUrl,
       })
     });
     const d = await r.json();
-    if (d.ok) {
-      showToast(`Generados ${d.files.length} PNGs!`, 'success');
-      // Preview
-      const prev = document.getElementById('slidesPreview');
-      prev.innerHTML = d.files.map((f, i) => `<div style="border-radius:var(--cgm-radius-sm);overflow:hidden;border:1px solid var(--cgm-border);"><img src="/media/slides/${selectedArticleId}/${f.split('/').pop()}" style="width:100%;aspect-ratio:1;object-fit:cover;"><div style="padding:4px;font-size:0.65rem;color:var(--cgm-text-2);text-align:center;">${i+1}/${d.files.length}</div></div>`).join('');
-      document.getElementById('slidesPreviewSection').style.display = 'block';
-      // Download
-      document.getElementById('downloadSection').style.display = 'block';
-      document.getElementById('downloadZipBtn').href = `/cgm/api/download-slides/${selectedArticleId}/`;
+    if (d.ok && d.files.length) {
+      s.previewUrl = `/media/slides/${selectedArticleId}/${d.files[0].split('/').pop()}`;
+      renderSlidesList();
+      showToast(`Slide ${idx+1} generado!`, 'success');
     } else {
       showToast('Error: ' + (d.error || ''), 'error');
     }
   } catch(e) { showToast('Error de red', 'error'); }
 }
 
+async function renderAllSlides() {
+  if (!selectedArticleId) return showToast('Seleccioná un artículo', 'error');
+  if (slides.length < 2) return showToast('Mínimo 2 slides', 'error');
+
+  showToast('Generando todas las slides...', 'success');
+  try {
+    const r = await fetch('/cgm/api/generate-slides/', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+      body: JSON.stringify({
+        article_id: parseInt(selectedArticleId),
+        slides: slides.map(s => s.text),
+        template_style: slides[0].layout,
+        bg_image_url: curBgUrl,
+      })
+    });
+    const d = await r.json();
+    if (d.ok) {
+      // Asignar preview a cada slide
+      d.files.forEach((f, i) => {
+        if (slides[i]) {
+          slides[i].previewUrl = `/media/slides/${selectedArticleId}/${f.split('/').pop()}`;
+        }
+      });
+      renderSlidesList();
+      document.getElementById('zipSection').style.display = 'block';
+      showToast(`${d.files.length} slides generadas!`, 'success');
+    } else {
+      showToast('Error: ' + (d.error || ''), 'error');
+    }
+  } catch(e) { showToast('Error de red', 'error'); }
+}
+
+function downloadZIP() {
+  if (!selectedArticleId) return;
+  window.location.href = `/cgm/api/download-slides/${selectedArticleId}/`;
+}
+
 // RRSS generation
 async function generateRRSS() {
-  const articleId = document.getElementById('sourceArticle').value;
-  if (!articleId) return showToast('Seleccioná un artículo', 'error');
+  const aid = document.getElementById('sourceArticle').value;
+  if (!aid) return showToast('Seleccioná un artículo', 'error');
   document.getElementById('rrssLoading').classList.add('active');
   try {
     const r = await fetch('/cgm/api/generate-rrss/', {
       method: 'POST',
       headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
-      body: JSON.stringify({article_id: parseInt(articleId), plataforma: currentPlatform, formato: currentFormat})
+      body: JSON.stringify({article_id: parseInt(aid), plataforma: curPlat, formato: curFmt})
     });
     const d = await r.json();
     if (d.ok) { showToast(`Copy de ${d.formato} generado!`, 'success'); location.reload(); }
@@ -338,22 +363,22 @@ async function generateRRSS() {
 function deletePost(id) {
   if (!confirm('¿Eliminar?')) return;
   fetch('/cgm/api/delete-social-post/' + id + '/', {method: 'POST', headers: {'X-CSRFToken': '{{ csrf_token }}'}})
-    .then(r => r.json()).then(d => { if (d.ok) { document.getElementById('post-' + id).remove(); showToast('Eliminado', 'success'); } else showToast('Error', 'error'); });
+    .then(r => r.json()).then(d => { if (d.ok) { document.getElementById('post-' + id).remove(); showToast('Eliminado', 'success'); } });
 }
 
 function toggleEdit(id) {
-  const p = document.getElementById('preview-' + id);
-  const e = document.getElementById('editor-' + id);
+  const p = document.getElementById('prev-' + id);
+  const e = document.getElementById('edt-' + id);
   if (e.style.display === 'none') { p.style.display = 'none'; e.style.display = 'block'; }
   else { p.style.display = 'block'; e.style.display = 'none'; }
 }
 
 async function savePost(id) {
   const data = {
-    gancho: document.getElementById('edit-' + id + '-gancho')?.value || '',
-    cuerpo: document.getElementById('edit-' + id + '-cuerpo')?.value || '',
-    cta: document.getElementById('edit-' + id + '-cta')?.value || '',
-    descripcion: document.getElementById('edit-' + id + '-descripcion')?.value || '',
+    gancho: document.getElementById('e-' + id + '-g')?.value || '',
+    cuerpo: document.getElementById('e-' + id + '-c')?.value || '',
+    cta: document.getElementById('e-' + id + '-t')?.value || '',
+    descripcion: document.getElementById('e-' + id + '-d')?.value || '',
   };
   try {
     const r = await fetch('/cgm/api/save-social-post/' + id + '/', {
@@ -367,6 +392,6 @@ async function savePost(id) {
 }
 
 // Init
-selectFormat('carrusel');
+selectFmt('carrusel');
 </script>
 {% endblock %}
