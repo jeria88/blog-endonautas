@@ -4,8 +4,6 @@ Comando para traer eventos de email desde la API de Brevo.
 Uso:
     python manage.py fetch_brevo_events       # Trae eventos de las últimas 24h
     python manage.py fetch_brevo_events --days 7  # Trae eventos de los últimos 7 días
-
-Programar con celery beat o cron para correr cada 15-30 minutos.
 """
 import logging
 from datetime import timedelta
@@ -20,7 +18,10 @@ from crm.models import EmailEvent, SentEmail, Subscriber
 
 logger = logging.getLogger(__name__)
 
-BREVO_API_URL = "https://api.brevo.com/v3/smtp/activities"
+BREVO_API_URL = "https://api.brevo.com/v3/smtp/emails"
+
+# Brevo event param values (singular, not comma-separated)
+BREVO_EVENTS = ["opened", "clicks", "bounces", "unsubscribed", "delivered"]
 
 
 class Command(BaseCommand):
@@ -41,53 +42,52 @@ class Command(BaseCommand):
             return
 
         days = options["days"]
-        date_from = (timezone.now() - timedelta(days=days)).strftime("%Y-%m-%dT00:00:00Z")
+        date_from = (timezone.now() - timedelta(days=days)).strftime("%Y-%m-%d")
 
-        self.stdout.write(f"Consultando eventos de Brevo desde {date_from}...")
+        total_fetched = 0
+        total_saved = 0
 
         headers = {
             "api-key": api_key,
             "Accept": "application/json",
         }
 
-        params = {
-            "limit": 100,
-            "offset": 0,
-            "startDate": date_from,
-            "event": "opened,clicked,bounced,unsubscribed,delivered",
-        }
+        for brevo_event in BREVO_EVENTS:
+            params = {
+                "limit": 100,
+                "offset": 0,
+                "startDate": date_from,
+                "event": brevo_event,
+                "sort": "desc",
+            }
 
-        total_fetched = 0
-        total_saved = 0
+            while True:
+                try:
+                    resp = requests.get(BREVO_API_URL, headers=headers, params=params, timeout=30)
+                except Exception as e:
+                    logger.error(f"[fetch_brevo_events] Error consultando API ({brevo_event}): {e}")
+                    break
 
-        while True:
-            try:
-                resp = requests.get(BREVO_API_URL, headers=headers, params=params, timeout=30)
-            except Exception as e:
-                self.stderr.write(self.style.ERROR(f"Error consultando API: {e}"))
-                return
+                if resp.status_code != 200:
+                    logger.error(f"API error {resp.status_code}: {resp.text[:200]}")
+                    break
 
-            if resp.status_code != 200:
-                self.stderr.write(self.style.ERROR(f"API error {resp.status_code}: {resp.text[:200]}"))
-                return
+                data = resp.json()
+                activities = data.get("transactionalEmails", [])
 
-            data = resp.json()
-            activities = data if isinstance(data, list) else data.get("activities", data.get("data", []))
+                if not activities:
+                    break
 
-            if not activities:
-                break
+                total_fetched += len(activities)
 
-            total_fetched += len(activities)
+                for activity in activities:
+                    saved = self._process_activity(activity)
+                    if saved:
+                        total_saved += 1
 
-            for activity in activities:
-                saved = self._process_activity(activity)
-                if saved:
-                    total_saved += 1
-
-            # Paginación
-            if len(activities) < params["limit"]:
-                break
-            params["offset"] += params["limit"]
+                if len(activities) < params["limit"]:
+                    break
+                params["offset"] += params["limit"]
 
         self.stdout.write(
             self.style.SUCCESS(
@@ -99,12 +99,11 @@ class Command(BaseCommand):
         """Procesa un evento de la API de Brevo. Retorna True si se guardó."""
         email = activity.get("email", "").strip().lower()
         event_type = self._map_event_type(activity.get("event", ""))
-        occurred_at = activity.get("date", activity.get("timestamp", ""))
+        occurred_at = activity.get("date", "")
 
         if not email or not event_type:
             return False
 
-        # Buscar suscriptor
         try:
             subscriber = Subscriber.objects.filter(email__iexact=email).first()
             if not subscriber:
@@ -112,22 +111,19 @@ class Command(BaseCommand):
         except Exception:
             return False
 
-        # Buscar el SentEmail asociado (por message-id o email+fecha)
         sent_email = None
-        message_id = activity.get("messageId", activity.get("message_id", ""))
+        message_id = activity.get("messageId", "")
         if message_id:
             sent_email = SentEmail.objects.filter(
                 subscriber=subscriber,
                 brevo_message_id=message_id,
             ).first()
 
-        # Si no se encontró por message_id, buscar por fecha aproximada
         if not sent_email and occurred_at:
             try:
                 from django.utils.dateparse import parse_datetime
                 dt = parse_datetime(occurred_at) if isinstance(occurred_at, str) else occurred_at
                 if dt:
-                    # Buscar un sent_email de los últimos 7 días para este suscriptor
                     sent_email = SentEmail.objects.filter(
                         subscriber=subscriber,
                         sent_at__gte=dt - timedelta(days=7),
@@ -145,7 +141,6 @@ class Command(BaseCommand):
         ).exists():
             return False
 
-        # Parsear fecha
         try:
             from django.utils.dateparse import parse_datetime
             dt = parse_datetime(occurred_at) if isinstance(occurred_at, str) else occurred_at
@@ -154,7 +149,6 @@ class Command(BaseCommand):
         except Exception:
             dt = timezone.now()
 
-        # Metadatos adicionales
         metadata = {}
         if "link" in activity:
             metadata["link"] = activity["link"]
@@ -174,11 +168,12 @@ class Command(BaseCommand):
         return True
 
     def _map_event_type(self, brevo_event):
-        """Mapea el tipo de evento de Brevo al nuestro."""
         mapping = {
             "opened": "opened",
+            "clicks": "clicked",
             "click": "clicked",
             "clicked": "clicked",
+            "bounces": "bounced",
             "bounce": "bounced",
             "bounced": "bounced",
             "softBounce": "bounced",

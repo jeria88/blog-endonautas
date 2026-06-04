@@ -1,9 +1,9 @@
-{% extends "admin/base_site.html" %}
-{% load static %}
-
-{% block title %}CGM — Content Generation Management{% endblock %}
-
-{% block extrahead %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CGM — Content Generation</title>
 <style>
 :root {
   --cgm-bg: #0a0b14;
@@ -23,26 +23,22 @@
   --cgm-radius-sm: 8px;
   --cgm-shadow: 0 4px 24px rgba(0,0,0,0.4);
 }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--cgm-bg); color: var(--cgm-text); font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; }
 .cgm-wrap { padding: 2rem; max-width: 1400px; margin: 0 auto; }
 .cgm-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
 .cgm-header h1 { font-size: 1.8rem; font-weight: 700; color: var(--cgm-text); margin: 0; }
 .cgm-header h1 span { color: var(--cgm-accent); }
+.cgm-header-sub { color: var(--cgm-text-2); font-size: 0.85rem; margin-top: 4px; }
 
-/* Tabs */
-.cgm-tabs { display: flex; gap: 4px; margin-bottom: 2rem; border-bottom: 1px solid var(--cgm-border); padding-bottom: 0; }
-.cgm-tab { padding: 12px 24px; color: var(--cgm-text-2); text-decoration: none; font-size: 0.9rem; font-weight: 500; border-radius: var(--cgm-radius-sm) var(--cgm-radius-sm) 0 0; transition: all 0.15s; border: 1px solid transparent; border-bottom: none; cursor: pointer; background: none; font-family: inherit; }
-.cgm-tab:hover { color: var(--cgm-text); background: var(--cgm-surface); }
-.cgm-tab.active { color: var(--cgm-accent); background: var(--cgm-surface); border-color: var(--cgm-border); border-bottom-color: var(--cgm-surface); margin-bottom: -1px; }
-.cgm-tab .step { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: var(--cgm-text-3); color: var(--cgm-bg); font-size: 0.7rem; font-weight: 700; margin-right: 8px; }
-.cgm-tab.active .step { background: var(--cgm-accent); }
-.cgm-tab.done .step { background: var(--cgm-green); }
-
-/* Tab content */
-.cgm-tab-content { display: none; }
-.cgm-tab-content.active { display: block; }
+/* Nav tabs */
+.cgm-nav { display: flex; gap: 4px; margin-bottom: 2rem; border-bottom: 1px solid var(--cgm-border); }
+.cgm-nav a { padding: 12px 24px; color: var(--cgm-text-2); text-decoration: none; font-size: 0.9rem; font-weight: 500; border-radius: var(--cgm-radius-sm) var(--cgm-radius-sm) 0 0; border: 1px solid transparent; border-bottom: none; }
+.cgm-nav a:hover { color: var(--cgm-text); background: var(--cgm-surface); }
+.cgm-nav a.active { color: var(--cgm-accent); background: var(--cgm-surface); border-color: var(--cgm-border); border-bottom-color: var(--cgm-surface); margin-bottom: -1px; }
 
 /* Cards */
-.cgm-card { background: var(--cgm-surface); border: 1px solid var(--cgm-border); border-radius: var(--cgm-radius); padding: 1.5rem; transition: all 0.15s; }
+.cgm-card { background: var(--cgm-surface); border: 1px solid var(--cgm-border); border-radius: var(--cgm-radius); padding: 1.5rem; margin-bottom: 1rem; }
 .cgm-card:hover { border-color: var(--cgm-border-2); }
 
 /* Buttons */
@@ -60,11 +56,9 @@
 /* Form */
 .cgm-form-group { margin-bottom: 1rem; }
 .cgm-form-group label { display: block; font-size: 0.75rem; color: var(--cgm-text-2); margin-bottom: 4px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
-.cgm-input { width: 100%; background: var(--cgm-bg); border: 1px solid var(--cgm-border); border-radius: var(--cgm-radius-sm); padding: 10px 14px; color: var(--cgm-text); font-size: 0.9rem; outline: none; box-sizing: border-box; }
-.cgm-input:focus { border-color: var(--cgm-accent); }
-.cgm-textarea { width: 100%; min-height: 80px; background: var(--cgm-bg); border: 1px solid var(--cgm-border); border-radius: var(--cgm-radius-sm); padding: 10px 14px; color: var(--cgm-text); font-size: 0.9rem; outline: none; resize: vertical; box-sizing: border-box; }
-.cgm-textarea:focus { border-color: var(--cgm-accent); }
-.cgm-select { width: 100%; background: var(--cgm-bg); border: 1px solid var(--cgm-border); border-radius: var(--cgm-radius-sm); padding: 10px 14px; color: var(--cgm-text); font-size: 0.9rem; outline: none; }
+.cgm-input, .cgm-textarea, .cgm-select { width: 100%; background: var(--cgm-bg); border: 1px solid var(--cgm-border); border-radius: var(--cgm-radius-sm); padding: 10px 14px; color: var(--cgm-text); font-size: 0.9rem; outline: none; font-family: inherit; }
+.cgm-textarea { min-height: 80px; resize: vertical; }
+.cgm-input:focus, .cgm-textarea:focus, .cgm-select:focus { border-color: var(--cgm-accent); }
 
 /* Badge */
 .cgm-badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.72rem; font-weight: 600; }
@@ -85,9 +79,6 @@
 .cgm-toast-success { border-left: 3px solid var(--cgm-green); }
 .cgm-toast-error { border-left: 3px solid var(--cgm-red); }
 
-/* Preview iframe */
-.cgm-preview-iframe { width: 100%; aspect-ratio: 1080/1350; border: 1px solid var(--cgm-border); border-radius: var(--cgm-radius-sm); background: #000; }
-
 /* Empty state */
 .cgm-empty { text-align: center; padding: 3rem 1rem; color: var(--cgm-text-2); }
 .cgm-empty-icon { font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.5; }
@@ -95,45 +86,58 @@
 /* Grid */
 .cgm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
 
-/* Responsive */
+/* Card internals */
+.cgm-card-title { font-size: 0.95rem; font-weight: 600; color: var(--cgm-text); margin-bottom: 6px; line-height: 1.3; }
+.cgm-card-meta { font-size: 0.75rem; color: var(--cgm-text-3); margin-bottom: 8px; }
+.cgm-card-body { font-size: 0.82rem; color: var(--cgm-text-2); line-height: 1.5; margin-bottom: 12px; }
+.cgm-card-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+/* Stats */
+.cgm-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+.cgm-stat { background: var(--cgm-surface); border: 1px solid var(--cgm-border); border-radius: var(--cgm-radius); padding: 1.25rem; text-align: center; }
+.cgm-stat-n { font-size: 2rem; font-weight: 700; color: var(--cgm-accent); line-height: 1; }
+.cgm-stat-l { font-size: 0.75rem; color: var(--cgm-text-2); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+
+/* Modal */
+.cgm-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; }
+.cgm-modal-overlay.active { display: flex; }
+.cgm-modal { background: var(--cgm-surface); border: 1px solid var(--cgm-border-2); border-radius: var(--cgm-radius); width: 90%; max-width: 560px; max-height: 90vh; overflow-y: auto; box-shadow: var(--cgm-shadow); }
+.cgm-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--cgm-border); }
+.cgm-modal-header h2 { font-size: 1rem; font-weight: 600; color: var(--cgm-text); margin: 0; }
+.cgm-modal-close { background: none; border: none; color: var(--cgm-text-2); font-size: 1.4rem; cursor: pointer; line-height: 1; padding: 0; }
+.cgm-modal-close:hover { color: var(--cgm-text); }
+.cgm-modal-body { padding: 1.5rem; }
+.cgm-modal-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--cgm-border); display: flex; justify-content: flex-end; gap: 8px; }
+
+/* Toolbar */
+.cgm-toolbar { display: flex; gap: 12px; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.cgm-search { position: relative; flex: 1; min-width: 200px; }
+.cgm-search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 0.85rem; pointer-events: none; }
+.cgm-search input { width: 100%; background: var(--cgm-bg); border: 1px solid var(--cgm-border); border-radius: var(--cgm-radius-sm); padding: 8px 12px 8px 34px; color: var(--cgm-text); font-size: 0.85rem; outline: none; }
+.cgm-search input:focus { border-color: var(--cgm-accent); }
+
 @media (max-width: 768px) {
   .cgm-wrap { padding: 1rem; }
-  .cgm-tabs { overflow-x: auto; }
+  .cgm-nav { overflow-x: auto; }
 }
 </style>
-{% endblock %}
-
-{% block content %}
+</head>
+<body>
 <div class="cgm-wrap">
   <div class="cgm-header">
     <div>
       <h1>✦ CGM <span>Content Generation</span></h1>
-      <div style="color: var(--cgm-text-2); font-size: 0.85rem; margin-top: 4px;">Artículo → Copy RRSS → Slides → PNG</div>
+      <div class="cgm-header-sub">Artículo → Copy RRSS → Slides → PNG</div>
     </div>
-    <a href="{% url 'cgm:dashboard' %}" class="cgm-btn cgm-btn-sm">← Volver</a>
   </div>
 
-  <!-- Tabs -->
-  <nav class="cgm-tabs">
-    <button class="cgm-tab active" data-tab="tab-article" onclick="switchTab('article')"><span class="step">1</span> Artículo</button>
-    <button class="cgm-tab" data-tab="tab-copy" onclick="switchTab('copy')"><span class="step">2</span> Copy RRSS</button>
-    <button class="cgm-tab" data-tab="tab-slides" onclick="switchTab('slides')"><span class="step">3</span> Slides</button>
+  <nav class="cgm-nav">
+    <a href="{% url 'cgm:dashboard' %}" class="{% if tab == 'dashboard' %}active{% endif %}">Dashboard</a>
+    <a href="{% url 'cgm:articles' %}" class="{% if tab == 'articles' %}active{% endif %}">Artículos</a>
+    <a href="{% url 'cgm:rrss' %}" class="{% if tab == 'rrss' %}active{% endif %}">RRSS</a>
   </nav>
 
-  <!-- Tab 1: Artículo -->
-  <div class="cgm-tab-content active" id="tab-article">
-    {% block tab_article %}{% endblock %}
-  </div>
-
-  <!-- Tab 2: Copy RRSS -->
-  <div class="cgm-tab-content" id="tab-copy">
-    {% block tab_copy %}{% endblock %}
-  </div>
-
-  <!-- Tab 3: Slides -->
-  <div class="cgm-tab-content" id="tab-slides">
-    {% block tab_slides %}{% endblock %}
-  </div>
+  {% block cgm_content %}{% endblock %}
 </div>
 
 <div class="cgm-toast" id="cgmToast"></div>
@@ -153,10 +157,7 @@ function copyText(btn, text) {
   btn.innerHTML = '✓ Copiado';
   setTimeout(() => btn.innerHTML = orig, 2000);
 }
-function switchTab(name) {
-  document.querySelectorAll('.cgm-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === 'tab-' + name));
-  document.querySelectorAll('.cgm-tab-content').forEach(c => c.classList.toggle('active', c.id === 'tab-' + name));
-}
 </script>
 {% block cgm_scripts %}{% endblock %}
-{% endblock %}
+</body>
+</html>
