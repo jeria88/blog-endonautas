@@ -20,6 +20,8 @@ urlpatterns = [
     path('api/generate-rrss/', views_cgm.api_generate_rrss, name='api_generate_rrss'),
     path('api/delete-social-post/<int:pk>/', views_cgm.api_delete_social_post, name='api_delete_social_post'),
     path('api/save-social-post/<int:pk>/', views_cgm.api_save_social_post, name='api_save_social_post'),
+    path('api/slide-preview/', views_cgm.api_slide_preview, name='api_slide_preview'),
+    path('api/save-slides/', views_cgm.api_save_slides, name='api_save_slides'),
     path('api/generate-slides/', views_cgm.api_generate_slides, name='api_generate_slides'),
     path('api/download-slides/<int:pk>/', views_cgm.api_download_slides, name='api_download_slides'),
 ]

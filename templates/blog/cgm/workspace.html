@@ -1,7 +1,7 @@
 {% extends "blog/cgm/base.html" %}
 
 {% block tab_article %}
-<!-- TAB 1: Seleccionar/Editar artículo -->
+<!-- TAB 1: Seleccionar artículo -->
 <div class="cgm-card" style="margin-bottom:1rem;">
   <div class="cgm-form-group">
     <label>Artículo base</label>
@@ -16,23 +16,19 @@
   </div>
   <div style="display:flex;gap:8px;margin-top:8px;">
     <button class="cgm-btn cgm-btn-sm" onclick="loadArticleInfo()">📄 Cargar datos</button>
-    <a id="editArticleBtn" class="cgm-btn cgm-btn-sm" href="#" target="_blank">✏️ Editar artículo</a>
   </div>
 </div>
 
 <!-- Datos del artículo cargado -->
 <div id="articleData" class="cgm-card" style="display:none;">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
-    <h3 style="font-size:0.9rem;font-weight:600;color:var(--cgm-text);" id="articleTitle"></h3>
-    <span class="cgm-badge cgm-badge-draft" id="articleStatus"></span>
-  </div>
+  <h3 style="font-size:0.9rem;font-weight:600;color:var(--cgm-text);margin-bottom:0.5rem;" id="articleTitle"></h3>
   <div id="articleBody" style="font-size:0.85rem;color:var(--cgm-text-2);line-height:1.6;"></div>
-  <div id="articleImage" style="margin-top:1rem;"></div>
 </div>
 
-<div class="cgm-card" style="margin-top:1rem;">
-  <div style="font-size:0.8rem;color:var(--cgm-text-2);text-align:center;padding:1rem;">
-    👆 Seleccioná un artículo y hacé clic en "Cargar datos" para continuar al siguiente paso
+<div id="articleNext" class="cgm-card" style="margin-top:1rem;display:none;">
+  <div style="text-align:center;">
+    <p style="font-size:0.85rem;color:var(--cgm-text-2);margin-bottom:1rem;">Artículo cargado. Ahora generá el copy RRSS.</p>
+    <button class="cgm-btn cgm-btn-primary" onclick="switchTab('copy')">Siguiente: Copy RRSS →</button>
   </div>
 </div>
 {% endblock %}
@@ -63,9 +59,7 @@
         <button class="cgm-btn cgm-btn-sm plat-btn" data-plat="linkedin" onclick="selectPlat('linkedin')">💼 LI</button>
       </div>
     </div>
-    <button class="cgm-btn cgm-btn-primary" style="width:100%;justify-content:center;margin-top:1rem;" onclick="generateCopy()">
-      ⚡ Generar copy con IA
-    </button>
+    <button class="cgm-btn cgm-btn-primary cgm-btn-block" style="margin-top:1rem;" onclick="generateCopy()">⚡ Generar copy con IA</button>
     <div class="cgm-loading" id="copyLoading" style="margin-top:1rem;">
       <div class="cgm-spinner"></div>
       <p style="margin-top:1rem;color:var(--cgm-text-2);">Generando copy...</p>
@@ -77,7 +71,7 @@
     <h3 style="font-size:0.9rem;font-weight:600;color:var(--cgm-text);margin-bottom:1rem;">Copy generado</h3>
     <div id="copyContent"></div>
     <div style="display:flex;gap:8px;margin-top:1rem;">
-      <button class="cgm-btn cgm-btn-sm cgm-btn-green" onclick="useCopyForSlides()">→ Usar para slides</button>
+      <button class="cgm-btn cgm-btn-sm cgm-btn-green" onclick="goToSlides()">→ Siguiente: Slides</button>
       <button class="cgm-btn cgm-btn-sm" onclick="generateCopy()">🔄 Regenerar</button>
     </div>
   </div>
@@ -93,16 +87,8 @@
 </div>
 
 <div id="slidesEditor" style="display:none;">
-  <!-- Selector de layout global -->
+  <!-- Fondo global -->
   <div class="cgm-card" style="margin-bottom:1rem;">
-    <div class="cgm-form-group">
-      <label>Estilo de plantilla</label>
-      <div style="display:flex;gap:6px;">
-        <button class="cgm-btn cgm-btn-sm tpl-btn active" data-tpl="A" onclick="selectTpl('A')">A — Editorial Dark</button>
-        <button class="cgm-btn cgm-btn-sm tpl-btn" data-tpl="B" onclick="selectTpl('B')">B — Canva Premium</button>
-        <button class="cgm-btn cgm-btn-sm tpl-btn" data-tpl="C" onclick="selectTpl('C')">C — Bold Statement</button>
-      </div>
-    </div>
     <div class="cgm-form-group">
       <label>Fondo global (Pexels)</label>
       <div style="display:flex;gap:8px;">
@@ -115,18 +101,23 @@
   </div>
 
   <!-- Lista de slides -->
-  <div id="slidesList" class="cgm-card" style="margin-bottom:1rem;">
-    <div style="font-size:0.8rem;color:var(--cgm-text-2);text-align:center;padding:2rem;">
-      Hacé clic en "Separar en slides" para crear slides desde el copy
+  <div id="slidesList" style="margin-bottom:1rem;">
+    <div class="cgm-card">
+      <div style="font-size:0.8rem;color:var(--cgm-text-2);text-align:center;padding:2rem;">
+        Hacé clic en "Cargar desde copy" para crear slides desde el copy generado
+      </div>
     </div>
   </div>
 
   <div style="display:flex;gap:8px;margin-bottom:1rem;">
-    <button class="cgm-btn cgm-btn-sm" onclick="separateSlides()" style="flex:1;">✂️ Separar en slides</button>
+    <button class="cgm-btn cgm-btn-sm" onclick="loadSlidesFromCopy()" style="flex:1;">📄 Cargar desde copy</button>
     <button class="cgm-btn cgm-btn-sm" onclick="addSlide()" style="flex:1;">+ Agregar slide</button>
   </div>
 
-  <button class="cgm-btn cgm-btn-green cgm-btn-block" onclick="generateAllSlides()">🎨 Generar todas las slides</button>
+  <div style="display:flex;gap:8px;margin-bottom:1rem;">
+    <button class="cgm-btn cgm-btn-green" style="flex:1;" onclick="generateAllSlides()">🎨 Generar todas</button>
+    <button class="cgm-btn cgm-btn-primary" style="flex:1;" onclick="saveSlides()">💾 Guardar</button>
+  </div>
 
   <!-- Preview y descarga -->
   <div id="slidesPreviewSection" style="margin-top:1rem;display:none;">
@@ -141,20 +132,29 @@
 <script>
 let selectedArticleId = null;
 let currentCopy = null;
-let slides = [];
-let currentTpl = 'A';
-let currentBgUrl = '';
+let slides = []; // [{template_id, title, body, tag, cta, bg_url}]
+let curFmt = 'carrusel';
+let curPlat = 'instagram';
+let curBgUrl = '';
+let previewTimers = {};
+
+const TEMPLATES = [
+  {id: 'portada', label: 'Portada', fields: ['title', 'body', 'cta']},
+  {id: 'problema', label: 'Problema', fields: ['tag', 'title', 'body']},
+  {id: 'diferenciacion', label: 'Diferenciación', fields: ['tag', 'title', 'body']},
+  {id: 'definicion', label: 'Definición', fields: ['tag', 'title', 'body']},
+  {id: 'cta', label: 'CTA Final', fields: ['title', 'body']},
+];
 
 // Tab 1: Artículo
 function onArticleSelect() {
   selectedArticleId = document.getElementById('articleSelect').value;
   document.getElementById('articleData').style.display = 'none';
+  document.getElementById('articleNext').style.display = 'none';
   document.getElementById('copyStep').style.display = selectedArticleId ? 'none' : 'block';
   document.getElementById('copyEditor').style.display = selectedArticleId ? 'block' : 'none';
   document.getElementById('slidesStep').style.display = 'block';
   document.getElementById('slidesEditor').style.display = 'none';
-  // Actualizar botón editar
-  document.getElementById('editArticleBtn').href = selectedArticleId ? '/cgm/workspace/?article=' + selectedArticleId : '#';
 }
 
 async function loadArticleInfo() {
@@ -163,30 +163,19 @@ async function loadArticleInfo() {
     const r = await fetch('/cgm/api/article-info/' + selectedArticleId + '/');
     const d = await r.json();
     if (!d.ok) return showToast('Error', 'error');
-
     document.getElementById('articleTitle').textContent = d.title;
     document.getElementById('articleBody').innerHTML = d.body || d.intro || 'Sin contenido';
-    document.getElementById('articleStatus').textContent = 'Cargado';
-    document.getElementById('articleStatus').className = 'cgm-badge cgm-badge-approved';
-
-    if (d.intro) {
-      document.getElementById('articleImage').innerHTML = '<p style="font-size:0.85rem;color:var(--cgm-text-2);"><strong>Intro:</strong> ' + d.intro.substring(0, 200) + '...</p>';
-    }
-
     document.getElementById('articleData').style.display = 'block';
+    document.getElementById('articleNext').style.display = 'block';
     showToast('Artículo cargado', 'success');
   } catch(e) { showToast('Error', 'error'); }
 }
 
 // Tab 2: Copy RRSS
-let curFmt = 'carrusel';
-let curPlat = 'instagram';
-
 function selectFmt(f) {
   curFmt = f;
   document.querySelectorAll('.fmt-btn').forEach(b => b.classList.toggle('active', b.dataset.fmt === f));
 }
-
 function selectPlat(p) {
   curPlat = p;
   document.querySelectorAll('.plat-btn').forEach(b => b.classList.toggle('active', b.dataset.plat === p));
@@ -204,147 +193,69 @@ async function generateCopy() {
     const d = await r.json();
     if (d.ok) {
       currentCopy = d;
-      showToast('Copy generado!', 'success');
-      // Mostrar resultado
       document.getElementById('copyResult').style.display = 'block';
-      document.getElementById('copyContent').innerHTML = `
-        <div style="margin-bottom:8px;"><span style="font-size:0.7rem;color:var(--cgm-text-3);">Formato: ${d.formato} · ${curPlat}</span></div>
-        <div style="padding:12px;background:var(--cgm-bg);border-radius:var(--cgm-radius-sm);font-size:0.85rem;">
-          Copy generado exitosamente. Hacé clic en "Usar para slides" continuar.
-        </div>
-      `;
-      // Marcar tab 2 como done
-      document.querySelector('[data-tab="tab-copy"] .step').textContent = '✓';
-      document.querySelector('[data-tab="tab-copy"]').classList.add('done');
-    } else {
-      showToast('Error: ' + (d.error || ''), 'error');
-    }
+      document.getElementById('copyContent').innerHTML = `<div style="padding:12px;background:var(--cgm-bg);border-radius:var(--cgm-radius-sm);font-size:0.85rem;">Copy de <strong>${d.formato}</strong> generado para <strong>${curPlat}</strong>.</div>`;
+      showToast('Copy generado!', 'success');
+    } else { showToast('Error: ' + (d.error || ''), 'error'); }
   } catch(e) { showToast('Error de red', 'error'); }
   document.getElementById('copyLoading').classList.remove('active');
 }
 
-function useCopyForSlides() {
+function goToSlides() {
   if (!currentCopy) return;
-  // Activar tab 3
   switchTab('slides');
   document.getElementById('slidesStep').style.display = 'none';
   document.getElementById('slidesEditor').style.display = 'block';
-  // Marcar tab 2 como done
-  document.querySelector('[data-tab="tab-copy"] .step').textContent = '✓';
-  document.querySelector('[data-tab="tab-copy"]').classList.add('done');
 }
 
 // Tab 3: Slides
-function selectTpl(t) {
-  currentTpl = t;
-  document.querySelectorAll('.tpl-btn').forEach(b => b.classList.toggle('active', b.dataset.tpl === t));
-}
-
-async function searchBg() {
-  const q = document.getElementById('bgQuery').value.trim();
-  if (!q) return;
-  const c = document.getElementById('bgResults');
-  c.innerHTML = '<div class="cgm-spinner" style="margin:1rem auto;"></div>';
-  try {
-    const r = await fetch('/cgm/api/search-pexels/?q=' + encodeURIComponent(q));
-    const d = await r.json();
-    if (d.ok && d.images && d.images.length) {
-      c.innerHTML = d.images.map(img => `<div onclick="selectBg('${img.url}')" style="cursor:pointer;border-radius:var(--cgm-radius-sm);overflow:hidden;border:2px solid transparent;"><img src="${img.url_small}" style="width:100%;height:50px;object-fit:cover;"></div>`).join('');
-    } else {
-      c.innerHTML = '<p style="color:var(--cgm-text-2);font-size:0.85rem;grid-column:1/-1;">No se encontraron imágenes.</p>';
-    }
-  } catch(e) { c.innerHTML = '<p style="color:var(--cgm-red);font-size:0.85rem;">Error</p>'; }
-}
-
-function selectBg(url) {
-  currentBgUrl = url;
-  document.getElementById('bgUrl').value = url;
-  document.querySelectorAll('#bgResults > div').forEach(d => d.style.borderColor = 'transparent');
-  event.currentTarget.style.borderColor = '#c4813a';
-}
-
 function renderSlidesList() {
   const c = document.getElementById('slidesList');
   if (!slides.length) {
-    c.innerHTML = '<div style="font-size:0.8rem;color:var(--cgm-text-2);text-align:center;padding:2rem;">Hacé clic en "Separar en slides" para crear slides desde el copy</div>';
+    c.innerHTML = '<div class="cgm-card"><div style="font-size:0.8rem;color:var(--cgm-text-2);text-align:center;padding:2rem;">Hacé clic en "Cargar desde copy" para crear slides</div></div>';
     return;
   }
   c.innerHTML = slides.map((s, i) => {
-    const isFirst = i === 0;
-    const isLast = i === slides.length - 1;
-    const label = isFirst ? '🎣 Gancho' : isLast ? '📢 CTA' : `📝 Slide ${i}`;
-    const layoutOptions = ['portada','split','hero','quote','cta','lista','dato','blur'].map(l =>
-      `<option value="${l}" ${s.layout === l ? 'selected' : ''}>${l.charAt(0).toUpperCase() + l.slice(1)}</option>`
-    ).join('');
+    const tpl = TEMPLATES.find(t => t.id === s.template_id) || TEMPLATES[0];
+    const tplOptions = TEMPLATES.map(t => `<option value="${t.id}" ${s.template_id === t.id ? 'selected' : ''}>${t.label}</option>`).join('');
+    const fieldsHtml = tpl.fields.map(f => {
+      const val = s[f] || '';
+      const label = f === 'title' ? 'Título' : f === 'body' ? 'Cuerpo' : f === 'cta' ? 'CTA' : f === 'tag' ? 'Tag' : f;
+      return `<div class="cgm-form-group" style="margin-top:4px;"><label>${label}</label><input type="text" class="cgm-input" style="padding:6px 10px;font-size:0.82rem;" value="${val}" oninput="updateSlideField(${i}, '${f}', this.value)"></div>`;
+    }).join('');
 
-    const previewHtml = s.previewUrl
-      ? `<div style="margin-top:8px;border-radius:var(--cgm-radius-sm);overflow:hidden;border:1px solid var(--cgm-border);"><img src="${s.previewUrl}" style="width:100%;aspect-ratio:1080/1350;object-fit:cover;"></div>
-         <div style="display:flex;gap:4px;margin-top:4px;">
-           <button class="cgm-btn cgm-btn-sm cgm-btn-green" onclick="generateOneSlide(${i})">🔄 Regenerar</button>
-           <a class="cgm-btn cgm-btn-sm" href="${s.previewUrl}" download="slide-${i+1}.png" target="_blank">⬇️ Descargar</a>
-         </div>`
-      : `<div style="margin-top:8px;padding:1rem;background:var(--cgm-bg);border-radius:var(--cgm-radius-sm);text-align:center;color:var(--cgm-text-3);font-size:0.8rem;">Sin preview — clic en "Regenerar" o "Generar todas"</div>`;
+    const previewHtml = s.preview_url
+      ? `<div style="margin-top:8px;border-radius:var(--cgm-radius-sm);overflow:hidden;border:1px solid var(--cgm-border);"><img src="${s.preview_url}" style="width:100%;aspect-ratio:1080/1350;object-fit:cover;"></div><div style="display:flex;gap:4px;margin-top:4px;"><button class="cgm-btn cgm-btn-sm cgm-btn-green" onclick="generateOneSlide(${i})">🔄 Regenerar</button><a class="cgm-btn cgm-btn-sm" href="${s.preview_url}" download="slide-${i+1}.png" target="_blank">⬇️ Descargar</a></div>`
+      : `<div style="margin-top:8px;"><iframe src="/cgm/api/slide-preview/?template_id=${s.template_id}&title=${encodeURIComponent(s.title||'')}&body=${encodeURIComponent(s.body||'')}&cta=${encodeURIComponent(s.cta||'')}&tag=${encodeURIComponent(s.tag||'')}&bg_url=${encodeURIComponent(s.bg_url||curBgUrl)}" class="cgm-preview-iframe" style="width:100%;aspect-ratio:1080/1350;border:1px solid var(--cgm-border);border-radius:var(--cgm-radius-sm);background:#000;" scrolling="no"></iframe></div>`;
 
-    return `<div style="margin-bottom:12px;padding:12px;background:var(--cgm-bg);border-radius:var(--cgm-radius-sm);border:1px solid var(--cgm-border);">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-        <span style="font-size:0.7rem;color:var(--cgm-accent);font-weight:600;">${label}</span>
+    return `<div class="cgm-card" style="margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span style="font-size:0.7rem;color:var(--cgm-accent);font-weight:600;">${i === 0 ? '🎣' : i === slides.length - 1 ? '📢' : '📝'} Slide ${i+1}</span>
         <div style="display:flex;gap:4px;">
           ${i>0?`<button class="cgm-btn cgm-btn-sm" onclick="moveSlide(${i},-1)">↑</button>`:''}
           ${i<slides.length-1?`<button class="cgm-btn cgm-btn-sm" onclick="moveSlide(${i},1)">↓</button>`:''}
           <button class="cgm-btn cgm-btn-sm cgm-btn-red" onclick="removeSlide(${i})">✕</button>
         </div>
       </div>
-      <textarea class="cgm-textarea" style="min-height:50px;font-size:0.82rem;" onchange="slides[${i}].text=this.value">${s.text}</textarea>
-      <div class="cgm-form-group" style="margin-top:6px;">
-        <label>Layout</label>
-        <select class="cgm-select" style="padding:4px 8px;font-size:0.8rem;" onchange="slides[${i}].layout=this.value">${layoutOptions}</select>
-      </div>
+      <div class="cgm-form-group"><label>Template</label><select class="cgm-select" style="padding:4px 8px;font-size:0.8rem;" onchange="changeSlideTemplate(${i}, this.value)">${tplOptions}</select></div>
+      ${fieldsHtml}
       ${previewHtml}
     </div>`;
   }).join('');
 }
 
-function separateSlides() {
-  if (!selectedArticleId) return showToast('Seleccioná un artículo', 'error');
+function changeSlideTemplate(i, tplId) {
+  slides[i].template_id = tplId;
+  renderSlidesList();
+}
 
-  // Cargar el artículo y separar en slides
-  fetch('/cgm/api/article-info/' + selectedArticleId + '/')
-    .then(r => r.json())
-    .then(d => {
-      if (!d.ok) return showToast('Error', 'error');
-
-      slides = [];
-      // Gancho: título o primeras líneas del intro
-      const intro = d.intro || '';
-      const body = d.body || '';
-      const introLines = intro.split('\n').filter(l => l.trim());
-      const bodyText = body.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-      const sentences = bodyText.split(/[.!?]+/).filter(s => s.trim().length > 20);
-
-      // Slide 1: Gancho
-      slides.push({text: introLines.slice(0, 2).join(' ') || d.title, layout: 'portada', bgUrl: '', previewUrl: ''});
-
-      // Slides intermedios: frases del cuerpo
-      const step = Math.max(1, Math.floor(sentences.length / 4));
-      for (let i = step; i < sentences.length - step && slides.length < 5; i += step) {
-        const t = sentences[i].trim();
-        if (t.length > 10) {
-          slides.push({text: t.length > 150 ? t.substring(0, 150) + '...' : t, layout: 'hero', bgUrl: '', previewUrl: ''});
-        }
-      }
-
-      // Último slide: CTA
-      slides.push({text: 'Descubrí más en endonautas.cl', layout: 'cta', bgUrl: '', previewUrl: ''});
-
-      renderSlidesList();
-      showToast(`${slides.length} slides creadas`, 'success');
-    })
-    .catch(() => showToast('Error', 'error'));
+function updateSlideField(i, field, value) {
+  slides[i][field] = value;
 }
 
 function addSlide() {
   const pos = slides.length > 1 ? slides.length - 1 : slides.length;
-  slides.splice(pos, 0, {text: 'Nuevo slide', layout: 'hero', bgUrl: '', previewUrl: ''});
+  slides.splice(pos, 0, {template_id: 'problema', title: '', body: '', tag: '', cta: '', bg_url: ''});
   renderSlidesList();
 }
 
@@ -361,6 +272,60 @@ function moveSlide(i, dir) {
   renderSlidesList();
 }
 
+function loadSlidesFromCopy() {
+  if (!selectedArticleId) return showToast('Seleccioná un artículo', 'error');
+  fetch('/cgm/api/article-info/' + selectedArticleId + '/')
+    .then(r => r.json())
+    .then(d => {
+      if (!d.ok) return showToast('Error', 'error');
+      slides = [];
+      const intro = d.intro || '';
+      const body = d.body || '';
+      const introLines = intro.split('\n').filter(l => l.trim());
+      const bodyText = body.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+      const sentences = bodyText.split(/[.!?]+/).filter(s => s.trim().length > 20);
+
+      slides.push({template_id: 'portada', title: introLines.slice(0, 2).join(' ') || d.title, body: sentences[0] || '', cta: 'Deslizá →', tag: '', bg_url: ''});
+
+      const step = Math.max(1, Math.floor(sentences.length / 4));
+      for (let i = step; i < sentences.length - step && slides.length < 5; i += step) {
+        const t = sentences[i].trim();
+        if (t.length > 10) {
+          slides.push({template_id: 'diferenciacion', title: t.length > 100 ? t.substring(0, 100) + '...' : t, body: '', tag: 'IDEA ' + (slides.length - 1), cta: '', bg_url: ''});
+        }
+      }
+
+      slides.push({template_id: 'cta', title: 'Tu mapa interior está esperando', body: 'Descubrí los patrones que mueven tus vínculos.', tag: '', cta: '', bg_url: ''});
+
+      renderSlidesList();
+      showToast(`${slides.length} slides creadas`, 'success');
+    })
+    .catch(() => showToast('Error', 'error'));
+}
+
+async function searchBg() {
+  const q = document.getElementById('bgQuery').value.trim();
+  if (!q) return;
+  const c = document.getElementById('bgResults');
+  c.innerHTML = '<div class="cgm-spinner" style="margin:1rem auto;"></div>';
+  try {
+    const r = await fetch('/cgm/api/search-pexels/?q=' + encodeURIComponent(q));
+    const d = await r.json();
+    if (d.ok && d.images && d.images.length) {
+      c.innerHTML = d.images.map(img => `<div onclick="selectBg('${img.url}')" style="cursor:pointer;border-radius:var(--cgm-radius-sm);overflow:hidden;border:2px solid transparent;"><img src="${img.url_small}" style="width:100%;height:50px;object-fit:cover;"></div>`).join('');
+    } else { c.innerHTML = '<p style="color:var(--cgm-text-2);font-size:0.85rem;grid-column:1/-1;">No se encontraron imágenes.</p>'; }
+  } catch(e) { c.innerHTML = '<p style="color:var(--cgm-red);font-size:0.85rem;">Error</p>'; }
+}
+
+function selectBg(url) {
+  curBgUrl = url;
+  document.getElementById('bgUrl').value = url;
+  slides.forEach(s => { if (!s.bg_url) s.bg_url = url; });
+  document.querySelectorAll('#bgResults > div').forEach(d => d.style.borderColor = 'transparent');
+  event.currentTarget.style.borderColor = '#c4813a';
+  renderSlidesList();
+}
+
 async function generateOneSlide(idx) {
   if (!selectedArticleId) return showToast('Seleccioná un artículo', 'error');
   const s = slides[idx];
@@ -371,26 +336,23 @@ async function generateOneSlide(idx) {
       headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
       body: JSON.stringify({
         article_id: parseInt(selectedArticleId),
-        slides: [{text: s.text, layout: s.layout, bg_url: s.bgUrl || currentBgUrl}],
-        template_style: currentTpl,
-        bg_image_url: currentBgUrl,
+        slides: [s],
+        template_style: 'A',
+        bg_image_url: s.bg_url || curBgUrl,
       })
     });
     const d = await r.json();
     if (d.ok && d.files.length) {
-      s.previewUrl = `/media/slides/${selectedArticleId}/${d.files[0].split('/').pop()}`;
+      s.preview_url = `/media/slides/${selectedArticleId}/${d.files[0].split('/').pop()}`;
       renderSlidesList();
       showToast(`Slide ${idx+1} generada!`, 'success');
-    } else {
-      showToast('Error: ' + (d.error || ''), 'error');
-    }
+    } else { showToast('Error: ' + (d.error || ''), 'error'); }
   } catch(e) { showToast('Error de red', 'error'); }
 }
 
 async function generateAllSlides() {
   if (!selectedArticleId) return showToast('Seleccioná un artículo', 'error');
   if (slides.length < 2) return showToast('Mínimo 2 slides', 'error');
-
   showToast('Generando todas las slides...', 'success');
   try {
     const r = await fetch('/cgm/api/generate-slides/', {
@@ -398,23 +360,34 @@ async function generateAllSlides() {
       headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
       body: JSON.stringify({
         article_id: parseInt(selectedArticleId),
-        slides: slides.map(s => ({text: s.text, layout: s.layout, bg_url: s.bgUrl || currentBgUrl})),
-        template_style: currentTpl,
-        bg_image_url: currentBgUrl,
+        slides: slides,
+        template_style: 'A',
+        bg_image_url: curBgUrl,
       })
     });
     const d = await r.json();
     if (d.ok) {
-      d.files.forEach((f, i) => { if (slides[i]) slides[i].previewUrl = `/media/slides/${selectedArticleId}/${f.split('/').pop()}`; });
+      d.files.forEach((f, i) => { if (slides[i]) slides[i].preview_url = `/media/slides/${selectedArticleId}/${f.split('/').pop()}`; });
       renderSlidesList();
-      // Mostrar preview
       const prev = document.getElementById('slidesPreview');
-      prev.innerHTML = slides.map((s, i) => `<div style="border-radius:var(--cgm-radius-sm);overflow:hidden;border:1px solid var(--cgm-border);"><img src="${s.previewUrl}" style="width:100%;aspect-ratio:1080/1350;object-fit:cover;"><div style="padding:4px;font-size:0.65rem;color:var(--cgm-text-2);text-align:center;">${i+1}/${slides.length}</div></div>`).join('');
+      prev.innerHTML = slides.map((s, i) => `<div style="border-radius:var(--cgm-radius-sm);overflow:hidden;border:1px solid var(--cgm-border);"><img src="${s.preview_url || ''}" style="width:100%;aspect-ratio:1080/1350;object-fit:cover;" onerror="this.style.background='#222';this.style.display='flex';this.style.alignItems='center';this.style.justifyContent='center';this.innerHTML='<span style=\\'color:#555;font-size:0.7rem;\\'>Sin preview</span>';"><div style="padding:4px;font-size:0.65rem;color:var(--cgm-text-2);text-align:center;">${i+1}/${slides.length}</div></div>`).join('');
       document.getElementById('slidesPreviewSection').style.display = 'block';
       showToast(`${d.files.length} slides generadas!`, 'success');
-    } else {
-      showToast('Error: ' + (d.error || ''), 'error');
-    }
+    } else { showToast('Error: ' + (d.error || ''), 'error'); }
+  } catch(e) { showToast('Error de red', 'error'); }
+}
+
+async function saveSlides() {
+  if (!selectedArticleId) return showToast('Seleccioná un artículo', 'error');
+  try {
+    const r = await fetch('/cgm/api/save-slides/', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+      body: JSON.stringify({article_id: parseInt(selectedArticleId), slides: slides})
+    });
+    const d = await r.json();
+    if (d.ok) showToast('Slides guardadas', 'success');
+    else showToast('Error: ' + (d.error || ''), 'error');
   } catch(e) { showToast('Error de red', 'error'); }
 }
 

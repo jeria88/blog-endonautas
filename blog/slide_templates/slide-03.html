@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Slide — Diferenciación</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #000; color: #F0E8DC; font-family: 'Plus Jakarta Sans', sans-serif; }
+.slide { width: 1080px; height: 1350px; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+.label { font-size: 14px; font-weight: 600; letter-spacing: 4px; text-transform: uppercase; color: #7ecfa8; padding: 12px 18px; background: rgba(0,0,0,0.6); position: absolute; top: 0; left: 0; z-index: 10; border-radius: 0 0 12px 0; }
+.z1 { position: relative; z-index: 1; }
+.shadow { text-shadow: 0 3px 30px rgba(0,0,0,0.8); }
+.s3 { justify-content: flex-end; }
+.s3 .bg { position: absolute; inset: 0; }
+.s3 .bg img { width: 100%; height: 100%; object-fit: cover; }
+.s3 .dim { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0.9) 100%); }
+.s3 .content { position: relative; z-index: 1; padding: 60px 80px; }
+.s3 .tag { font-size: 14px; font-weight: 600; letter-spacing: 4px; text-transform: uppercase; color: #7ecfa8; margin-bottom: 24px; }
+.s3 .title { font-family: 'Space Grotesk', sans-serif; font-size: 72px; font-weight: 700; line-height: 1.15; color: #F0E8DC; margin-bottom: 24px; }
+.s3 .title em { font-style: italic; color: #7ecfa8; }
+.s3 .body { font-size: 26px; font-weight: 300; line-height: 1.7; color: rgba(240,232,220,0.65); max-width: 700px; }
+</style>
+</head>
+<body>
+<div class="slide s3">
+  <div class="bg"><img src="{{BG_URL}}" alt="" onerror="this.style.display='none'"></div>
+  <div class="dim"></div>
+  <div class="label">Diferenciación</div>
+  <div class="content z1">
+    <div class="tag shadow">{{TAG}}</div>
+    <div class="title shadow">{{TITLE}}</div>
+    <div class="body shadow">{{BODY}}</div>
+  </div>
+</div>
+</body>
+</html>

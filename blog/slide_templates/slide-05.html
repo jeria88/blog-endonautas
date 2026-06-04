@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Slide — CTA Final</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #000; color: #F0E8DC; font-family: 'Plus Jakarta Sans', sans-serif; }
+.slide { width: 1080px; height: 1350px; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+.label { font-size: 14px; font-weight: 600; letter-spacing: 4px; text-transform: uppercase; color: #7ecfa8; padding: 12px 18px; background: rgba(0,0,0,0.6); position: absolute; top: 0; left: 0; z-index: 10; border-radius: 0 0 12px 0; }
+.z1 { position: relative; z-index: 1; }
+.shadow { text-shadow: 0 3px 30px rgba(0,0,0,0.8); }
+.s5 { align-items: center; justify-content: center; text-align: center; padding: 80px; }
+.s5 .bg { position: absolute; inset: 0; background: url('{{BG_URL}}') center/cover no-repeat; opacity: 0.4; }
+.s5 .dim { position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 20%, rgba(0,0,0,0.6) 100%), linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.85) 100%); }
+.s5 .logo { display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 40px; }
+.s5 .logo span { font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 600; letter-spacing: 5px; text-transform: uppercase; color: #7ecfa8; }
+.s5 .title { font-family: 'Space Grotesk', sans-serif; font-size: 80px; font-weight: 700; line-height: 1.1; color: #F0E8DC; margin-bottom: 30px; }
+.s5 .title em { font-style: italic; color: #7ecfa8; }
+.s5 .line { width: 60px; height: 2px; background: rgba(126,207,168,0.5); margin: 0 auto 30px; }
+.s5 .body { font-size: 28px; font-weight: 300; line-height: 1.7; color: rgba(240,232,220,0.75); max-width: 720px; }
+.s5 .url { font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 600; color: #7ecfa8; margin-top: 40px; padding: 14px 36px; border: 1px solid rgba(126,207,168,0.25); border-radius: 100px; display: inline-block; }
+</style>
+</head>
+<body>
+<div class="slide s5">
+  <div class="bg"></div>
+  <div class="dim"></div>
+  <div class="label">CTA Final</div>
+  <div class="logo z1"><span>Endonautas</span></div>
+  <div class="title shadow z1">{{TITLE}}</div>
+  <div class="line z1"></div>
+  <div class="body shadow z1">{{BODY}}</div>
+  <div class="url shadow z1">endonautas.cl →</div>
+</div>
+</body>
+</html>

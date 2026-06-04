@@ -9,7 +9,7 @@ from pathlib import Path
 
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
-from django.http import JsonResponse, FileResponse
+from django.http import JsonResponse, FileResponse, HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.views.decorators.http import require_POST
 
@@ -353,3 +353,60 @@ def api_download_slides(request, pk):
             if fp.exists():
                 zf.write(str(fp), arcname=fp.name)
     return FileResponse(open(str(zip_path), 'rb'), as_attachment=True, filename=f'{article.slug}-slides.zip')
+
+
+@staff_member_required
+def api_slide_preview(request):
+    """GET /cgm/api/slide-preview/?template_id=portada&title=...&body=...&cta=...&tag=...
+    Devuelve el HTML del template con los valores inyectados."""
+    template_id = request.GET.get('template_id', 'portada')
+    title = request.GET.get('title', '')
+    body = request.GET.get('body', '')
+    cta = request.GET.get('cta', 'Deslizá →')
+    tag = request.GET.get('tag', '')
+    bg_url = request.GET.get('bg_url', '')
+
+    # Cargar template HTML
+    template_path = Path(settings.BASE_DIR) / 'blog' / 'slide_templates' / f'slide-{_get_template_index(template_id):02d}.html'
+    if not template_path.exists():
+        return HttpResponse('Template no encontrado', content_type='text/plain', status=404)
+
+    html = template_path.read_text(encoding='utf-8')
+
+    # Reemplazar placeholders
+    html = html.replace('{{TITLE}}', title)
+    html = html.replace('{{BODY}}', body)
+    html = html.replace('{{CTA}}', cta)
+    html = html.replace('{{TAG}}', tag)
+    html = html.replace('{{BG_URL}}', bg_url)
+
+    return HttpResponse(html, content_type='text/html')
+
+
+def _get_template_index(template_id):
+    """Devuelve el número de archivo para un template_id."""
+    mapping = {'portada': 1, 'problema': 2, 'diferenciacion': 3, 'definicion': 4, 'cta': 5}
+    return mapping.get(template_id, 1)
+
+
+@staff_member_required
+@require_POST
+def api_save_slides(request):
+    """POST /cgm/api/save-slides/ — Guarda los slides_data de un artículo."""
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        data = request.POST
+
+    article_id = data.get('article_id')
+    if not article_id:
+        return JsonResponse({'error': 'Falta article_id'}, status=400)
+
+    try:
+        article = GeneratedArticle.objects.get(pk=article_id)
+    except GeneratedArticle.DoesNotExist:
+        return JsonResponse({'error': 'No encontrado'}, status=404)
+
+    article.slides_data = data.get('slides', [])
+    article.save()
+    return JsonResponse({'ok': True})
