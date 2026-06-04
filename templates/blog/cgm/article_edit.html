@@ -1,23 +1,22 @@
 {% extends "blog/cgm/base.html" %}
 
 {% block cgm_content %}
-<div style="max-width: 1000px; margin: 0 auto;">
+<div style="max-width: 1200px; margin: 0 auto;">
   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
     <a href="{% url 'cgm:articles' %}" class="cgm-btn cgm-btn-sm">← Volver</a>
     <div style="display: flex; gap: 8px;">
       <button class="cgm-btn cgm-btn-sm" onclick="openPreview()">👁️ Preview</button>
       <button class="cgm-btn cgm-btn-sm" onclick="saveArticle()">💾 Guardar</button>
-      {% if article.status == 'approved' %}
-      <button class="cgm-btn cgm-btn-sm cgm-btn-green" onclick="publishToBlog()">📤 Publicar</button>
-      {% endif %}
+      <button class="cgm-btn cgm-btn-sm cgm-btn-green" onclick="publishToBlog()">📤 Publicar en Wagtail</button>
     </div>
   </div>
 
   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-    <!-- Editor -->
+    <!-- Columna izquierda: Editor -->
     <div>
+      <!-- Estado -->
       <div class="cgm-card" style="margin-bottom: 1rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
           <span class="cgm-badge cgm-badge-{{ article.status }}" id="statusBadge">{{ article.get_status_display }}</span>
           <select id="statusSelect" class="cgm-select" style="width: auto; padding: 4px 8px;" onchange="document.getElementById('statusBadge').className='cgm-badge cgm-badge-'+this.value; document.getElementById('statusBadge').textContent=this.options[this.selectedIndex].text;">
             <option value="draft" {% if article.status == 'draft' %}selected{% endif %}>Borrador</option>
@@ -26,7 +25,10 @@
             <option value="published" {% if article.status == 'published' %}selected{% endif %}>Publicado</option>
           </select>
         </div>
+      </div>
 
+      <!-- Datos del artículo -->
+      <div class="cgm-card" style="margin-bottom: 1rem;">
         <div class="cgm-form-group">
           <label>Título</label>
           <input type="text" id="editTitle" class="cgm-input" value="{{ article.title|default:'' }}" placeholder="Título del artículo...">
@@ -41,14 +43,15 @@
         </div>
         <div class="cgm-form-group">
           <label>Contenido (HTML)</label>
-          <textarea id="editBody" class="cgm-textarea" style="min-height: 250px; font-family: monospace; font-size: 0.82rem;" placeholder="Contenido en HTML...">{{ article.body|default:'' }}</textarea>
+          <textarea id="editBody" class="cgm-textarea" style="min-height: 200px; font-family: monospace; font-size: 0.82rem;" placeholder="Contenido en HTML...">{{ article.body|default:'' }}</textarea>
         </div>
       </div>
 
+      <!-- Imagen destacada -->
       <div class="cgm-card" style="margin-bottom: 1rem;">
         <h3 style="font-size: 0.9rem; font-weight: 600; color: var(--cgm-text); margin-bottom: 1rem;">🖼️ Imagen destacada</h3>
         <div id="imagePreview" style="margin-bottom: 1rem; display: {% if article.featured_image_url %}block{% else %}none{% endif %};">
-          <img id="previewImg" src="{{ article.featured_image_url|default:'' }}" style="width: 100%; border-radius: var(--cgm-radius-sm); max-height: 200px; object-fit: cover;">
+          <img id="previewImg" src="{{ article.featured_image_url|default:'' }}" style="width: 100%; border-radius: var(--cgm-radius-sm); max-height: 150px; object-fit: cover;">
         </div>
         <div style="display: flex; gap: 8px; margin-bottom: 1rem;">
           <input type="text" id="pexelsQuery" class="cgm-input" placeholder="Buscar imagen en Pexels..." style="flex: 1;">
@@ -58,7 +61,8 @@
         <input type="hidden" id="editImageUrl" value="{{ article.featured_image_url|default:'' }}">
       </div>
 
-      <div class="cgm-card">
+      <!-- SEO & CTA -->
+      <div class="cgm-card" style="margin-bottom: 1rem;">
         <h3 style="font-size: 0.9rem; font-weight: 600; color: var(--cgm-text); margin-bottom: 1rem;">⚙️ SEO & CTA</h3>
         <div class="cgm-form-group">
           <label>Meta Description</label>
@@ -85,13 +89,60 @@
           </div>
         </div>
       </div>
+
+      <!-- SLIDES DEL CARRUSEL -->
+      <div class="cgm-card" style="margin-bottom: 1rem; border-color: var(--cgm-accent);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h3 style="font-size: 0.9rem; font-weight: 600; color: var(--cgm-text);">📱 Slides del Carrusel</h3>
+          <div style="display: flex; gap: 6px;">
+            <button class="cgm-btn cgm-btn-sm" onclick="generateSlidesFromArticle()">⚡ Auto-generar</button>
+            <button class="cgm-btn cgm-btn-sm cgm-btn-green" onclick="generateSlidePNGs()">🎨 Generar PNGs</button>
+          </div>
+        </div>
+
+        <!-- Selector de plantilla -->
+        <div class="cgm-form-group">
+          <label>Estilo de plantilla</label>
+          <div style="display: flex; gap: 8px;" id="templateButtons">
+            <button class="cgm-btn cgm-btn-sm template-btn active" data-template="A" onclick="selectTemplate('A')">A — Editorial Dark</button>
+            <button class="cgm-btn cgm-btn-sm template-btn" data-template="B" onclick="selectTemplate('B')">B — Canva Premium</button>
+            <button class="cgm-btn cgm-btn-sm template-btn" data-template="C" onclick="selectTemplate('C')">C — Bold Statement</button>
+          </div>
+        </div>
+
+        <!-- Fondo del carrusel -->
+        <div class="cgm-form-group">
+          <label>Imagen de fondo (Pexels)</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="slideBgQuery" class="cgm-input" placeholder="Buscar fondo..." style="flex: 1;">
+            <button class="cgm-btn cgm-btn-sm" onclick="searchSlideBg()">🔍</button>
+          </div>
+          <div id="slideBgResults" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 8px;"></div>
+          <input type="hidden" id="slideBgUrl" value="">
+        </div>
+
+        <!-- Lista de slides -->
+        <div id="slidesList" style="margin-top: 1rem;">
+          <div style="font-size: 0.8rem; color: var(--cgm-text-2); text-align: center; padding: 1rem;">
+            Hacé clic en "Auto-generar" para crear slides desde el artículo, o agregá manualmente
+          </div>
+        </div>
+
+        <button class="cgm-btn cgm-btn-sm" style="width: 100%; margin-top: 8px;" onclick="addSlide()">+ Agregar slide</button>
+
+        <!-- Descarga ZIP -->
+        <div id="downloadSection" style="margin-top: 1rem; display: none;">
+          <a id="downloadZipBtn" class="cgm-btn cgm-btn-primary" style="width: 100%; justify-content: center;" href="#">
+            📦 Descargar ZIP con PNGs
+          </a>
+        </div>
+      </div>
     </div>
 
-    <!-- Preview en vivo -->
+    <!-- Columna derecha: Preview -->
     <div>
       <h3 style="font-size: 0.9rem; font-weight: 600; color: var(--cgm-text); margin-bottom: 1rem;">👁️ Vista previa</h3>
       <div class="cgm-card" style="background: #fff; color: #333; border-radius: var(--cgm-radius); overflow: hidden;">
-        <!-- Imagen -->
         <div id="liveImageWrap" style="display: {% if article.featured_image_url %}block{% else %}none{% endif %}; width: 100%; height: 200px; background: #eee; overflow: hidden;">
           <img id="liveImage" src="{{ article.featured_image_url|default:'' }}" style="width: 100%; height: 100%; object-fit: cover;">
         </div>
@@ -105,19 +156,27 @@
           </div>
         </div>
       </div>
+
+      <!-- Preview de slides -->
+      <h3 style="font-size: 0.9rem; font-weight: 600; color: var(--cgm-text); margin: 1.5rem 0 1rem;">📱 Preview de slides</h3>
+      <div id="slidesPreview" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+        <div style="font-size: 0.8rem; color: var(--cgm-text-2); text-align: center; padding: 2rem; grid-column: 1/-1;">
+          Los slides aparecerán aquí después de generar los PNGs
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- Preview Modal (full) -->
+<!-- Preview Modal -->
 <div class="cgm-modal-overlay" id="previewModal">
   <div class="cgm-modal" style="max-width: 800px;">
     <div class="cgm-modal-header">
       <h2>Preview del artículo</h2>
       <button class="cgm-modal-close" onclick="closeModal('previewModal')">&times;</button>
     </div>
-    <div class="cgm-modal-body" style="background: #fff; color: #333; border-radius: 0 0 var(--cgm-radius) var(--cgm-radius);">
-      <div id="modalImageWrap" style="width: 100%; height: 250px; background: #eee; overflow: hidden;">
+    <div class="cgm-modal-body" style="background: #fff; color: #333;">
+      <div id="modalImageWrap" style="width: 100%; height: 250px; background: #eee; overflow: hidden; display: none;">
         <img id="modalImage" src="" style="width: 100%; height: 100%; object-fit: cover;">
       </div>
       <div style="padding: 2rem;">
@@ -131,19 +190,20 @@
 
 <script>
 const articleId = {{ article.pk }};
+let currentTemplate = 'A';
+let slidesData = {{ article.slides_data|default:"{}"|safe }};
+let slides = slidesData.slides || [];
+let slideBgUrl = slidesData.bg_image_url || '';
 
-// Live preview updates
+// Live preview
 document.getElementById('editTitle').addEventListener('input', e => {
   document.getElementById('liveTitle').textContent = e.target.value || 'Título del artículo';
-  document.getElementById('modalTitle').textContent = e.target.value;
 });
 document.getElementById('editIntro').addEventListener('input', e => {
   document.getElementById('liveIntro').textContent = e.target.value || 'Introducción del artículo...';
-  document.getElementById('modalIntro').textContent = e.target.value;
 });
 document.getElementById('editBody').addEventListener('input', e => {
   document.getElementById('liveBody').textContent = e.target.value.substring(0, 300) + '...';
-  document.getElementById('modalBody').innerHTML = e.target.value;
 });
 document.getElementById('editCtaText').addEventListener('input', e => {
   const el = document.getElementById('liveCta');
@@ -151,7 +211,13 @@ document.getElementById('editCtaText').addEventListener('input', e => {
   else { el.style.display = 'none'; }
 });
 
-// Pexels search
+// Template selection
+function selectTemplate(t) {
+  currentTemplate = t;
+  document.querySelectorAll('.template-btn').forEach(b => b.classList.toggle('active', b.dataset.template === t));
+}
+
+// Pexels search for article image
 async function searchPexels() {
   const q = document.getElementById('pexelsQuery').value.trim();
   if (!q) return;
@@ -160,17 +226,17 @@ async function searchPexels() {
   try {
     const resp = await fetch('/cgm/api/search-pexels/?q=' + encodeURIComponent(q));
     const data = await resp.json();
-    if (data.ok && data.images.length) {
+    if (data.ok && data.images && data.images.length) {
       container.innerHTML = data.images.map(img => `
-        <div onclick="selectImage('${img.url}')" style="cursor: pointer; border-radius: var(--cgm-radius-sm); overflow: hidden; border: 2px solid transparent; transition: border-color 0.15s;">
-          <img src="${img.url_small}" style="width: 100%; height: 80px; object-fit: cover;">
+        <div onclick="selectImage('${img.url}')" style="cursor: pointer; border-radius: var(--cgm-radius-sm); overflow: hidden; border: 2px solid transparent;">
+          <img src="${img.url_small}" style="width: 100%; height: 60px; object-fit: cover;">
         </div>
       `).join('');
     } else {
-      container.innerHTML = '<p style="color: var(--cgm-text-2); font-size: 0.85rem; grid-column: 1/-1;">No se encontraron imágenes. Probá con otra búsqueda.</p>';
+      container.innerHTML = '<p style="color: var(--cgm-text-2); font-size: 0.85rem; grid-column: 1/-1;">No se encontraron imágenes.</p>';
     }
   } catch(e) {
-    container.innerHTML = '<p style="color: var(--cgm-red); font-size: 0.85rem; grid-column: 1/-1;">Error de red</p>';
+    container.innerHTML = '<p style="color: var(--cgm-red); font-size: 0.85rem; grid-column: 1/-1;">Error</p>';
   }
 }
 
@@ -180,14 +246,166 @@ function selectImage(url) {
   document.getElementById('imagePreview').style.display = 'block';
   document.getElementById('liveImage').src = url;
   document.getElementById('liveImageWrap').style.display = 'block';
-  document.getElementById('modalImage').src = url;
-  document.getElementById('modalImageWrap').style.display = 'block';
-  // Highlight selected
-  document.querySelectorAll('#pexelsResults > div').forEach(d => d.style.borderColor = 'transparent');
+}
+
+// Pexels search for slide background
+async function searchSlideBg() {
+  const q = document.getElementById('slideBgQuery').value.trim();
+  if (!q) return;
+  const container = document.getElementById('slideBgResults');
+  container.innerHTML = '<div class="cgm-spinner" style="margin: 1rem auto;"></div>';
+  try {
+    const resp = await fetch('/cgm/api/search-pexels/?q=' + encodeURIComponent(q));
+    const data = await resp.json();
+    if (data.ok && data.images && data.images.length) {
+      container.innerHTML = data.images.map(img => `
+        <div onclick="selectSlideBg('${img.url}')" style="cursor: pointer; border-radius: var(--cgm-radius-sm); overflow: hidden; border: 2px solid transparent;">
+          <img src="${img.url_small}" style="width: 100%; height: 50px; object-fit: cover;">
+        </div>
+      `).join('');
+    } else {
+      container.innerHTML = '<p style="color: var(--cgm-text-2); font-size: 0.85rem; grid-column: 1/-1;">No se encontraron imágenes.</p>';
+    }
+  } catch(e) {
+    container.innerHTML = '<p style="color: var(--cgm-red); font-size: 0.85rem;">Error</p>';
+  }
+}
+
+function selectSlideBg(url) {
+  slideBgUrl = url;
+  document.getElementById('slideBgUrl').value = url;
+  document.querySelectorAll('#slideBgResults > div').forEach(d => d.style.borderColor = 'transparent');
   event.currentTarget.style.borderColor = '#c4813a';
 }
 
-// Save
+// Slides management
+function renderSlidesList() {
+  const container = document.getElementById('slidesList');
+  if (slides.length === 0) {
+    container.innerHTML = '<div style="font-size: 0.8rem; color: var(--cgm-text-2); text-align: center; padding: 1rem;">Hacé clic en "Auto-generar" para crear slides desde el artículo</div>';
+    return;
+  }
+
+  container.innerHTML = slides.map((slide, i) => {
+    const isFirst = i === 0;
+    const isLast = i === slides.length - 1;
+    const label = isFirst ? '🎣 Gancho' : isLast ? '📢 CTA' : `📝 Slide ${i}`;
+    return `
+      <div style="margin-bottom: 8px; padding: 8px; background: var(--cgm-bg); border-radius: var(--cgm-radius-sm);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+          <span style="font-size: 0.7rem; color: var(--cgm-accent); font-weight: 600;">${label}</span>
+          <div style="display: flex; gap: 4px;">
+            ${i > 0 ? `<button class="cgm-btn cgm-btn-sm" onclick="moveSlide(${i}, -1)">↑</button>` : ''}
+            ${i < slides.length - 1 ? `<button class="cgm-btn cgm-btn-sm" onclick="moveSlide(${i}, 1)">↓</button>` : ''}
+            <button class="cgm-btn cgm-btn-sm cgm-btn-red" onclick="removeSlide(${i})">✕</button>
+          </div>
+        </div>
+        <textarea class="cgm-textarea" style="min-height: 50px; font-size: 0.82rem;" onchange="updateSlide(${i}, this.value)">${slide}</textarea>
+      </div>
+    `;
+  }).join('');
+}
+
+function addSlide() {
+  slides.push('Nuevo slide - editá este texto');
+  renderSlidesList();
+}
+
+function removeSlide(i) {
+  slides.splice(i, 1);
+  renderSlidesList();
+}
+
+function moveSlide(i, dir) {
+  const newI = i + dir;
+  if (newI < 0 || newI >= slides.length) return;
+  [slides[i], slides[newI]] = [slides[newI], slides[i]];
+  renderSlidesList();
+}
+
+function updateSlide(i, value) {
+  slides[i] = value;
+}
+
+function generateSlidesFromArticle() {
+  const title = document.getElementById('editTitle').value;
+  const intro = document.getElementById('editIntro').value;
+  const body = document.getElementById('editBody').value;
+  const cta = document.getElementById('editCtaText').value || 'Descubrí más en endonautas.cl';
+
+  if (!title) return showToast('Primero escribí un título', 'error');
+
+  // Generar slides automáticamente
+  slides = [];
+
+  // Slide 1: Gancho (del título o intro)
+  if (intro) {
+    // Usar las primeras 2 líneas del intro como gancho
+    const introLines = intro.split('\n').filter(l => l.trim());
+    slides.push(introLines.slice(0, 2).join(' ') || title);
+  } else {
+    slides.push(title);
+  }
+
+  // Slides de cuerpo: extraer párrafos del body
+  const bodyText = body.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  const sentences = bodyText.split(/[.!?]+/).filter(s => s.trim().length > 20);
+
+  // Tomar hasta 3 frases intermedias
+  const step = Math.max(1, Math.floor(sentences.length / 4));
+  for (let i = step; i < sentences.length - step && slides.length < 4; i += step) {
+    const text = sentences[i].trim();
+    if (text.length > 10) {
+      slides.push(text.length > 150 ? text.substring(0, 150) + '...' : text);
+    }
+  }
+
+  // Último slide: CTA
+  slides.push(cta);
+
+  renderSlidesList();
+  showToast(`Generados ${slides.length} slides`, 'success');
+}
+
+async function generateSlidePNGs() {
+  if (slides.length < 2) return showToast('Necesitás al menos 2 slides (gancho + CTA)', 'error');
+
+  showToast('Generando PNGs...', 'success');
+
+  try {
+    const resp = await fetch('/cgm/api/generate-slides/', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+      body: JSON.stringify({
+        article_id: articleId,
+        slides: slides,
+        template_style: currentTemplate,
+        bg_image_url: slideBgUrl,
+      })
+    });
+    const data = await resp.json();
+    if (data.ok) {
+      showToast(`Generados ${data.files.length} PNGs!`, 'success');
+      // Mostrar preview
+      const preview = document.getElementById('slidesPreview');
+      preview.innerHTML = data.files.map((f, i) => `
+        <div style="border-radius: var(--cgm-radius-sm); overflow: hidden; border: 1px solid var(--cgm-border);">
+          <img src="/media/slides/${articleId}/${f.split('/').pop()}" style="width: 100%; aspect-ratio: 1; object-fit: cover;">
+          <div style="padding: 4px; font-size: 0.65rem; color: var(--cgm-text-2); text-align: center;">${i+1}/${data.files.length}</div>
+        </div>
+      `).join('');
+      // Mostrar botón descarga
+      document.getElementById('downloadSection').style.display = 'block';
+      document.getElementById('downloadZipBtn').href = `/cgm/api/download-slides/${articleId}/`;
+    } else {
+      showToast('Error: ' + (data.error || ''), 'error');
+    }
+  } catch(e) {
+    showToast('Error de red', 'error');
+  }
+}
+
+// Save article
 async function saveArticle() {
   const data = {
     title: document.getElementById('editTitle').value,
@@ -200,6 +418,7 @@ async function saveArticle() {
     tags: document.getElementById('editTags').value,
     meta_description: document.getElementById('editMeta').value,
     featured_image_url: document.getElementById('editImageUrl').value,
+    slides_data: {slides, template_style: currentTemplate, bg_image_url: slideBgUrl},
     status: document.getElementById('statusSelect').value,
   };
   try {
@@ -229,9 +448,12 @@ function publishToBlog() {
   fetch('/cgm/api/publish-article/' + articleId + '/', {
     method: 'POST', headers: {'X-CSRFToken': '{{ csrf_token }}'}
   }).then(r => r.json()).then(data => {
-    if (data.ok) { showToast('Publicado!', 'success'); location.reload(); }
+    if (data.ok) { showToast('Publicado en Wagtail!', 'success'); location.reload(); }
     else showToast('Error: ' + (data.error || ''), 'error');
   });
 }
+
+// Init
+renderSlidesList();
 </script>
 {% endblock %}

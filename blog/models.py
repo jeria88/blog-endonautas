@@ -186,6 +186,8 @@ class GeneratedArticle(models.Model):
     published_at  = models.DateTimeField(null=True, blank=True)
     featured_image_url = models.URLField('URL imagen destacada', blank=True,
         help_text='Imagen de Pexels u otra fuente para el artículo')
+    slides_data = models.JSONField('Datos de slides RRSS', blank=True, default=dict,
+        help_text='JSON con slides generados para carruseles')
 
     class Meta:
         ordering = ['-created_at']

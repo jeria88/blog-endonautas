@@ -22,4 +22,6 @@ urlpatterns = [
     path('api/save-social-post/<int:pk>/', views_cgm.api_save_social_post, name='api_save_social_post'),
     path('api/article-info/<int:pk>/', views_cgm.api_article_info, name='api_article_info'),
     path('api/search-pexels/', views_cgm.api_search_pexels, name='api_search_pexels'),
+    path('api/generate-slides/', views_cgm.api_generate_slides, name='api_generate_slides'),
+    path('api/download-slides/<int:pk>/', views_cgm.api_download_slides, name='api_download_slides'),
 ]
