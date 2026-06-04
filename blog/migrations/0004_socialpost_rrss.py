@@ -6,7 +6,8 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('blog', '0003_emailevent_brevo_message_id'),
+        ('blog', '0002_tag_contacttag_broadcast'),
+        ('crm', '0003_emailevent_brevo_message_id'),
     ]
 
     operations = [
