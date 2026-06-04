@@ -236,7 +236,15 @@ class GeneratedArticle(models.Model):
 # ── Contenido de RRSS ──────────────────────────────────────────────────────────
 
 class SocialPost(models.Model):
-    """Contenido de RRSS generado a partir de un artículo del blog."""
+    """Contenido de RRSS generado a partir de un artículo del blog.
+
+    Estructura del copy por red social:
+    - Gancho: frase inicial que detiene el scroll
+    - Cuerpo: desarrollo del contenido
+    - CTA: llamada a la acción
+    - Hashtags: etiquetas para la red social
+    - Descripción: texto completo formateado para copiar/pegar
+    """
 
     generated_article = models.ForeignKey(
         GeneratedArticle, on_delete=models.SET_NULL,
@@ -249,15 +257,49 @@ class SocialPost(models.Model):
         help_text="Artículo de Wagtail (opcional)"
     )
 
-    # Copys generados
-    copy_carrusel = models.TextField('Copy carrusel', blank=True,
-        help_text="Texto para las slides del carrusel (un párrafo por slide, separados por ---)")
-    copy_descripcion = models.TextField('Copy descripción', blank=True,
-        help_text="Texto de la descripción del carrusel en Instagram")
-    copy_reel_texto = models.TextField('Copy reel (texto en pantalla)', blank=True,
-        help_text="Texto que aparece sobre el video del reel")
-    copy_reel_descripcion = models.TextField('Copy reel (descripción)', blank=True,
-        help_text="Descripción del reel que se lee mientras el video se reproduce en loop")
+    # ── Copy carrusel ──
+    carrusel_gancho = models.TextField('Gancho carrusel', blank=True,
+        help_text="Frase inicial que detiene el scroll (portada)")
+    carrusel_cuerpo = models.TextField('Cuerpo carrusel', blank=True,
+        help_text="Texto de las slides de contenido (separadas por ---)")
+    carrusel_cta = models.TextField('CTA carrusel', blank=True,
+        help_text="Llamada a la acción final")
+    carrusel_hashtags = models.TextField('Hashtags carrusel', blank=True,
+        help_text="Hashtags para Instagram (ej: #autoconocimiento #psicología)")
+    carrusel_descripcion = models.TextField('Descripción carrusel', blank=True,
+        help_text="Descripción completa del carrusel para copiar/pegar")
+
+    # ── Copy reel ──
+    reel_gancho = models.TextField('Gancho reel', blank=True,
+        help_text="Frase inicial que aparece en pantalla (hook)")
+    reel_cuerpo = models.TextField('Cuerpo reel', blank=True,
+        help_text="Texto que se lee mientras el video se reproduce en loop")
+    reel_cta = models.TextField('CTA reel', blank=True,
+        help_text="Llamada a la acción del reel")
+    reel_hashtags = models.TextField('Hashtags reel', blank=True,
+        help_text="Hashtags para el reel")
+    reel_descripcion = models.TextField('Descripción reel', blank=True,
+        help_text="Descripción completa del reel para copiar/pegar")
+
+    # ── Copy post simple ──
+    post_gancho = models.TextField('Gancho post', blank=True,
+        help_text="Frase inicial del post")
+    post_cuerpo = models.TextField('Cuerpo post', blank=True,
+        help_text="Contenido del post")
+    post_cta = models.TextField('CTA post', blank=True,
+        help_text="Llamada a la acción del post")
+    post_hashtags = models.TextField('Hashtags post', blank=True,
+        help_text="Hashtags para el post")
+    post_descripcion = models.TextField('Descripción post', blank=True,
+        help_text="Descripción completa del post para copiar/pegar")
+
+    # ── Texto completo formateado por red (para copiar/pegar) ──
+    copy_instagram = models.TextField('Copy Instagram', blank=True,
+        help_text="Texto completo formateado para Instagram (gancho + cuerpo + CTA + hashtags)")
+    copy_tiktok = models.TextField('Copy TikTok', blank=True,
+        help_text="Texto completo formateado para TikTok")
+    copy_linkedin = models.TextField('Copy LinkedIn', blank=True,
+        help_text="Texto completo formateado para LinkedIn")
 
     # Plataforma y formato
     PLATAFORMA_INSTAGRAM = 'instagram'
@@ -321,6 +363,61 @@ class SocialPost(models.Model):
 
     def get_slides_text(self):
         """Lista de textos para cada slide del carrusel."""
-        if not self.copy_carrusel:
+        if not self.carrusel_cuerpo:
             return []
-        return [s.strip() for s in self.copy_carrusel.split('---') if s.strip()]
+        return [s.strip() for s in self.carrusel_cuerpo.split('---') if s.strip()]
+
+    def get_copy_for_platform(self, platform):
+        """Devuelve el texto completo formateado para una red social."""
+        if platform == 'instagram':
+            return self.copy_instagram
+        elif platform == 'tiktok':
+            return self.copy_tiktok
+        elif platform == 'linkedin':
+            return self.copy_linkedin
+        return ''
+
+    def build_formatted_copy(self):
+        """Construye el texto formateado para cada red social a partir de los campos."""
+        if self.formato == self.FORMATO_CARRUSEL:
+            parts = []
+            if self.carrusel_gancho:
+                parts.append(self.carrusel_gancho)
+            if self.carrusel_cuerpo:
+                parts.append(self.carrusel_cuerpo.replace('---', '\n\n'))
+            if self.carrusel_cta:
+                parts.append(self.carrusel_cta)
+            if self.carrusel_hashtags:
+                parts.append(self.carrusel_hashtags)
+            full = '\n\n'.join(parts)
+            self.copy_instagram = full
+            self.copy_tiktok = full
+            self.copy_linkedin = full
+        elif self.formato == self.FORMATO_REEL:
+            parts = []
+            if self.reel_gancho:
+                parts.append(self.reel_gancho)
+            if self.reel_cuerpo:
+                parts.append(self.reel_cuerpo)
+            if self.reel_cta:
+                parts.append(self.reel_cta)
+            if self.reel_hashtags:
+                parts.append(self.reel_hashtags)
+            full = '\n\n'.join(parts)
+            self.copy_instagram = full
+            self.copy_tiktok = full
+            self.copy_linkedin = full
+        elif self.formato == self.FORMATO_POST:
+            parts = []
+            if self.post_gancho:
+                parts.append(self.post_gancho)
+            if self.post_cuerpo:
+                parts.append(self.post_cuerpo)
+            if self.post_cta:
+                parts.append(self.post_cta)
+            if self.post_hashtags:
+                parts.append(self.post_hashtags)
+            full = '\n\n'.join(parts)
+            self.copy_instagram = full
+            self.copy_tiktok = full
+            self.copy_linkedin = full

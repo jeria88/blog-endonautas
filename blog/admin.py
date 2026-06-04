@@ -7,13 +7,15 @@ from wagtail.rich_text import RichText
 from .models import BlogPost, BlogIndexPage, BlogSubmission, GeneratedArticle, SocialPost
 
 
+# ════════════════════════════════════════════════════════════════════════════
+# BlogSubmission
+# ════════════════════════════════════════════════════════════════════════════
+
 def _create_post_from_submission(sub):
     blog_index = BlogIndexPage.objects.live().first()
     if not blog_index:
         raise RuntimeError('No existe una página de índice de blog publicada.')
-
     body_html = '<p>' + sub.body.replace('\n\n', '</p><p>').replace('\n', '<br>') + '</p>'
-
     post = BlogPost(
         title=sub.title,
         intro=sub.body[:280],
@@ -22,10 +24,8 @@ def _create_post_from_submission(sub):
         date=sub.created_at.date(),
     )
     post.body = [('richtext', RichText(body_html))]
-
     blog_index.add_child(instance=post)
     post.save_revision()
-
     sub.blog_post = post
     sub.status = BlogSubmission.STATUS_APPROVED
     sub.save()
@@ -42,7 +42,7 @@ def aprobar_submissions(modeladmin, request, queryset):
         except Exception as e:
             messages.error(request, f'Error con "{sub.title}": {e}')
     if created:
-        messages.success(request, f'{created} postulación(es) aprobada(s). Revisa el CMS para publicar.')
+        messages.success(request, f'{created} postulación(es) aprobada(s).')
 
 
 @admin.action(description='Rechazar seleccionadas')
@@ -84,7 +84,9 @@ class BlogSubmissionAdmin(admin.ModelAdmin):
     cms_link.short_description = 'CMS'
 
 
-# ── Admin para artículos generados por IA ───────────────────────────────────────
+# ════════════════════════════════════════════════════════════════════════════
+# GeneratedArticle — CRUD
+# ════════════════════════════════════════════════════════════════════════════
 
 @admin.action(description='Publicar en el blog (Wagtail)')
 def publish_to_blog_action(modeladmin, request, queryset):
@@ -100,13 +102,20 @@ def publish_to_blog_action(modeladmin, request, queryset):
         messages.info(request, f'{published} artículo(s) publicado(s) en el blog.')
 
 
+@admin.action(description='Eliminar seleccionados')
+def delete_articles(modeladmin, request, queryset):
+    count = queryset.count()
+    queryset.delete()
+    messages.success(request, f'{count} artículo(s) eliminado(s).')
+
+
 @admin.register(GeneratedArticle)
 class GeneratedArticleAdmin(admin.ModelAdmin):
     list_display   = ('title', 'source_type', 'status', 'created_at', 'blog_post_link')
     list_filter    = ('status', 'source_type')
     search_fields  = ('title', 'keywords', 'body')
     readonly_fields = ('blog_post', 'created_at', 'updated_at', 'published_at')
-    actions        = [publish_to_blog_action]
+    actions        = [publish_to_blog_action, delete_articles]
     ordering       = ('-created_at',)
 
     fieldsets = (
@@ -136,36 +145,88 @@ class GeneratedArticleAdmin(admin.ModelAdmin):
     blog_post_link.short_description = 'Blog'
 
 
-# ── Admin para Posts de RRSS ────────────────────────────────────────────────────
+# ════════════════════════════════════════════════════════════════════════════
+# SocialPost — CRUD con copys por red social
+# ════════════════════════════════════════════════════════════════════════════
+
+@admin.action(description='Construir copy formateado')
+def build_copy_action(modeladmin, request, queryset):
+    for post in queryset:
+        post.build_formatted_copy()
+        post.save()
+    messages.success(request, f'Copy construido para {queryset.count()} post(s).')
+
+
+@admin.action(description='Eliminar seleccionados')
+def delete_social_posts(modeladmin, request, queryset):
+    count = queryset.count()
+    queryset.delete()
+    messages.success(request, f'{count} post(s) eliminado(s).')
+
 
 @admin.register(SocialPost)
 class SocialPostAdmin(admin.ModelAdmin):
-    list_display   = ('fuente_titulo', 'plataforma', 'formato', 'status', 'created_at')
+    list_display   = ('fuente_titulo', 'plataforma', 'formato', 'status', 'created_at', 'copy_buttons')
     list_filter    = ('plataforma', 'formato', 'status')
-    search_fields  = ('copy_carrusel', 'copy_descripcion', 'copy_reel_texto')
+    search_fields  = ('carrusel_gancho', 'carrusel_cuerpo', 'reel_gancho', 'post_gancho')
     readonly_fields = ('created_at', 'updated_at', 'published_at')
+    actions        = [build_copy_action, delete_social_posts]
     ordering       = ('-created_at',)
 
     fieldsets = (
         ('Fuente', {
             'fields': ('generated_article', 'blog_post'),
         }),
-        ('Plataforma', {
-            'fields': ('plataforma', 'formato'),
+        ('Plataforma y formato', {
+            'fields': ('plataforma', 'formato', 'status'),
         }),
-        ('Carrusel', {
-            'fields': ('copy_carrusel', 'copy_descripcion'),
+        ('── Copy Carrusel ──', {
+            'fields': ('carrusel_gancho', 'carrusel_cuerpo', 'carrusel_cta', 'carrusel_hashtags', 'carrusel_descripcion'),
             'classes': ('collapse',),
         }),
-        ('Reel', {
-            'fields': ('copy_reel_texto', 'copy_reel_descripcion'),
+        ('── Copy Reel ──', {
+            'fields': ('reel_gancho', 'reel_cuerpo', 'reel_cta', 'reel_hashtags', 'reel_descripcion'),
             'classes': ('collapse',),
+        }),
+        ('── Copy Post Simple ──', {
+            'fields': ('post_gancho', 'post_cuerpo', 'post_cta', 'post_hashtags', 'post_descripcion'),
+            'classes': ('collapse',),
+        }),
+        ('── Copy por Red Social (para copiar/pegar) ──', {
+            'fields': ('copy_instagram', 'copy_tiktok', 'copy_linkedin'),
         }),
         ('Assets generados', {
             'fields': ('carrusel_html_path', 'carrusel_png_count', 'reel_video_path'),
             'classes': ('collapse',),
         }),
-        ('Estado', {
-            'fields': ('status', 'published_at', 'created_at', 'updated_at'),
+        ('Metadata', {
+            'fields': ('created_at', 'updated_at', 'published_at'),
+            'classes': ('collapse',),
         }),
     )
+
+    def copy_buttons(self, obj):
+        """Botones para copiar el texto de cada red social."""
+        from django.utils.safestring import mark_safe
+        buttons = []
+        for platform, label, color, field in [
+            ('ig', 'Copiar IG', '#E1306C', 'copy_instagram'),
+            ('tt', 'Copiar TT', '#010101', 'copy_tiktok'),
+            ('li', 'Copiar LI', '#0077B5', 'copy_linkedin'),
+        ]:
+            text = getattr(obj, field, '')
+            if text:
+                # Escape for JS
+                js_text = text.replace('\\', '\\\\').replace("'", "\\'").replace('\n', '\\n').replace('\r', '')
+                btn = (
+                    f'<button type="button" class="button" '
+                    f'onclick="navigator.clipboard.writeText(\'{js_text}\'); '
+                    f'this.textContent=\'✓ Copiado!\'; '
+                    f'setTimeout(()=>this.textContent=\'{label}\', 2000)" '
+                    f'style="margin:2px;padding:4px 10px;font-size:0.75rem;'
+                    f'background:{color};color:#fff;border:none;border-radius:4px;cursor:pointer">'
+                    f'{label}</button>'
+                )
+                buttons.append(btn)
+        return mark_safe(' '.join(buttons)) if buttons else '—'
+    copy_buttons.short_description = 'Copiar'
